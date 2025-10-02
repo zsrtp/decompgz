@@ -14,6 +14,7 @@
 #include "d/d_s_play.h"
 #include "SSystem/SComponent/c_math.h"
 #include "f_op/f_op_actor_enemy.h"
+#include "gz/font.h"
 
 /**
  * @class daE_YK_HIO_c
@@ -1278,7 +1279,12 @@ static void action(e_yk_class* i_this) {
  * - Updates collision sphere position and radius
  */
 /* 80806B78-8080708C 002438 0514+00 2/1 0/0 0/0 .text            daE_YK_Execute__FP10e_yk_class */
+Texture blankTex;
+
 static int daE_YK_Execute(e_yk_class* i_this) {
+    Font::loadFont("/tpgz/fonts/consola.fnt");
+    load_texture("tpgz/tex/blank.tex", &blankTex);
+    GZ_drawText("hello from decomp!", 100.0f, 100.0f, 0xFF000000, true);
     fopEn_enemy_c* _this = static_cast<fopEn_enemy_c*>(i_this);
     cXyz pos, pos2;
 

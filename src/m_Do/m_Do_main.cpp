@@ -492,8 +492,6 @@ void main01(void) {
             mDoMch_HeapCheckAll();
         }
 
-        OSReport("test!\n");
-
         if (SyncWidthSound) {
             g_mDoMemCd_control.update();
         }

@@ -749,7 +749,10 @@ config.libs = [
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_timer.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_k_wmark.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_k_wpillar.cpp"),
-            # Object(Modded, "gz/gz_main.cpp"),
+            Object(Modded, "gz/gz_main.cpp"),
+            Object(Modded, "gz/disc.cpp"),
+            Object(Modded, "gz/draw.cpp"),
+            Object(Modded, "gz/font.cpp"),
         ],
     },
     {
@@ -1780,7 +1783,7 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_yd_leaf"),
     ActorRel(NonMatching, "d_a_e_yg"),
     ActorRel(NonMatching, "d_a_e_yh"),
-    ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_yk"),
+    ActorRel(Modded, "d_a_e_yk"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ym"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ym_tag"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ymb"),
@@ -2127,7 +2130,7 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_poFire"),
     ActorRel(NonMatching, "d_a_obj_poTbox"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_prop"),
-    ActorRel(MatchingFor("GZ2E01"), "d_a_obj_pumpkin"),
+    ActorRel(Modded, "d_a_obj_pumpkin"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rcircle"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rfHole"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rgate"),
@@ -2342,6 +2345,7 @@ if config_path.exists():
         for asset in module.get("extract", []):
             emit_build_rule(asset)
 
+
 # Optional callback to adjust link order. This can be used to add, remove, or reorder objects.
 # This is called once per module, with the module ID and the current link order.
 #
@@ -2352,11 +2356,12 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
     if not config.non_matching:
         return objects
     if module_id == 0:  # DOL
-        return objects + ["dummy.c"]
+        return objects + ["gz/gz_main.cpp", "gz/disc.cpp", "gz/draw.cpp", "gz/font.cpp"]
     return objects
 
+
 # Uncomment to enable the link order callback.
-# config.link_order_callback = link_order_callback
+config.link_order_callback = link_order_callback
 
 # Optional extra categories for progress tracking
 config.progress_categories = [

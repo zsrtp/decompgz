@@ -1,5 +1,6 @@
 #include "f_pc/f_pc_leaf.h"
 #include "d/d_procname.h"
+#include "gz/gz_main.h"
 
 // static void GZMenu_Create(scene_class* i_this) { }
 // static void GZMenu_Delete(GZMenu* i_this) { }
