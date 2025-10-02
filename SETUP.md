@@ -69,13 +69,14 @@ Building
   Modding
   ========
 
-  - Install Lago's glibc tools
+  - Install Lago's gclib tools
   ```
   pip install "gclib @ git+https://github.com/LagoLunatic/gclib.git"
   ```
   - Modify any existing cpp or header files
   - Replace the object you modified with `Modded` instead of `MatchingFor(...)` in `configure.py`
   - Run `python configure.py --non-matching --map`
+  - Run `ninja`
   - Run this from the repo root to rebuild the ISO
   ```
   python tools/rebuild-decomp-tp.py <path_to_GZ2E01.iso> <path_to_output.iso> ./
