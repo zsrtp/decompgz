@@ -436,8 +436,8 @@ def JSystemLib(lib_name: str, objects: List[Object], progress_category: str="thi
 
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
-Equivalent = config.non_matching  # Object should be linked when configured with --non-matching
-
+Equivalent = False  # Object should be linked when configured with --non-matching
+Modded = config.non_matching
 
 # Object is only matching for specific versions
 def MatchingFor(*versions) -> bool:
@@ -476,7 +476,7 @@ config.libs = [
         "progress_category": "core",
         "host": True,
         "objects": [
-            Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_main.cpp"),
+            Object(Modded, "m_Do/m_Do_main.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_printf.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_audio.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_controller_pad.cpp"),
@@ -739,7 +739,7 @@ config.libs = [
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class_alpha.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class_ex.cpp"),
-            Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_logo.cpp"),
+            Object(Modded, "d/d_s_logo.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_menu.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_name.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_play.cpp"),

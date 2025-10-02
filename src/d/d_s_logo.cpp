@@ -614,6 +614,7 @@ static int resLoad(request_of_phase_process_class* i_phase, dScnLogo_c* i_this) 
 
 /* 80257AE0-80257C64 252420 0184+00 1/1 0/0 0/0 .text            create__10dScnLogo_cFv */
 int dScnLogo_c::create() {
+    OSReport("test from logo!\n");
     int phase_state = resLoad(&field_0x1c4, this);
     if (phase_state != cPhs_COMPLEATE_e) {
         return phase_state;

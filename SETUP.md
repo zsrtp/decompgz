@@ -66,13 +66,17 @@ Building
   ninja
   ```
 
-Diffing
-=======
+  Modding
+  ========
 
-Once the initial build succeeds, an `objdiff.json` should exist in the project root.
-
-Download the latest release from [encounter/objdiff](https://github.com/encounter/objdiff). Under project settings, set `Project directory`. The configuration should be loaded automatically.
-
-Select an object from the left sidebar to begin diffing. Changes to the project will rebuild automatically: changes to source files, headers, `configure.py`, `splits.txt` or `symbols.txt`.
-
-![](assets/objdiff.png)
+  - Install Lago's glibc tools
+  ```
+  pip install "gclib @ git+https://github.com/LagoLunatic/gclib.git"
+  ```
+  - Modify any existing cpp or header files
+  - Replace the object you modified with `Modded` instead of `MatchingFor(...)` in `configure.py`
+  - Run `python configure.py --non-matching --map`
+  - Run this from the repo root to rebuild the ISO
+  ```
+  python tools/rebuild-decomp-tp.py <path_to_GZ2E01.iso> <path_to_output.iso> ./
+  ```
