@@ -799,6 +799,7 @@ process_profile_definition* g_fpcPfLst_ProfileList[] = {
     &g_profile_TIMER,
     &g_profile_METER2,
     &g_profile_GAMEOVER,
+    &g_profile_GZMENU,
     NULL,
 };
 

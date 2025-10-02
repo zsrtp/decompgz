@@ -772,7 +772,7 @@ static DynamicNameTableEntry const DynamicNameTable[] = {
 };
 
 /* 803F0F50-803F1BB0 01DC70 0C60+00 4/4 0/0 0/0 .bss             DMC */
-static DynamicModuleControlBase* DMC[792];
+static DynamicModuleControlBase* DMC[PROC_MAX];
 
 /* 80450CA8-80450CAC 0001A8 0004+00 1/1 0/0 0/0 .sbss            None */
 static bool DMC_initialized;

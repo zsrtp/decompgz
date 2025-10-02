@@ -9,11 +9,15 @@
 #include "m_Do/m_Do_Reset.h"
 #include "m_Do/m_Do_main.h"
 
+#include "gz/gz.h"
+
 /* 803DD2D8-803DD2E8 009FF8 0010+00 2/2 6/6 0/0 .bss             m_gamePad__8mDoCPd_c */
 JUTGamePad* mDoCPd_c::m_gamePad[4];
 
 /* 803DD2E8-803DD3E8 00A008 0100+00 2/2 84/84 37/37 .bss             m_cpadInfo__8mDoCPd_c */
 interface_of_controller_pad mDoCPd_c::m_cpadInfo[4];
+
+interface_of_controller_pad mDoCPd_c::m_gzPadInfo;
 
 /* 80007954-80007A94 002294 0140+00 0/0 1/1 0/0 .text            create__8mDoCPd_cFv */
 void mDoCPd_c::create() {
@@ -70,6 +74,10 @@ void mDoCPd_c::read() {
         }
     }
 
+    // map port 1 inputs to gz controller info
+    convert(&m_gzPadInfo, *m_gamePad);
+    LRlockCheck(&m_gzPadInfo);
+
     JUTGamePad** pad = m_gamePad;
     interface_of_controller_pad* interface = m_cpadInfo;
 
@@ -83,6 +91,12 @@ void mDoCPd_c::read() {
 
         pad++;
         interface++;
+    }
+
+    // if gz menu is up, zero out normal cpad button flags
+    if (g_gzInfo.isDisplay()) {
+        m_cpadInfo[PAD_1].mPressedButtonFlags = 0;
+        m_cpadInfo[PAD_1].mButtonFlags = 0;
     }
 }
 

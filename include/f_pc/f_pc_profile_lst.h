@@ -796,6 +796,8 @@ extern process_profile_definition g_profile_TBOX_SW;
 extern process_profile_definition g_profile_TITLE;
 extern process_profile_definition g_profile_WarpBug;
 
+extern process_profile_definition g_profile_GZMENU;
+
 extern process_profile_definition* g_fpcPfLst_ProfileList[];
 
 #endif /* F_PC_PROFILE_LST_H_ */

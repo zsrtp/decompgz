@@ -436,7 +436,9 @@ def JSystemLib(lib_name: str, objects: List[Object], progress_category: str="thi
 
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
-Equivalent = config.non_matching  # Object should be linked when configured with --non-matching
+Equivalent = False                # Object should be linked when configured with --non-matching
+
+Custom = config.non_matching  # new custom object
 
 
 # Object is only matching for specific versions
@@ -2285,6 +2287,17 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_tboxSw"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_title"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_warp_bug"),
+
+    # gz
+    {
+        "lib": "gz",
+        "mw_version": MWVersion(config.version),
+        "cflags": cflags_framework,
+        "objects": [
+            Object(Custom, "gz/gz.cpp"),
+            Object(Custom, "gz/gz_menu.cpp"),
+        ],
+    },
 ]
 
 
@@ -2351,11 +2364,14 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
     if not config.non_matching:
         return objects
     if module_id == 0:  # DOL
-        return objects + ["dummy.c"]
+        return objects + [
+                "gz/gz.cpp",
+                "gz/gz_menu.cpp"
+            ]
     return objects
 
 # Uncomment to enable the link order callback.
-# config.link_order_callback = link_order_callback
+config.link_order_callback = link_order_callback
 
 # Optional extra categories for progress tracking
 config.progress_categories = [
