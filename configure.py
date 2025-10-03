@@ -437,7 +437,7 @@ def JSystemLib(lib_name: str, objects: List[Object], progress_category: str="thi
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
 Equivalent = False  # Object should be linked when configured with --non-matching
-Modded = config.non_matching
+Custom = config.non_matching
 
 # Object is only matching for specific versions
 def MatchingFor(*versions) -> bool:
@@ -476,7 +476,7 @@ config.libs = [
         "progress_category": "core",
         "host": True,
         "objects": [
-            Object(Modded, "m_Do/m_Do_main.cpp"),
+            Object(Custom, "m_Do/m_Do_main.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_printf.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_audio.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "m_Do/m_Do_controller_pad.cpp"),
@@ -503,7 +503,7 @@ config.libs = [
         "host": True,
         "objects": [
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "c/c_damagereaction.cpp"),
-            Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "c/c_dylink.cpp"),
+            Object(Custom, "c/c_dylink.cpp"),
         ],
     },
     {
@@ -739,20 +739,16 @@ config.libs = [
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class_alpha.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_pane_class_ex.cpp"),
-            Object(Modded, "d/d_s_logo.cpp"),
+            Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_logo.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_menu.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_name.cpp"),
-            Object(Modded, "d/d_s_play.cpp"),
+            Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_play.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_room.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_s_title.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_save_HIO.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_timer.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_k_wmark.cpp"),
             Object(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d/d_k_wpillar.cpp"),
-            Object(Modded, "gz/gz_main.cpp"),
-            Object(Modded, "gz/disc.cpp"),
-            Object(Modded, "gz/draw.cpp"),
-            Object(Modded, "gz/font.cpp"),
         ],
     },
     {
@@ -1783,7 +1779,7 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_yd_leaf"),
     ActorRel(NonMatching, "d_a_e_yg"),
     ActorRel(NonMatching, "d_a_e_yh"),
-    ActorRel(Modded, "d_a_e_yk"),
+    ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_yk"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ym"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ym_tag"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_e_ymb"),
@@ -2130,7 +2126,7 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_poFire"),
     ActorRel(NonMatching, "d_a_obj_poTbox"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_prop"),
-    ActorRel(Modded, "d_a_obj_pumpkin"),
+    ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_pumpkin"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rcircle"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rfHole"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_rgate"),
@@ -2289,7 +2285,19 @@ config.libs = [
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_tboxSw"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_title"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_warp_bug"),
+
+    # gz
+    {
+        "lib": "gz",
+        "mw_version": MWVersion(config.version),
+        "cflags": cflags_framework,
+        "objects": [
+            Object(Custom, "gz/gz.cpp"),
+            Object(Custom, "gz/gz_menu.cpp"),
+        ],
+    },
 ]
+
 
 
 # Define our custom asset processing scripts
@@ -2356,7 +2364,10 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
     if not config.non_matching:
         return objects
     if module_id == 0:  # DOL
-        return objects + ["gz/gz_main.cpp", "gz/disc.cpp", "gz/draw.cpp", "gz/font.cpp"]
+        return objects + [
+             "gz/gz.cpp",
+             "gz/gz_menu.cpp"
+        ]
     return objects
 
 

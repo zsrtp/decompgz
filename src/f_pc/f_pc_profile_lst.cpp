@@ -20,7 +20,6 @@ process_profile_definition* g_fpcPfLst_ProfileList[] = {
     &g_profile_MENU_SCENE,
     &g_profile_PLAY_SCENE,
     &g_profile_OPENING_SCENE,
-    // &g_profile_GZ_MENU,
     &g_profile_NAME_SCENE,
     &g_profile_NAMEEX_SCENE,
     &g_profile_WARNING_SCENE,
@@ -800,6 +799,7 @@ process_profile_definition* g_fpcPfLst_ProfileList[] = {
     &g_profile_TIMER,
     &g_profile_METER2,
     &g_profile_GAMEOVER,
+    &g_profile_GZ_MENU,
     NULL,
 };
 

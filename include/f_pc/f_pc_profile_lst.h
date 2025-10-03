@@ -33,7 +33,6 @@ extern process_profile_definition g_profile_NAME_SCENE;
 extern process_profile_definition g_profile_NAMEEX_SCENE;
 extern process_profile_definition g_profile_PLAY_SCENE;
 extern process_profile_definition g_profile_OPENING_SCENE;
-// extern process_profile_definition g_profile_GZ_MENU;
 extern process_profile_definition g_profile_ROOM_SCENE;
 extern process_profile_definition g_profile_WARNING_SCENE;
 extern process_profile_definition g_profile_WARNING2_SCENE;
@@ -796,6 +795,9 @@ extern process_profile_definition g_profile_TALK;
 extern process_profile_definition g_profile_TBOX_SW;
 extern process_profile_definition g_profile_TITLE;
 extern process_profile_definition g_profile_WarpBug;
+
+// custom profiles
+extern process_profile_definition g_profile_GZ_MENU;
 
 extern process_profile_definition* g_fpcPfLst_ProfileList[];
 

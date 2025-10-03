@@ -34,8 +34,8 @@ fpc_ProcID fopScnM_DeleteReq(scene_class* i_scene) {
 }
 
 /* 8001ED84-8001EDCC 0196C4 0048+00 0/0 2/2 0/0 .text            fopScnM_CreateReq__FssUsUl */
-int fopScnM_CreateReq(s16 i_procName, s16 param_2, u16 param_3, u32 i_data) {
-    fpc_ProcID request_id = fopScnRq_Request(0, 0, i_procName, (void*)i_data, param_2, param_3);
+int fopScnM_CreateReq(s16 i_procName, s16 i_fadename, u16 i_peektime, u32 i_data) {
+    fpc_ProcID request_id = fopScnRq_Request(0, 0, i_procName, (void*)i_data, i_fadename, i_peektime);
     return request_id != fpcM_ERROR_PROCESS_ID_e;
 }
 

@@ -70,6 +70,8 @@ public:
 
     static JUTGamePad* m_gamePad[4];
     static interface_of_controller_pad m_cpadInfo[4];
+
+    static interface_of_controller_pad m_gzPadInfo;
 };
 
 inline void mDoCPd_ANALOG_CONV(u8 analog, f32& param_1) {

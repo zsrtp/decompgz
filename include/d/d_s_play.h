@@ -78,7 +78,6 @@ public:
 
 extern dScnPly_env_HIO_c g_envHIO;
 extern dScnPly_reg_HIO_c g_regHIO;
-// extern scene_process_profile_definition g_profile_GZ_MENU;
 
 #ifdef DEBUG
 extern dScnPly_preset_HIO_c g_presetHIO;
