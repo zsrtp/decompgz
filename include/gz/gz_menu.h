@@ -5,6 +5,7 @@
 #include "JSystem/J2DGraph/J2DTextBox.h"
 #include "gz/gz.h"
 
+
 class gzMenu_c : public dDlst_base_c {
 public:
     struct gzCursor {
@@ -28,7 +29,7 @@ public:
     static const int LINE_NUM = 9;
     static gzCursor mCursor;
 
-    J2DTextBox* mpLines[LINE_NUM];
+    gzTextBox* mpLines[LINE_NUM];
 };
 
 class gzSettingsMenu_c : public gzMenu_c {
@@ -43,7 +44,7 @@ public:
     static const int LINE_NUM = 11;
     static gzCursor mCursor;
 
-    J2DTextBox* mpLines[LINE_NUM];
+    gzTextBox* mpLines[LINE_NUM];
 };
 
 template <typename T>

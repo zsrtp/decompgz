@@ -14,7 +14,7 @@ int gzInfo_c::_create() {
     ResTIMG* icon = (ResTIMG*)dComIfGp_getMain2DArchive()->getResource('TIMG', "midona64.bti");
     mpIcon = new J2DPicture(icon);
 
-    mpHeader = new J2DTextBox();
+    mpHeader = new gzTextBox();
     mpHeader->setFont(mDoExt_getMesgFont());
     mpHeader->setFontSize(18.0f, 18.0f);
     mpHeader->setCharColor(mCursorColor);
@@ -73,7 +73,7 @@ int gzInfo_c::draw() {
         }
 
         if (mpHeader != NULL) {
-            mpHeader->draw(65.0f, 30.0f, 608.0f, HBIND_LEFT);
+            mpHeader->draw(65.0f, 30.0f, mCursorColor, true);
         }
 
         dComIfGd_set2DOpaTop(mpCurrentMenu);

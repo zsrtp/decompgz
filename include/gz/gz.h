@@ -8,6 +8,7 @@
 #include "SSystem/SComponent/c_API_controller_pad.h"
 
 class gzMenu_c;
+class gzTextBox;
 class gzMainMenu_c;
 
 class gzInfo_c {
@@ -23,7 +24,7 @@ public:
     u32 getCursorColor() const { return mCursorColor; }
 
     J2DPicture* mpIcon;
-    J2DTextBox* mpHeader;
+    gzTextBox* mpHeader;
     gzMenu_c* mpCurrentMenu;
 
     u32 mCursorColor;
@@ -80,5 +81,20 @@ namespace gzPad {
 };
 
 int gzPrint(int x, int y, u32 color, char const* string, ...);
+
+class gzTextBox : public J2DTextBox {
+public:
+    void draw(f32 x, f32 y, u32 color, bool dropShadows) {
+        if (dropShadows) {
+            setCharColor(0x00000080);
+            setGradColor(0x00000080);
+            J2DTextBox::draw(x + 2, y + 2, 608.0f, HBIND_LEFT);
+        }
+        
+        setCharColor(color);
+        setGradColor(color);
+        J2DTextBox::draw(x, y, 608.0f, HBIND_LEFT);
+    }
+};
 
 #endif

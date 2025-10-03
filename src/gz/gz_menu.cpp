@@ -9,7 +9,7 @@ gzMainMenu_c::gzMainMenu_c() {
     OSReport("creating gzMainMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new J2DTextBox();
+        mpLines[i] = new gzTextBox();
         mpLines[i]->setFont(mDoExt_getMesgFont());
         mpLines[i]->setFontSize(18.0f, 18.0f);
     }
@@ -70,15 +70,11 @@ void gzMainMenu_c::draw() {
     // textbox method
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
-            mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 608.0f, HBIND_LEFT);
-        }
-
-        if (mCursor.y == i) {
-            mpLines[i]->setCharColor(g_gzInfo.getCursorColor());
-            mpLines[i]->setGradColor(g_gzInfo.getCursorColor());
-        } else {
-            mpLines[i]->setCharColor(0xFFFFFFFF);
-            mpLines[i]->setGradColor(0xFFFFFFFF);
+            if (mCursor.y == i) {
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), true);
+            } else {
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, true);
+            }
         }
     }
 
