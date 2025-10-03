@@ -1693,10 +1693,6 @@ static int dStage_playerInit(dStage_dt_c* i_stage, void* i_data, int num, void* 
         }
     }
 
-    // create gz process when player is initialized
-    // TODO: is this the best place for this?
-    fopMsgM_Create(PROC_GZMENU, NULL, NULL);
-
     return 1;
 }
 

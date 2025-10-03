@@ -9,40 +9,24 @@
 
 class gzMainMenu_c;
 
-// main gz handler
-class gz_c : public msg_class {
+class gzInfo_c {
 public:
+    gzInfo_c() { mGZInitialized = false; }
+
     int _create();
     int _delete();
     int execute();
     int draw();
+
+    bool isDisplay() const { return mDisplay; }
+    u32 getCursorColor() const { return mCursorColor; }
 
     J2DPicture* mpIcon;
     J2DTextBox* mpHeader;
     gzMainMenu_c* mpMainMenu;
     u32 mCursorColor;
     bool mDisplay;
-};
-
-class gzInfo_c {
-public:
-    bool isDisplay() const {
-        if (m_process != NULL) {
-            return m_process->mDisplay;
-        }
-        
-        return false;
-    }
-
-    u32 getCursorColor() const {
-        if (m_process != NULL) {
-            return m_process->mCursorColor;
-        }
-        
-        return 0xFFFFFFFF;
-    }
-
-    gz_c* m_process;
+    bool mGZInitialized;
 };
 
 extern gzInfo_c g_gzInfo;

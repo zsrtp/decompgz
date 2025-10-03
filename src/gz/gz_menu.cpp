@@ -52,7 +52,7 @@ void gzMainMenu_c::execute() {
 
 void gzMainMenu_c::draw() {
     // textbox method
-    /* for (int i = 0; i < LINE_NUM; i++) {
+    for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
             mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 608.0f, HBIND_LEFT);
         }
@@ -64,10 +64,10 @@ void gzMainMenu_c::draw() {
             mpLines[i]->setCharColor(0xFFFFFFFF);
             mpLines[i]->setGradColor(0xFFFFFFFF);
         }
-    } */
+    }
 
     // print method
-    for (int i = 0; i < LINE_NUM; i++) {
+    /* for (int i = 0; i < LINE_NUM; i++) {
         const char* lines[] = {
             "cheats",
             "flags",
@@ -81,5 +81,5 @@ void gzMainMenu_c::draw() {
         };
 
         gzPrint(30, 90 + ((i - 1) * 22), g_gzInfo.getCursorColor(), lines[i]);
-    }
+    } */
 }

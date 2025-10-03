@@ -8,7 +8,7 @@
 
 gzInfo_c g_gzInfo;
 
-int gz_c::_create() {
+int gzInfo_c::_create() {
     mCursorColor = 0xEE8000FF; // temp
 
     ResTIMG* icon = (ResTIMG*)dComIfGp_getMain2DArchive()->getResource('TIMG', "midona64.bti");
@@ -23,10 +23,11 @@ int gz_c::_create() {
 
     mpMainMenu = new gzMainMenu_c();
 
-    return cPhs_COMPLEATE_e;
+    mGZInitialized = true;
+    return 1;
 }
 
-int gz_c::_delete() {
+int gzInfo_c::_delete() {
     delete mpIcon;
     mpIcon = NULL;
 
@@ -39,7 +40,9 @@ int gz_c::_delete() {
     return 1;
 }
 
-int gz_c::execute() {
+int gzInfo_c::execute() {
+    if (!mGZInitialized) return 0;
+
     if (gzPad::getHoldL() && gzPad::getHoldR() && gzPad::getTrigDown()) {
         mDisplay = !mDisplay;
     }
@@ -55,7 +58,9 @@ int gz_c::execute() {
     return 1;
 }
 
-int gz_c::draw() {
+int gzInfo_c::draw() {
+    if (!mGZInitialized) return 0;
+
     if (mDisplay) {
         if (mpIcon != NULL) {
             mpIcon->draw(30.0f, 5.0f, 30.0f, 30.0f, false, false, false);
@@ -107,54 +112,3 @@ int gzPrint(int x, int y, u32 color, char const* string, ...) {
     JUTDbPrint::getManager()->flush();
     return 1;
 }
-
-static int gz_Draw(gz_c* i_this) {
-    return i_this->draw();
-}
-
-static int gz_Execute(gz_c* i_this) {
-    return i_this->execute();
-}
-
-static int gz_IsDelete(gz_c* i_this) {
-    return 1;
-}
-
-static int gz_Delete(gz_c* i_this) {
-    OSReport("[%d] - run gz_Delete\n", g_Counter.mCounter0);
-    g_gzInfo.m_process = NULL;
-    return i_this->_delete();
-}
-
-static int gz_Create(gz_c* i_this) {
-    OSReport("[%d] - run gz_Create\n", g_Counter.mCounter0);
-    g_gzInfo.m_process = i_this;
-    JUTDbPrint::getManager()->changeFont(mDoExt_getMesgFont());
-    return i_this->_create();
-}
-
-// make sure these don't get stripped
-#pragma push
-#pragma force_active on
-static leafdraw_method_class l_gzMenu_Method = {
-    (process_method_func)gz_Create,
-    (process_method_func)gz_Delete,
-    (process_method_func)gz_Execute,
-    (process_method_func)gz_IsDelete,
-    (process_method_func)gz_Draw,
-};
-
-extern msg_process_profile_definition g_profile_GZMENU = {
-    fpcLy_CURRENT_e,
-    12,
-    fpcPi_CURRENT_e,
-    PROC_GZMENU,
-    (process_method_class*)&g_fpcLf_Method,
-    sizeof(gz_c),
-    0,
-    0,
-    &g_fopMsg_Method,
-    770,
-    &l_gzMenu_Method,
-};
-#pragma pop

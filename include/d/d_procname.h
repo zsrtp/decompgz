@@ -799,8 +799,6 @@ enum {
     /* 0x316 */ PROC_METER2,
     /* 0x317 */ PROC_GAMEOVER,
 
-    PROC_GZMENU,
-
     PROC_MAX,
 };
 
