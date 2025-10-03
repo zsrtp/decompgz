@@ -871,8 +871,7 @@ static int cDyl_InitCallback(void* param_0) {
     DynamicModuleControl dmc("f_pc_profile_lst");
     dmc.link();
     cDyl_Initialized = true;
-    // fopScnM_CreateReq(PROC_LOGO_SCENE, 0x7FFF, 0, 0);
-    fopScnM_CreateReq(PROC_GZMENU, 0x7FFF, 0, 0);
+    fopScnM_CreateReq(PROC_LOGO_SCENE, 0x7FFF, 0, 0);
 
     return 1;
 }
