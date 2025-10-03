@@ -20,10 +20,13 @@ int gzInfo_c::_create() {
     mpHeader->setCharColor(mCursorColor);
     mpHeader->setGradColor(mCursorColor);
     mpHeader->setString("tpgz v1.2.0");
+    mpCurrentMenu = new gzMainMenu_c();
 
-    mpMainMenu = new gzMainMenu_c();
+    mInputWaitTimer = 5;
 
     mGZInitialized = true;
+
+    // JUTDbPrint::getManager()->changeFont(mDoExt_getMesgFont());
     return 1;
 }
 
@@ -34,9 +37,8 @@ int gzInfo_c::_delete() {
     delete mpHeader;
     mpHeader = NULL;
 
-    delete mpMainMenu;
-    mpMainMenu = NULL;
-
+    delete mpCurrentMenu;
+    mpCurrentMenu = NULL;
     return 1;
 }
 
@@ -45,14 +47,18 @@ int gzInfo_c::execute() {
 
     if (gzPad::getHoldL() && gzPad::getHoldR() && gzPad::getTrigDown()) {
         mDisplay = !mDisplay;
+
+        if (mDisplay)
+            g_gzInfo.mInputWaitTimer = 5;
     }
 
     if (mDisplay) {
-        if (gzPad::getTrigB()) {
-            mDisplay = false;
+        if (mInputWaitTimer != 0) {
+            mInputWaitTimer--;
+            return 1;
         }
 
-        mpMainMenu->execute();
+        mpCurrentMenu->execute();
     }
 
     return 1;
@@ -70,7 +76,7 @@ int gzInfo_c::draw() {
             mpHeader->draw(65.0f, 30.0f, 608.0f, HBIND_LEFT);
         }
 
-        dComIfGd_set2DOpaTop(mpMainMenu);
+        dComIfGd_set2DOpaTop(mpCurrentMenu);
     }
 
     // temp heap print

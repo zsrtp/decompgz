@@ -2296,6 +2296,7 @@ config.libs = [
         "objects": [
             Object(Custom, "gz/gz.cpp"),
             Object(Custom, "gz/gz_menu.cpp"),
+            Object(Custom, "gz/gz_settings.cpp"),
         ],
     },
 ]
@@ -2366,7 +2367,8 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
     if module_id == 0:  # DOL
         return objects + [
                 "gz/gz.cpp",
-                "gz/gz_menu.cpp"
+                "gz/gz_menu.cpp",
+                "gz/gz_settings.cpp"
             ]
     return objects
 

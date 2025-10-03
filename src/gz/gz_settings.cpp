@@ -3,10 +3,10 @@
 #include "gz/gz.h"
 #include "gz/gz_menu.h"
 
-gzMenu_c::gzCursor gzMainMenu_c::mCursor = {0, 0};
+gzMenu_c::gzCursor gzSettingsMenu_c::mCursor = {0, 0};
 
-gzMainMenu_c::gzMainMenu_c() {
-    OSReport("creating gzMainMenu_c\n");
+gzSettingsMenu_c::gzSettingsMenu_c() {
+    OSReport("creating gzSettingsMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
         mpLines[i] = new J2DTextBox();
@@ -14,30 +14,32 @@ gzMainMenu_c::gzMainMenu_c() {
         mpLines[i]->setFontSize(18.0f, 18.0f);
     }
 
-    mpLines[0]->setString("cheats");
-    mpLines[1]->setString("flags");
-    mpLines[2]->setString("inventory");
-    mpLines[3]->setString("memory");
-    mpLines[4]->setString("practice");
-    mpLines[5]->setString("scene");
-    mpLines[6]->setString("settings");
-    mpLines[7]->setString("tools");
-    mpLines[8]->setString("warping");
+    mpLines[0]->setString("area reload behavior:");
+    mpLines[1]->setString("cursor color:");
+    mpLines[2]->setString("font:");
+    mpLines[3]->setString("drop shadows:");
+    mpLines[4]->setString("swap equips:");
+    mpLines[5]->setString("save card");
+    mpLines[6]->setString("load card");
+    mpLines[7]->setString("delete card");
+    mpLines[8]->setString("command combos");
+    mpLines[9]->setString("menu positions");
+    mpLines[10]->setString("credits");
 }
 
-gzMainMenu_c::~gzMainMenu_c() {
+gzSettingsMenu_c::~gzSettingsMenu_c() {
     _delete();
 }
 
-void gzMainMenu_c::_delete() {
-    OSReport("deleting gzMainMenu_c\n");
+void gzSettingsMenu_c::_delete() {
+    OSReport("deleting gzSettingsMenu_c\n");
     for (int i = 0; i < LINE_NUM; i++) {
         delete mpLines[i];
         mpLines[i] = NULL;
     }
 }
 
-void gzMainMenu_c::execute() {
+void gzSettingsMenu_c::execute() {
     if (gzPad::getTrigDown() && mCursor.y < LINE_NUM) {
         mCursor.y++;
     }
@@ -53,20 +55,12 @@ void gzMainMenu_c::execute() {
     }
 
     if (gzPad::getTrigB()) {
-        g_gzInfo.mDisplay = false;
+        gzChangeMenu<gzMainMenu_c>();
         return;
-    }
-
-    if (gzPad::getTrigA()) {
-        switch (mCursor.y) {
-        case 6:
-            gzChangeMenu<gzSettingsMenu_c>();
-            break;
-        }
     }
 }
 
-void gzMainMenu_c::draw() {
+void gzSettingsMenu_c::draw() {
     // textbox method
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
@@ -81,21 +75,4 @@ void gzMainMenu_c::draw() {
             mpLines[i]->setGradColor(0xFFFFFFFF);
         }
     }
-
-    // print method
-    /* for (int i = 0; i < LINE_NUM; i++) {
-        const char* lines[] = {
-            "cheats",
-            "flags",
-            "inventory",
-            "memory",
-            "practice",
-            "scene",
-            "settings",
-            "tools",
-            "warping",
-        };
-
-        gzPrint(30, 90 + ((i - 1) * 22), g_gzInfo.getCursorColor(), lines[i]);
-    } */
 }

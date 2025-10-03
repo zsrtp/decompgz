@@ -7,6 +7,7 @@
 #include "JSystem/J2DGraph/J2DTextBox.h"
 #include "SSystem/SComponent/c_API_controller_pad.h"
 
+class gzMenu_c;
 class gzMainMenu_c;
 
 class gzInfo_c {
@@ -23,8 +24,10 @@ public:
 
     J2DPicture* mpIcon;
     J2DTextBox* mpHeader;
-    gzMainMenu_c* mpMainMenu;
+    gzMenu_c* mpCurrentMenu;
+
     u32 mCursorColor;
+    s16 mInputWaitTimer;
     bool mDisplay;
     bool mGZInitialized;
 };
