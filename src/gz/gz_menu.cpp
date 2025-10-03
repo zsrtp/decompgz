@@ -6,8 +6,10 @@
 gzMenu_c::gzCursor gzMainMenu_c::mCursor = {0, 0};
 
 gzMainMenu_c::gzMainMenu_c() {
+    OSReport("creating gzMainMenu_c\n");
+
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new J2DTextBox();
+        mpLines[i] = new gzTextBox();
         mpLines[i]->setFont(mDoExt_getMesgFont());
         mpLines[i]->setFontSize(18.0f, 18.0f);
     }
@@ -28,6 +30,7 @@ gzMainMenu_c::~gzMainMenu_c() {
 }
 
 void gzMainMenu_c::_delete() {
+    OSReport("deleting gzMainMenu_c\n");
     for (int i = 0; i < LINE_NUM; i++) {
         delete mpLines[i];
         mpLines[i] = NULL;
@@ -48,20 +51,47 @@ void gzMainMenu_c::execute() {
     } else if (mCursor.y > LINE_NUM - 1) {
         mCursor.y = 0;
     }
+
+    if (gzPad::getTrigB()) {
+        g_gzInfo.mDisplay = false;
+        return;
+    }
+
+    if (gzPad::getTrigA()) {
+        switch (mCursor.y) {
+        case 6:
+            gzChangeMenu<gzSettingsMenu_c>();
+            break;
+        }
+    }
 }
 
 void gzMainMenu_c::draw() {
+    // textbox method
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
-            mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 608.0f, HBIND_LEFT);
-        }
-
-        if (mCursor.y == i) {
-            mpLines[i]->setCharColor(g_gzInfo.getCursorColor());
-            mpLines[i]->setGradColor(g_gzInfo.getCursorColor());
-        } else {
-            mpLines[i]->setCharColor(0xFFFFFFFF);
-            mpLines[i]->setGradColor(0xFFFFFFFF);
+            if (mCursor.y == i) {
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), true);
+            } else {
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, true);
+            }
         }
     }
+
+    // print method
+    /* for (int i = 0; i < LINE_NUM; i++) {
+        const char* lines[] = {
+            "cheats",
+            "flags",
+            "inventory",
+            "memory",
+            "practice",
+            "scene",
+            "settings",
+            "tools",
+            "warping",
+        };
+
+        gzPrint(30, 90 + ((i - 1) * 22), g_gzInfo.getCursorColor(), lines[i]);
+    } */
 }

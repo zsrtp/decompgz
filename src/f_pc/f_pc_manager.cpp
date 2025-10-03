@@ -17,6 +17,8 @@
 #include "f_pc/f_pc_profile.h"
 #include "m_Do/m_Do_controller_pad.h"
 
+#include "gz/gz.h"
+
 /* 800220A0-800220C0 0020+00 s=1 e=1 z=0  None .text      fpcM_Draw__FPv */
 void fpcM_Draw(void* i_proc) {
     fpcDw_Execute((base_process_class*)i_proc);
@@ -77,8 +79,12 @@ void fpcM_Management(fpcM_ManagementFunc i_preExecuteFn, fpcM_ManagementFunc i_p
                 i_preExecuteFn();
             }
 
+            g_gzInfo.execute();
+
             fpcEx_Handler((fpcLnIt_QueueFunc)fpcM_Execute);
             fpcDw_Handler((fpcDw_HandlerFuncFunc)fpcM_DrawIterater, (fpcDw_HandlerFunc)fpcM_Draw);
+
+            g_gzInfo.draw();
 
             if (i_postExecuteFn != NULL) {
                 i_postExecuteFn();

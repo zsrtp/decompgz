@@ -102,7 +102,7 @@ void mDoGph_gInf_c::create() {
     JFWDisplay::getManager()->setFader(faderPtr);
     JUTProcBar::getManager()->setVisibleHeapBar(false);
     JUTProcBar::getManager()->setVisible(false);
-    JUTDbPrint::getManager()->setVisible(false);
+    //JUTDbPrint::getManager()->setVisible(false);
 
     mFrameBufferTimg = createTimg(304, 224, 6);
     mFrameBufferTex = (char*)mFrameBufferTimg + sizeof(ResTIMG);

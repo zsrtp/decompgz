@@ -9,6 +9,8 @@
 #include "m_Do/m_Do_Reset.h"
 #include "m_Do/m_Do_main.h"
 
+#include "gz/gz.h"
+
 /* 803DD2D8-803DD2E8 009FF8 0010+00 2/2 6/6 0/0 .bss             m_gamePad__8mDoCPd_c */
 JUTGamePad* mDoCPd_c::m_gamePad[4];
 
@@ -89,6 +91,12 @@ void mDoCPd_c::read() {
 
         pad++;
         interface++;
+    }
+
+    // if gz menu is up, zero out normal cpad button flags
+    if (g_gzInfo.isDisplay()) {
+        m_cpadInfo[PAD_1].mPressedButtonFlags = 0;
+        m_cpadInfo[PAD_1].mButtonFlags = 0;
     }
 }
 

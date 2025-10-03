@@ -436,8 +436,10 @@ def JSystemLib(lib_name: str, objects: List[Object], progress_category: str="thi
 
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
-Equivalent = False  # Object should be linked when configured with --non-matching
-Custom = config.non_matching
+Equivalent = False                # Object should be linked when configured with --non-matching
+
+Custom = config.non_matching  # new custom object
+
 
 # Object is only matching for specific versions
 def MatchingFor(*versions) -> bool:
@@ -2012,7 +2014,7 @@ config.libs = [
     ActorRel(NonMatching, "d_a_obj_iceleaf"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_ihasi"),
     ActorRel(NonMatching, "d_a_obj_ikada"),
-    ActorRel(NonMatching, "d_a_obj_inobone"),
+    ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_inobone"),
     ActorRel(NonMatching, "d_a_obj_ita"),
     ActorRel(NonMatching, "d_a_obj_itamato"),
     ActorRel(MatchingFor("GZ2E01", "GZ2P01", "GZ2J01"), "d_a_obj_kabuto"),
@@ -2294,6 +2296,7 @@ config.libs = [
         "objects": [
             Object(Custom, "gz/gz.cpp"),
             Object(Custom, "gz/gz_menu.cpp"),
+            Object(Custom, "gz/gz_settings.cpp"),
         ],
     },
 ]
@@ -2365,9 +2368,10 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
         return objects
     if module_id == 0:  # DOL
         return objects + [
-             "gz/gz.cpp",
-             "gz/gz_menu.cpp"
-        ]
+                "gz/gz.cpp",
+                "gz/gz_menu.cpp",
+                "gz/gz_settings.cpp"
+            ]
     return objects
 
 

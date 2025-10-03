@@ -798,9 +798,8 @@ enum {
     /* 0x315 */ PROC_TIMER,
     /* 0x316 */ PROC_METER2,
     /* 0x317 */ PROC_GAMEOVER,
-    /* 0x318 */ PROC_GZMENU,
 
-    PROC_MAX
+    PROC_MAX,
 };
 
 #endif /* D_PROCNAME_H */
