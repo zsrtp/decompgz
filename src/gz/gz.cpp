@@ -2,6 +2,8 @@
 
 #include "gz/gz.h"
 #include "gz/gz_menu.h"
+#include "JSystem/JKernel/JKRExpHeap.h"
+#include "JSystem/JUtility/JUTDbPrint.h"
 #include "SSystem/SComponent/c_counter.h"
 
 gzInfo_c g_gzInfo;
@@ -66,6 +68,43 @@ int gz_c::draw() {
         dComIfGd_set2DOpaTop(mpMainMenu);
     }
 
+    // temp heap print
+    if (zeldaHeap != NULL && gameHeap != NULL && archiveHeap != NULL) {
+        u32 zeldaFree = zeldaHeap->getFreeSize();
+        u32 gameFree = gameHeap->getFreeSize();
+        u32 archiveFree = archiveHeap->getFreeSize();
+        u32 zeldaTotal = zeldaHeap->getTotalFreeSize();
+        u32 gameTotal = gameHeap->getTotalFreeSize();
+        u32 archiveTotal = archiveHeap->getTotalFreeSize();
+
+        gzPrint(200, 30, 0xFFFFFFFF, "  Zelda %5d / %5d\n", zeldaFree / 1024, zeldaTotal / 1024);
+        gzPrint(200, 50, 0xFFFFFFFF, "   Game %5d / %5d\n", gameFree / 1024, gameTotal / 1024);
+        gzPrint(200, 70, 0xFFFFFFFF, "Archive %5d / %5d\n", archiveFree / 1024, archiveTotal / 1024);
+    }
+
+    return 1;
+}
+
+int gzPrint(int x, int y, u32 color, char const* string, ...) {
+    JUTDbPrint::getManager()->setVisible(true);
+    char buffer[256];
+
+    va_list list;
+    va_start(list, string);
+    vsnprintf(buffer, sizeof(buffer), string, list);
+    va_end(list);
+
+    JUTDbPrint::getManager()->flush();
+
+    static JUtility::TColor ShadowDarkColor(0, 0, 0, 0x80);
+    JUTDbPrint::getManager()->setCharColor(ShadowDarkColor);
+
+    JUTReport(x + 2, y + 2, buffer);
+    JUTDbPrint::getManager()->flush();
+
+    JUTDbPrint::getManager()->setCharColor(color);
+    JUTReport(x, y, buffer);
+    JUTDbPrint::getManager()->flush();
     return 1;
 }
 
@@ -90,6 +129,7 @@ static int gz_Delete(gz_c* i_this) {
 static int gz_Create(gz_c* i_this) {
     OSReport("[%d] - run gz_Create\n", g_Counter.mCounter0);
     g_gzInfo.m_process = i_this;
+    JUTDbPrint::getManager()->changeFont(mDoExt_getMesgFont());
     return i_this->_create();
 }
 

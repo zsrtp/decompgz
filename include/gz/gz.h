@@ -92,4 +92,6 @@ namespace gzPad {
     inline f32 getAnalogL() { return mDoCPd_c::m_gzPadInfo.mTriggerLeft; }
 };
 
+int gzPrint(int x, int y, u32 color, char const* string, ...);
+
 #endif
