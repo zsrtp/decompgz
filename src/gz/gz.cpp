@@ -13,7 +13,6 @@ int gzInfo_c::_create() {
 
     ResTIMG* icon = (ResTIMG*)dComIfGp_getMain2DArchive()->getResource('TIMG', "midona64.bti");
     mpIcon = new J2DPicture(icon);
-
     mpHeader = new gzTextBox();
     mpHeader->setFont(mDoExt_getMesgFont());
     mpHeader->setFontSize(18.0f, 18.0f);
@@ -21,9 +20,7 @@ int gzInfo_c::_create() {
     mpHeader->setGradColor(mCursorColor);
     mpHeader->setString("tpgz v1.2.0");
     mpCurrentMenu = new gzMainMenu_c();
-
     mInputWaitTimer = 5;
-
     mGZInitialized = true;
 
     // JUTDbPrint::getManager()->changeFont(mDoExt_getMesgFont());
@@ -79,20 +76,6 @@ int gzInfo_c::draw() {
         dComIfGd_set2DOpaTop(mpCurrentMenu);
     }
 
-    // temp heap print
-    if (zeldaHeap != NULL && gameHeap != NULL && archiveHeap != NULL) {
-        u32 zeldaFree = zeldaHeap->getFreeSize();
-        u32 gameFree = gameHeap->getFreeSize();
-        u32 archiveFree = archiveHeap->getFreeSize();
-        u32 zeldaTotal = zeldaHeap->getTotalFreeSize();
-        u32 gameTotal = gameHeap->getTotalFreeSize();
-        u32 archiveTotal = archiveHeap->getTotalFreeSize();
-
-        gzPrint(200, 30, 0xFFFFFFFF, "  Zelda %5d / %5d\n", zeldaFree / 1024, zeldaTotal / 1024);
-        gzPrint(200, 50, 0xFFFFFFFF, "   Game %5d / %5d\n", gameFree / 1024, gameTotal / 1024);
-        gzPrint(200, 70, 0xFFFFFFFF, "Archive %5d / %5d\n", archiveFree / 1024, archiveTotal / 1024);
-    }
-
     return 1;
 }
 
@@ -115,6 +98,22 @@ int gzPrint(int x, int y, u32 color, char const* string, ...) {
 
     JUTDbPrint::getManager()->setCharColor(color);
     JUTReport(x, y, buffer);
+
     JUTDbPrint::getManager()->flush();
     return 1;
+}
+
+void showHeapUsage() {
+    if (zeldaHeap != NULL && gameHeap != NULL && archiveHeap != NULL) {
+        u32 zeldaFree = zeldaHeap->getFreeSize();
+        u32 gameFree = gameHeap->getFreeSize();
+        u32 archiveFree = archiveHeap->getFreeSize();
+        u32 zeldaTotal = zeldaHeap->getTotalFreeSize();
+        u32 gameTotal = gameHeap->getTotalFreeSize();
+        u32 archiveTotal = archiveHeap->getTotalFreeSize();
+
+        gzPrint(200, 30, 0xFFFFFFFF, "  Zelda %5d / %5d\n", zeldaFree / 1024, zeldaTotal / 1024);
+        gzPrint(200, 50, 0xFFFFFFFF, "   Game %5d / %5d\n", gameFree / 1024, gameTotal / 1024);
+        gzPrint(200, 70, 0xFFFFFFFF, "Archive %5d / %5d\n", archiveFree / 1024, archiveTotal / 1024);
+    }
 }

@@ -14,15 +14,15 @@ gzMainMenu_c::gzMainMenu_c() {
         mpLines[i]->setFontSize(18.0f, 18.0f);
     }
 
-    mpLines[0]->setString("cheats");
-    mpLines[1]->setString("flags");
-    mpLines[2]->setString("inventory");
-    mpLines[3]->setString("memory");
-    mpLines[4]->setString("practice");
-    mpLines[5]->setString("scene");
-    mpLines[6]->setString("settings");
-    mpLines[7]->setString("tools");
-    mpLines[8]->setString("warping");
+    mpLines[MENU_CHEATS]->setString("cheats");
+    mpLines[MENU_FLAGS]->setString("flags");
+    mpLines[MENU_INVENTORY]->setString("inventory");
+    mpLines[MENU_MEMORY]->setString("memory");
+    mpLines[MENU_PRACTICE]->setString("practice");
+    mpLines[MENU_SCENE]->setString("scene");
+    mpLines[MENU_SETTINGS]->setString("settings");
+    mpLines[MENU_TOOLS]->setString("tools");
+    mpLines[MENU_WARPING]->setString("warping");
 }
 
 gzMainMenu_c::~gzMainMenu_c() {
@@ -59,7 +59,7 @@ void gzMainMenu_c::execute() {
 
     if (gzPad::getTrigA()) {
         switch (mCursor.y) {
-        case 6:
+        case MENU_SETTINGS:
             gzChangeMenu<gzSettingsMenu_c>();
             break;
         }
@@ -77,21 +77,4 @@ void gzMainMenu_c::draw() {
             }
         }
     }
-
-    // print method
-    /* for (int i = 0; i < LINE_NUM; i++) {
-        const char* lines[] = {
-            "cheats",
-            "flags",
-            "inventory",
-            "memory",
-            "practice",
-            "scene",
-            "settings",
-            "tools",
-            "warping",
-        };
-
-        gzPrint(30, 90 + ((i - 1) * 22), g_gzInfo.getCursorColor(), lines[i]);
-    } */
 }

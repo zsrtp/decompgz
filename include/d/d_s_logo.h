@@ -14,12 +14,6 @@ class mDoDvdThd_toMainRam_c;
 class dScnLogo_c : public scene_class {
 public:
     enum {
-        EXEC_PROG_IN,
-        EXEC_PROG_SEL,
-        EXEC_PROG_OUT,
-        EXEC_PROG_SET,
-        EXEC_PROG_SET2,
-        EXEC_PROG_CHANGE,
         EXEC_DVD_WAIT,
         EXEC_SCENE_CHANGE,
     };
@@ -30,12 +24,6 @@ public:
     bool preLoad_dyl();
     void checkProgSelect();
     int draw();
-    void progInDraw();
-    void progSelDraw();
-    void progOutDraw();
-    void progSetDraw();
-    void progSet2Draw();
-    void progChangeDraw();
     void dvdWaitDraw();
     void nextSceneChange();
     ~dScnLogo_c();
@@ -65,21 +53,11 @@ public:
     JKRExpHeap* field_0x1d0;
     JKRExpHeap* field_0x1d4;
     JKRHeap* mpHeap;
-    dDlst_2D_c* mProgressiveChoice;
-    dDlst_2D_c* mProgressiveYes;
-    dDlst_2D_c* mProgressiveNo;
-    dDlst_2D_c* mProgressiveSel;
 #if VERSION == VERSION_GCN_PAL
     mDoDvdThd_mountArchive_c* mpPalLogoResCommand;
 #endif
     request_of_phase_process_class* m_preLoad_dylPhase;
-    ResTIMG* mProgressivePro;
-    ResTIMG* mProgressiveInter;
     u8 mExecCommand;
-    u8 field_0x209;
-    u8 field_0x20a;
-    u8 field_0x20b;
-    u16 mTimer;
     u16 field_0x20e;
     u16 field_0x210;
     u16 field_0x212;

@@ -16,11 +16,13 @@ void mDoMch_HeapCheckAll();
 int mDoMch_Create();
 
 extern GXRenderModeObj g_ntscZeldaProg;
+extern GXRenderModeObj g_ntscZeldaIntDf;
 
 class mDoMch_render_c {
 public:
     static void setRenderModeObj(GXRenderModeObj* obj) { mRenderModeObj = obj; }
     static void setProgressiveMode() { setRenderModeObj(&g_ntscZeldaProg); }
+    static void setInterlacedMode() { setRenderModeObj(&g_ntscZeldaIntDf); }
     static u16 getEfbHeight() { return mRenderModeObj->efbHeight; }
     static u16 getFbWidth() { return mRenderModeObj->fbWidth; }
 

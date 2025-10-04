@@ -22,6 +22,7 @@ public:
 
     bool isDisplay() const { return mDisplay; }
     u32 getCursorColor() const { return mCursorColor; }
+    void setCursorColor(u32 i_cursorColor) { mCursorColor = i_cursorColor; }
 
     J2DPicture* mpIcon;
     gzTextBox* mpHeader;
@@ -34,6 +35,9 @@ public:
 };
 
 extern gzInfo_c g_gzInfo;
+
+// Static configuration options
+static bool g_progressiveMode = false;
 
 namespace gzPad {
     inline u32 getTrig() { return mDoCPd_c::m_gzPadInfo.mPressedButtonFlags; }

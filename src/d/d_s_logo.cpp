@@ -8,13 +8,11 @@
 #include "d/d_s_logo.h"
 #include "JSystem/JKernel/JKRAram.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
-#include "JSystem/JKernel/JKRMemArchive.h"
 #include "c/c_dylink.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_item.h"
 #include "d/d_map_path_dmap.h"
 #include "m_Do/m_Do_Reset.h"
-#include "m_Do/m_Do_controller_pad.h"
 #include "m_Do/m_Do_graphic.h"
 #include "m_Do/m_Do_machine.h"
 
@@ -40,10 +38,8 @@
 #endif
 
 typedef void (dScnLogo_c::*execFunc)();
-static execFunc l_execFunc[16] = {
-    &dScnLogo_c::progInDraw,
-    &dScnLogo_c::progSelDraw,     &dScnLogo_c::progOutDraw,     &dScnLogo_c::progSetDraw,
-    &dScnLogo_c::progSet2Draw,    &dScnLogo_c::progChangeDraw,  &dScnLogo_c::dvdWaitDraw,
+static execFunc l_execFunc[2] = {
+    &dScnLogo_c::dvdWaitDraw,
     &dScnLogo_c::nextSceneChange,
 };
 
@@ -81,218 +77,10 @@ bool dScnLogo_c::preLoad_dyl() {
     return ret;
 }
 
-/* 80256198-80256210 250AD8 0078+00 1/1 0/0 0/0 .text            checkProgSelect__10dScnLogo_cFv */
-void dScnLogo_c::checkProgSelect() {
-    #if VERSION == VERSION_GCN_PAL
-    if (mDoRst::getProgSeqFlag() == 0) {
-        field_0x20a = 1;
-
-        if (isProgressiveMode()) {
-            field_0x209 = 0;
-        } else {
-            field_0x209 = 1;
-        }
-    }
-    #else
-    if (mDoRst::getProgSeqFlag() == 0 && VIGetDTVStatus() != 0) {
-        if (isProgressiveMode() || mDoCPd_c::getHoldB(PAD_1)) {
-            field_0x20a = 1;
-            field_0x209 = 0;
-        }
-    }
-    #endif
-}
-
 /* 80256210-80256264 250B50 0054+00 1/1 0/0 0/0 .text            draw__10dScnLogo_cFv */
 int dScnLogo_c::draw() {
-    cLib_calcTimer<u16>(&mTimer);
     (this->*l_execFunc[mExecCommand])();
     return 1;
-}
-
-/* 80256264-8025631C 250BA4 00B8+00 1/0 0/0 0/0 .text            progInDraw__10dScnLogo_cFv */
-void dScnLogo_c::progInDraw() {
-    dComIfGd_set2DOpa(mProgressiveChoice);
-    dComIfGd_set2DOpa(mProgressiveYes);
-    dComIfGd_set2DOpa(mProgressiveNo);
-
-    if (mTimer == 0) {
-        mExecCommand = EXEC_PROG_SEL;
-        mTimer = 600;
-        field_0x20e = 30;
-        field_0x210 = field_0x20e;
-        field_0x212 = 0;
-        field_0x20b = 0;
-    }
-}
-
-/* 8025631C-802568E0 250C5C 05C4+00 1/0 0/0 0/0 .text            progSelDraw__10dScnLogo_cFv */
-void dScnLogo_c::progSelDraw() {
-    dComIfGd_set2DOpa(mProgressiveChoice);
-    dComIfGd_set2DOpa(mProgressiveYes);
-    dComIfGd_set2DOpa(mProgressiveNo);
-
-    if (field_0x20b == 0) {
-        if (field_0x209 == 0) {
-            if (mDoCPd_c::getHoldRight(PAD_1) || mDoCPd_c::getStickX(PAD_1) > 0.5f) {
-                mDoAud_seStart(Z2SE_SY_MENU_CURSOR_COMMON, NULL, 0, 0);
-                field_0x209 = 1;
-                field_0x20e = 30;
-                field_0x210 = field_0x20e;
-                field_0x212 = 0;
-            }
-        } else {
-            if (mDoCPd_c::getHoldLeft(PAD_1) || mDoCPd_c::getStickX(PAD_1) < -0.5f) {
-                mDoAud_seStart(Z2SE_SY_MENU_CURSOR_COMMON, NULL, 0, 0);
-                field_0x209 = 0;
-                field_0x20e = 30;
-                field_0x210 = field_0x20e;
-                field_0x212 = 0;
-            }
-        }
-
-        if (mDoCPd_c::getTrigA(PAD_1) || mTimer == 0) {
-            if (field_0x209 == 0) {
-                mProgressiveSel->getPicture()->changeTexture(mProgressivePro, 0);
-                setProgressiveMode(PROGRESSIVE_MODE_ON);
-                mDoRst::setProgChgFlag(1);
-                mDoAud_seStart(Z2SE_SY_CURSOR_OK, NULL, 0, 0);
-            } else {
-                mProgressiveSel->getPicture()->changeTexture(mProgressiveInter, 0);
-                setProgressiveMode(PROGRESSIVE_MODE_OFF);
-                mDoAud_seStart(Z2SE_SY_CURSOR_OK, NULL, 0, 0);
-            }
-
-            if (mTimer > 540) {
-                field_0x20b = 1;
-                field_0x214 = mTimer - 540;
-            } else {
-                mExecCommand = EXEC_PROG_OUT;
-                mTimer = 30;
-                mDoGph_gInf_c::startFadeOut(mTimer);
-                field_0x20e = 30;
-                field_0x210 = field_0x20e;
-                field_0x212 = 0;
-            }
-            mDoRst::setProgSeqFlag(1);
-        }
-    } else {
-        if (field_0x214 == 0) {
-            mExecCommand = EXEC_PROG_OUT;
-            mTimer = 30;
-            mDoGph_gInf_c::startFadeOut(30);
-            field_0x20e = 30;
-            field_0x210 = field_0x20e;
-            field_0x212 = 0;
-        } else {
-            field_0x214--;
-        }
-    }
-
-    f32 alpha = (f32)field_0x210 / (f32)field_0x20e;
-    if (field_0x212 != 0) {
-        alpha = 1.0f - alpha;
-    }
-    u8 r = alpha * 255.0f;
-    u8 g = alpha * 200.0f;
-
-    if (field_0x209 != 0) {
-        mProgressiveYes->getPicture()->setWhite(JUtility::TColor(160, 160, 160, 255));
-        mProgressiveYes->getPicture()->setBlack(JUtility::TColor(0, 0, 0, 0));
-
-        mProgressiveNo->getPicture()->setWhite(JUtility::TColor(255, 200, 0, 255));
-        mProgressiveNo->getPicture()->setBlack(JUtility::TColor(r, g, 0, 0));
-    } else {
-        mProgressiveYes->getPicture()->setWhite(JUtility::TColor(255, 200, 0, 255));
-        mProgressiveYes->getPicture()->setBlack(JUtility::TColor(r, g, 0, 0));
-
-        mProgressiveNo->getPicture()->setWhite(JUtility::TColor(160, 160, 160, 255));
-        mProgressiveNo->getPicture()->setBlack(JUtility::TColor(0, 0, 0, 0));
-    }
-
-    if (field_0x210 == 0) {
-        field_0x210 = field_0x20e;
-        field_0x212 ^= 1;
-    } else {
-        field_0x210--;
-    }
-}
-
-/* 802568E0-80256A3C 251220 015C+00 1/0 0/0 0/0 .text            progOutDraw__10dScnLogo_cFv */
-void dScnLogo_c::progOutDraw() {
-    dComIfGd_set2DOpa(mProgressiveChoice);
-    dComIfGd_set2DOpa(mProgressiveYes);
-    dComIfGd_set2DOpa(mProgressiveNo);
-
-    if (mTimer == 0) {
-        #if VERSION == VERSION_GCN_PAL
-        if (field_0x218 == 1 && field_0x209 == 0) {
-        #else
-        if (field_0x218 != 0 && field_0x209 == 0) {
-        #endif
-            mExecCommand = EXEC_PROG_CHANGE;
-            mTimer = 150;
-        } else if (field_0x218 == 0 && field_0x209 != 0) {
-            if (mDoRst::getWarningDispFlag() != 0) {
-                mTimer = 90;
-                mExecCommand = EXEC_DVD_WAIT;
-            } else {
-                mTimer = 120;
-                mExecCommand = EXEC_DVD_WAIT;
-            }
-
-            mDoGph_gInf_c::startFadeIn(30);
-        } else {
-            mExecCommand = EXEC_PROG_SET;
-            mTimer = 150;
-            mDoGph_gInf_c::startFadeIn(30);
-        }
-    }
-}
-
-/* 80256A3C-80256AC0 25137C 0084+00 1/0 0/0 0/0 .text            progSetDraw__10dScnLogo_cFv */
-void dScnLogo_c::progSetDraw() {
-    dComIfGd_set2DOpa(mProgressiveSel);
-
-    if (mTimer == 0) {
-        mExecCommand = EXEC_PROG_SET2;
-        mTimer = 30;
-        mDoGph_gInf_c::startFadeOut(30);
-    }
-}
-
-/* 80256AC0-80256B3C 251400 007C+00 1/0 0/0 0/0 .text            progSet2Draw__10dScnLogo_cFv */
-void dScnLogo_c::progSet2Draw() {
-    dComIfGd_set2DOpa(mProgressiveSel);
-
-    if (mTimer == 0) {
-        if (getProgressiveMode() != 0) {
-            mTimer = 150;
-        } else {
-            mTimer = 30;
-        }
-
-        mExecCommand = EXEC_PROG_CHANGE;
-    }
-}
-
-/* 80256B3C-80256BF4 25147C 00B8+00 1/0 0/0 0/0 .text            progChangeDraw__10dScnLogo_cFv */
-void dScnLogo_c::progChangeDraw() {
-    if (getProgressiveMode() != 0 && mTimer == 90 && field_0x209 == 0) {
-        setRenderMode();
-    }
-
-    if (mTimer == 0) {
-        if (mDoRst::getWarningDispFlag() != 0) {
-            mTimer = 90;
-            mExecCommand = EXEC_DVD_WAIT;
-        } else {
-            mTimer = 120;
-            mExecCommand = EXEC_DVD_WAIT;
-        }
-
-        mDoGph_gInf_c::startFadeIn(30);
-    }
 }
 
 /* 80257070-80257284 2519B0 0214+00 1/0 0/0 0/0 .text            dvdWaitDraw__10dScnLogo_cFv */
@@ -333,14 +121,17 @@ void dScnLogo_c::setupGameResources() {
     dComIfGp_setCardIconResArchive(mpCardIconCommand->getArchive());
     dComIfGp_setMsgDtArchive(0, mpBmgResCommand->getArchive());
     dComIfGp_setMsgCommonArchive(mpMsgComCommand->getArchive());
+    
     for (int i = 0; i < 7; i++) {
         dComIfGp_setMsgArchive(i, mpMsgResCommand[i]->getArchive());
     }
+
     dComIfGp_setFontArchive(mpFontResCommand->getArchive());
     dComIfGp_setRubyArchive(mpRubyResCommand->getArchive());
     dComIfGp_setMain2DArchive(mpMain2DCommand->getArchive());
     JKRAramHeap* aram_heap = JKRAram::getAramHeap();
     u32 free_size = aram_heap->getTotalFreeSize();
+
     mDoExt_getMesgFont();
     mDoExt_getSubFont();
     mDoExt_getRubyFont();
@@ -358,9 +149,6 @@ void dScnLogo_c::setupGameResources() {
     dDlst_shadowControl_c::setSimpleTex((ResTIMG*)dComIfG_getObjectRes("Always", 0x4A));
     dTres_c::createWork();
     dMpath_c::createWork();
-
-    // initialize GZ after most game resources are setup
-    g_gzInfo._create();
 }
 
 /* 80257284-802572B8 251BC4 0034+00 1/0 0/0 0/0 .text            nextSceneChange__10dScnLogo_cFv */
@@ -379,16 +167,11 @@ dScnLogo_c::~dScnLogo_c() {
         mDoRst_reset(0, 0x80000000, 0);
     }
 
-    delete mProgressiveChoice;
-    delete mProgressiveYes;
-    delete mProgressiveNo;
-    delete mProgressiveSel;
-
-    #if VERSION == VERSION_GCN_PAL
+#if VERSION == VERSION_GCN_PAL
     mpPalLogoResCommand->getArchive()->removeResourceAll();
     mpPalLogoResCommand->getArchive()->unmount();
     mpPalLogoResCommand->destroy();
-    #endif
+#endif
 
     preLoad_dyl_remove();
     dComIfG_deleteObjectResMain(LOGO_ARC);
@@ -410,9 +193,11 @@ dScnLogo_c::~dScnLogo_c() {
     mpCardIconCommand->destroy();
     mpBmgResCommand->destroy();
     mpMsgComCommand->destroy();
+
     for (int i = 0; i < 7; i++) {
         mpMsgResCommand[i]->destroy();
     }
+
     mpFontResCommand->destroy();
     mpMain2DCommand->destroy();
     mpRubyResCommand->destroy();
@@ -465,7 +250,7 @@ static int phase_1(dScnLogo_c* i_this) {
         return cPhs_INIT_e;
     }
 
-    #if VERSION == VERSION_GCN_PAL
+#if VERSION == VERSION_GCN_PAL
     if (!SyncWidthSound) {
         return cPhs_INIT_e;
     }
@@ -473,7 +258,7 @@ static int phase_1(dScnLogo_c* i_this) {
     if (!i_this->mpPalLogoResCommand->sync()) {
         return cPhs_INIT_e;
     }
-    #endif
+#endif
 
     dComIfG_setObjectRes(LOGO_ARC, (u8)0, i_this->field_0x1d0);
     mDoRst::setLogoScnFlag(1);
@@ -513,24 +298,17 @@ int dScnLogo_c::create() {
     Z2AudioMgr::getInterface()->loadStaticWaves();
     mDoGph_gInf_c::setTickRate((OS_BUS_CLOCK / 4) / 60);
     mDoGph_gInf_c::waitBlanking(0);
-    field_0x20a = 0;
     mDoGph_gInf_c::startFadeIn(30);
 
-    checkProgSelect();
-    if (field_0x20a != 0) {
-        mExecCommand = EXEC_PROG_IN;
-        mTimer = 30;
-        field_0x218 = getProgressiveMode();
-    } else {
-        if (mDoRst::getWarningDispFlag()) {
-            mTimer = 90;
-            mExecCommand = EXEC_DVD_WAIT;
-        } else {
-            mTimer = 120;
-            mExecCommand = EXEC_DVD_WAIT;
-        }
-        mDoRst::setProgSeqFlag(1);
+    // Apply static progressive mode configuration
+    setProgressiveMode(g_progressiveMode ? PROGRESSIVE_MODE_ON : PROGRESSIVE_MODE_OFF);
+    if (g_progressiveMode) {
+        setRenderMode();
     }
+
+    // Always go directly to resource loading
+    mExecCommand = EXEC_DVD_WAIT;
+    mDoRst::setProgSeqFlag(1);
 
     JUTGamePad::clearResetOccurred();
     JUTGamePad::setResetCallback(mDoRst_resetCallBack, NULL);
@@ -664,6 +442,8 @@ static int dScnLogo_Draw(dScnLogo_c* i_this) {
 /* 802584A8-802584D0 252DE8 0028+00 1/0 0/0 0/0 .text            dScnLogo_Delete__FP10dScnLogo_c */
 static int dScnLogo_Delete(dScnLogo_c* i_this) {
     i_this->setupGameResources();
+    // initialize GZ after most game resources are setup
+    g_gzInfo._create();
     i_this->~dScnLogo_c();
     return 1;
 }

@@ -27,6 +27,7 @@
 #include "m_Do/m_Do_machine.h"
 #include "SSystem/SComponent/c_counter.h"
 #include <cstring.h>
+#include "gz/gz.h"
 
 /* 800056C0-80005728 000000 0068+00 1/1 0/0 0/0 .text            version_check__Fv */
 void version_check() {
@@ -483,7 +484,6 @@ void main01(void) {
     fopAcM_initManager();
     mDisplayHeapSize = 0;
     cDyl_InitAsync(); // init RELs
-
     g_mDoAud_audioHeap = JKRSolidHeap::create(0x14D800, JKRHeap::getCurrentHeap(), false);
 
     do {
