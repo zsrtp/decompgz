@@ -4,9 +4,11 @@
 #include "d/d_drawlist.h"
 #include "JSystem/J2DGraph/J2DTextBox.h"
 #include "d/d_select_cursor.h"
+#include "d/d_meter_haihai.h"
 #include "gz/gz.h"
 
 class dSelect_cursor_c;
+class dMeterHaihai_c;
 
 class gzMenu_c : public dDlst_base_c {
 public:
@@ -67,6 +69,11 @@ public:
         SETTING_MAX
     };
 
+    enum gzSettingsMenu_Haihai_e {
+        ARROW_RIGHT = 4,
+        ARROW_LEFT = 1
+    };
+
     gzSettingsMenu_c();
     ~gzSettingsMenu_c();
     void updateDynamicLines();
@@ -80,7 +87,9 @@ public:
 
 public:
     gzTextBox* mpLines[LINE_NUM];
+    gzTextBox* mpLineOptions[LINE_NUM];
     dSelect_cursor_c* mpDrawCursor;
+    dMeterHaihai_c* mpMeterHaihai;
 };
 
 class gzCreditsMenu_c : public gzMenu_c {
