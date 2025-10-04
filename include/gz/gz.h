@@ -20,6 +20,10 @@ public:
     int execute();
     int draw();
 
+    int storeSettingsMemcard();
+    int loadSettingsMemcard();
+    void showHeapUsage();
+
     bool isDisplay() const { return mDisplay; }
     u32 getCursorColor() const { return mCursorColor; }
     void setCursorColor(u32 i_cursorColor) { mCursorColor = i_cursorColor; }
@@ -50,6 +54,14 @@ public:
 };
 
 extern gzInfo_c g_gzInfo;
+
+struct gzSettings_s {
+    u32 mCursorColor;  // todo: just make this an index?
+    bool mDropShadows;
+    bool mSwapEquips;
+    bool mAreaReload;
+    bool mCursorType;
+};
 
 // Static configuration options
 extern bool g_progressiveMode;

@@ -26,34 +26,34 @@ struct data_s {
 };
 
 /* 803ECF40-803F0F40 019C60 4000+00 2/2 0/0 0/0 .bss             sTmpBuf */
-static u8 sTmpBuf[SECTOR_SIZE * 2];
+u8 mDoMemCd_Ctrl_c::sTmpBuf[SECTOR_SIZE * 2];
 
 /* 80017498-8001769C 011DD8 0204+00 0/0 1/1 0/0 .text mDoMemCdRWm_Store__FP12CARDFileInfoPvUl */
 s32 mDoMemCdRWm_Store(CARDFileInfo* file, void* data, u32 length) {
-    mDoMemCdRWm_BuildHeader((mDoMemCdRWm_HeaderData*)sTmpBuf);
+    mDoMemCdRWm_BuildHeader((mDoMemCdRWm_HeaderData*)mDoMemCd_Ctrl_c::sTmpBuf);
 
-    s32 ret = CARDWrite(file, sTmpBuf, sizeof(sTmpBuf), 0);
+    s32 ret = CARDWrite(file, mDoMemCd_Ctrl_c::sTmpBuf, sizeof(mDoMemCd_Ctrl_c::sTmpBuf), 0);
     if (ret != CARD_RESULT_READY) { 
         return ret;
     }
 
     if (!mDoMemCdRWm_CheckCardStat(file)) {
-        memset(sTmpBuf, 0, sizeof(sTmpBuf));
+        memset(mDoMemCd_Ctrl_c::sTmpBuf, 0, sizeof(mDoMemCd_Ctrl_c::sTmpBuf));
 
-        ret = CARDWrite(file, sTmpBuf, SECTOR_SIZE, 0x4000);
+        ret = CARDWrite(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x4000);
         if (ret != CARD_RESULT_READY) {
             return ret;
         }
 
-        ret = CARDWrite(file, sTmpBuf, SECTOR_SIZE, 0x6000);
+        ret = CARDWrite(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x6000);
         if (ret != CARD_RESULT_READY) {
             return ret;
         }
     }
 
-    memset(sTmpBuf, 0, sizeof(sTmpBuf));
+    memset(mDoMemCd_Ctrl_c::sTmpBuf, 0, sizeof(mDoMemCd_Ctrl_c::sTmpBuf));
 
-    data_s* tmp_data = (data_s*)sTmpBuf;
+    data_s* tmp_data = (data_s*)mDoMemCd_Ctrl_c::sTmpBuf;
     tmp_data->data_version = SAVEDATA_VERSION;
     memcpy(tmp_data->data, data, length);
     tmp_data->unk_0x0 = 0;
@@ -61,31 +61,31 @@ s32 mDoMemCdRWm_Store(CARDFileInfo* file, void* data, u32 length) {
     u32 checksum = mDoMemCdRWm_CalcCheckSum(tmp_data, sizeof(data_s) - 4);
     tmp_data->checksum = checksum;
 
-    ret = CARDWrite(file, sTmpBuf, SECTOR_SIZE, 0x4000);
+    ret = CARDWrite(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x4000);
     if (ret != CARD_RESULT_READY) {
         return ret;
     }
 
-    ret = CARDRead(file, sTmpBuf, SECTOR_SIZE, 0x4000);
+    ret = CARDRead(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x4000);
     if (ret != CARD_RESULT_READY) {
         return ret;
     }
 
-    if (checksum != mDoMemCdRWm_CalcCheckSum(sTmpBuf, sizeof(data_s) - 4)) {
+    if (checksum != mDoMemCdRWm_CalcCheckSum(mDoMemCd_Ctrl_c::sTmpBuf, sizeof(data_s) - 4)) {
         return ret;
     }
 
-    ret = CARDWrite(file, sTmpBuf, SECTOR_SIZE, 0x6000);
+    ret = CARDWrite(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x6000);
     if (ret != CARD_RESULT_READY) {
         return ret;
     }
 
-    ret = CARDRead(file, sTmpBuf, SECTOR_SIZE, 0x6000);
+    ret = CARDRead(file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0x6000);
     if (ret != CARD_RESULT_READY) {
         return ret;
     }
 
-    if (checksum != mDoMemCdRWm_CalcCheckSum(sTmpBuf, sizeof(data_s) - 4)) {
+    if (checksum != mDoMemCdRWm_CalcCheckSum(mDoMemCd_Ctrl_c::sTmpBuf, sizeof(data_s) - 4)) {
         return ret;
     }
 
@@ -97,8 +97,8 @@ s32 mDoMemCdRWm_Store(CARDFileInfo* file, void* data, u32 length) {
 s32 mDoMemCdRWm_Restore(CARDFileInfo* file, void* data, u32 length) {
     BOOL rewrite = FALSE;
 
-    data_s* saves = (data_s*)sTmpBuf;
-    data_s* backup_saves = (data_s*)(sTmpBuf + SECTOR_SIZE);
+    data_s* saves = (data_s*)mDoMemCd_Ctrl_c::sTmpBuf;
+    data_s* backup_saves = (data_s*)(mDoMemCd_Ctrl_c::sTmpBuf + SECTOR_SIZE);
 
     s32 ret = CARDRead(file, saves, SECTOR_SIZE, 0x4000);
     if (ret != CARD_RESULT_READY) {

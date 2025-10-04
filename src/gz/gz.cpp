@@ -5,6 +5,7 @@
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "SSystem/SComponent/c_counter.h"
+#include "m_Do/m_Do_MemCard.h"
 
 gzInfo_c g_gzInfo;
 
@@ -22,6 +23,7 @@ int gzInfo_c::_create() {
     mInputWaitTimer = 5;
     mGZInitialized = true;
 
+    loadSettingsMemcard();
     // JUTDbPrint::getManager()->changeFont(mDoExt_getMesgFont());
     return 1;
 }
@@ -45,7 +47,7 @@ int gzInfo_c::execute() {
         mDisplay = !mDisplay;
 
         if (mDisplay)
-            g_gzInfo.mInputWaitTimer = 5;
+            mInputWaitTimer = 5;
     }
 
     if (mDisplay) {
@@ -73,6 +75,8 @@ int gzInfo_c::draw() {
         }
 
         dComIfGd_set2DOpaTop(mpCurrentMenu);
+
+        // showHeapUsage();
     }
 
     return 1;
@@ -102,7 +106,7 @@ int gzPrint(int x, int y, u32 color, char const* string, ...) {
     return 1;
 }
 
-void showHeapUsage() {
+void gzInfo_c::showHeapUsage() {
     if (zeldaHeap != NULL && gameHeap != NULL && archiveHeap != NULL) {
         u32 zeldaFree = zeldaHeap->getFreeSize();
         u32 gameFree = gameHeap->getFreeSize();
@@ -115,4 +119,68 @@ void showHeapUsage() {
         gzPrint(200, 50, 0xFFFFFFFF, "   Game %5d / %5d\n", gameFree / 1024, gameTotal / 1024);
         gzPrint(200, 70, 0xFFFFFFFF, "Archive %5d / %5d\n", archiveFree / 1024, archiveTotal / 1024);
     }
+}
+
+int gzInfo_c::storeSettingsMemcard() {
+    CARDFileInfo file;
+    int ret;
+
+    ret = CARDProbeEx(0, NULL, NULL);
+    if (ret != CARD_RESULT_READY) {
+        return -1;
+    }
+
+    ret = CARDCreate(0, "tpgzcfg", SECTOR_SIZE, &file);
+    if (ret == CARD_RESULT_READY || ret == CARD_RESULT_EXIST) {
+        ret = CARDOpen(0, "tpgzcfg", &file);
+        if (ret == CARD_RESULT_READY) {
+
+            gzSettings_s settings;
+            settings.mCursorColor = mCursorColor;
+            settings.mAreaReload = mAreaReload;
+            settings.mCursorType = mCursorType;
+            settings.mDropShadows = mDropShadows;
+            settings.mSwapEquips = mSwapEquips;
+            memcpy(mDoMemCd_Ctrl_c::sTmpBuf, &settings, sizeof(gzSettings_s));
+
+            ret = CARDWrite(&file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0);
+            if (ret == CARD_RESULT_READY) {
+                OSReport("stored tpgz settings to memcard!\n");
+            }
+
+            CARDClose(&file);
+        }
+    }
+
+    return ret;
+}
+
+int gzInfo_c::loadSettingsMemcard() {
+    CARDFileInfo file;
+    int ret;
+
+    ret = CARDProbeEx(0, NULL, NULL);
+    if (ret != CARD_RESULT_READY) {
+        return -1;
+    }
+
+    ret = CARDOpen(0, "tpgzcfg", &file);
+    if (ret == CARD_RESULT_READY) {
+        ret = CARDRead(&file, mDoMemCd_Ctrl_c::sTmpBuf, SECTOR_SIZE, 0);
+        if (ret == CARD_RESULT_READY) {
+            OSReport("loaded tpgz settings from memcard!\n");
+            gzSettings_s settings;
+            memcpy(&settings, mDoMemCd_Ctrl_c::sTmpBuf, sizeof(gzSettings_s));
+
+            mCursorColor = settings.mCursorColor;
+            mAreaReload = settings.mAreaReload;
+            mCursorType = settings.mCursorType;
+            mDropShadows = settings.mDropShadows;
+            mSwapEquips = settings.mSwapEquips;
+        }
+
+        CARDClose(&file);
+    }
+
+    return ret;
 }

@@ -242,6 +242,12 @@ void gzSettingsMenu_c::execute() {
             g_progressiveMode ? mDoMch_render_c::setProgressiveMode() : mDoMch_render_c::setInterlacedMode();
             g_progressiveMode = !g_progressiveMode;
             break;
+        case SETTING_SAVE_CARD:
+            g_gzInfo.storeSettingsMemcard();
+            break;
+        case SETTING_LOAD_CARD:
+            g_gzInfo.loadSettingsMemcard();
+            break;
         case SETTING_CREDITS:
             gzChangeMenu<gzCreditsMenu_c>();
             return;
