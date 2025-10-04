@@ -11,15 +11,14 @@ gzInfo_c g_gzInfo;
 int gzInfo_c::_create() {
     mCursorColor = 0xEE8000FF; // temp
 
+    mpFont = mDoExt_getMesgFont();
+
     ResTIMG* icon = (ResTIMG*)dComIfGp_getMain2DArchive()->getResource('TIMG', "midona64.bti");
     mpIcon = new J2DPicture(icon);
-    mpHeader = new gzTextBox();
-    mpHeader->setFont(mDoExt_getMesgFont());
-    mpHeader->setFontSize(18.0f, 18.0f);
-    mpHeader->setCharColor(mCursorColor);
-    mpHeader->setGradColor(mCursorColor);
-    mpHeader->setString("tpgz v1.2.0");
+    mpHeader = new gzTextBox("tpgz v1.2.0", mCursorColor);
+
     mpCurrentMenu = new gzMainMenu_c();
+
     mInputWaitTimer = 5;
     mGZInitialized = true;
 
@@ -70,7 +69,7 @@ int gzInfo_c::draw() {
         }
 
         if (mpHeader != NULL) {
-            mpHeader->draw(65.0f, 30.0f, mCursorColor, true);
+            mpHeader->draw(65.0f, 30.0f, mCursorColor);
         }
 
         dComIfGd_set2DOpaTop(mpCurrentMenu);

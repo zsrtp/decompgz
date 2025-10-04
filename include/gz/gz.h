@@ -31,12 +31,15 @@ public:
     void setAreaReload(bool i_areaReload) { mAreaReload = i_areaReload; }
     bool getCursorType() const { return mCursorType; }
     void setCursorType(bool i_type) { mCursorType = i_type; }
+    void setFont(JUTFont* i_font) { mpFont = i_font; }
+    JUTFont* getFont() { return mpFont; }
 
     J2DPicture* mpIcon;
     gzTextBox* mpHeader;
     gzMenu_c* mpCurrentMenu;
 
     u32 mCursorColor;
+    JUTFont* mpFont;
     s16 mInputWaitTimer;
     bool mDisplay;
     bool mGZInitialized;
@@ -49,7 +52,7 @@ public:
 extern gzInfo_c g_gzInfo;
 
 // Static configuration options
-static bool g_progressiveMode = false;
+extern bool g_progressiveMode;
 
 namespace gzPad {
     inline u32 getTrig() { return mDoCPd_c::m_gzPadInfo.mPressedButtonFlags; }
@@ -100,8 +103,37 @@ int gzPrint(int x, int y, u32 color, char const* string, ...);
 
 class gzTextBox : public J2DTextBox {
 public:
-    void draw(f32 x, f32 y, u32 color, bool dropShadows) {
-        if (dropShadows) {
+    gzTextBox() : J2DTextBox() {
+        setFont(g_gzInfo.mpFont);
+        setFontSize(18.0f, 18.0f);
+    }
+
+    gzTextBox(const char* string, u32 color) : J2DTextBox() {
+        setFont(g_gzInfo.mpFont);
+        setFontSize(18.0f, 18.0f);
+        setString(string);
+        setCharColor(color);
+        setGradColor(color);
+    }
+
+    void setFullColor(u32 color) {
+        setCharColor(color);
+        setGradColor(color);
+    }
+
+    void setStringf(const char* fmt, ...) {
+        char buffer[256];
+
+        va_list list;
+        va_start(list, string);
+        vsnprintf(buffer, sizeof(buffer), fmt, list);
+        va_end(list);
+
+        setString(buffer);
+    }
+
+    void draw(f32 x, f32 y, u32 color) {
+        if (g_gzInfo.getDropShadows()) {
             setCharColor(0x00000080);
             setGradColor(0x00000080);
             J2DTextBox::draw(x + 2, y + 2, 608.0f, HBIND_LEFT);

@@ -45,6 +45,8 @@
 #define CURSOR_WILD_STRAWBERRY 0xFF43A4FF
 #define CURSOR_ZESTY_CHARTREUSE 0x7FFF00FF
 
+bool g_progressiveMode = false;
+
 static const int CURSOR_COLOR_COUNT = 26;
 
 static char* l_cursorColorName[] = {
@@ -146,22 +148,11 @@ u32 previousColor() {
 }
 
 void gzSettingsMenu_c::updateDynamicLines() {
-    static char buf[32];
-
-    sprintf(buf, "area reload behavior: <%s>", g_gzInfo.getAreaReload() ? "load area" : "load file");
-    mpLines[SETTING_AREA_RELOAD_BEHAVIOR]->setString(buf);
-
-    sprintf(buf, "drop shadows: [%s]", g_gzInfo.getDropShadows() ? "X" : " ");
-    mpLines[SETTING_DROP_SHADOW]->setString(buf);
-
-    sprintf(buf, "swap equips: [%s]", g_gzInfo.getSwapEquips() ? "X" : " ");
-    mpLines[SETTING_SWAP_EQUIPS]->setString(buf);
-
-    sprintf(buf, "progressive mode: [%s]", g_progressiveMode ? "X" : " ");
-    mpLines[SETTING_PROGRESSIVE_MODE]->setString(buf);
-
-    sprintf(buf, "cursor type: <%s>", g_gzInfo.getCursorType() ? "tp" : "classic");
-    mpLines[SETTING_CURSOR_TYPE]->setString(buf);
+    mpLines[SETTING_AREA_RELOAD_BEHAVIOR]->setStringf("area reload behavior: <%s>", g_gzInfo.getAreaReload() ? "load area" : "load file");
+    mpLines[SETTING_DROP_SHADOW]->setStringf("drop shadows: [%s]", g_gzInfo.getDropShadows() ? "X" : " ");
+    mpLines[SETTING_SWAP_EQUIPS]->setStringf("swap equips: [%s]", g_gzInfo.getSwapEquips() ? "X" : " ");
+    mpLines[SETTING_PROGRESSIVE_MODE]->setStringf("progressive mode: [%s]", g_progressiveMode ? "X" : " ");
+    mpLines[SETTING_CURSOR_TYPE]->setStringf("cursor type: <%s>", g_gzInfo.getCursorType() ? "tp" : "classic");
 
     // Find current color name
     char* currentColorName = "unknown";
@@ -171,8 +162,7 @@ void gzSettingsMenu_c::updateDynamicLines() {
             break;
         }
     }
-    sprintf(buf, "cursor color: <%s>", currentColorName);
-    mpLines[SETTING_CURSOR_COLOR]->setString(buf);
+    mpLines[SETTING_CURSOR_COLOR]->setStringf("cursor color: <%s>", currentColorName);
 }
 
 gzMenu_c::gzCursor gzSettingsMenu_c::mCursor = {0, 0};
@@ -182,8 +172,6 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
 
     for (int i = 0; i < LINE_NUM; i++) {
         mpLines[i] = new gzTextBox();
-        mpLines[i]->setFont(mDoExt_getMesgFont());
-        mpLines[i]->setFontSize(18.0f, 18.0f);
         mpLines[i]->mBounds.f.x = 330.0f;
         mpLines[i]->mBounds.f.y = 10.0f;
         mpLines[i]->setLineSpace(0.0f);
@@ -295,10 +283,10 @@ void gzSettingsMenu_c::draw() {
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
             if (mCursor.y == i) {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorType() == true ? 0xFFFFFFFF : g_gzInfo.getCursorColor(), g_gzInfo.getDropShadows());
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorType() == true ? 0xFFFFFFFF : g_gzInfo.getCursorColor());
                 mpDrawCursor->setPos(170.0f, 82.5f + ((i - 1) * 22.0f), (J2DPane*)mpLines[i], true);
             } else {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, g_gzInfo.getDropShadows());
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF);
             }
         }
     }

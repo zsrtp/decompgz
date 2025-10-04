@@ -10,8 +10,6 @@ gzMainMenu_c::gzMainMenu_c() {
 
     for (int i = 0; i < LINE_NUM; i++) {
         mpLines[i] = new gzTextBox();
-        mpLines[i]->setFont(mDoExt_getMesgFont());
-        mpLines[i]->setFontSize(18.0f, 18.0f);
     }
 
     mpLines[MENU_CHEATS]->setString("cheats");
@@ -67,13 +65,12 @@ void gzMainMenu_c::execute() {
 }
 
 void gzMainMenu_c::draw() {
-    // textbox method
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
             if (mCursor.y == i) {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), true);
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor());
             } else {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, true);
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF);
             }
         }
     }
