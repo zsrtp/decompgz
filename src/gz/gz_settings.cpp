@@ -105,10 +105,6 @@ static u32 l_cursorColorValue[] = {
     CURSOR_ZESTY_CHARTREUSE
 };
 
-bool area_reload;
-bool drop_shadows;
-bool swap_equips;
-
 u32 nextColor() {
     // Find current color index
     int currentIndex = -1;
@@ -152,17 +148,20 @@ u32 previousColor() {
 void gzSettingsMenu_c::updateDynamicLines() {
     static char buf[32];
 
-    sprintf(buf, "area reload behavior: <%s>", area_reload ? "load area" : "load file");
+    sprintf(buf, "area reload behavior: <%s>", g_gzInfo.getAreaReload() ? "load area" : "load file");
     mpLines[SETTING_AREA_RELOAD_BEHAVIOR]->setString(buf);
 
-    sprintf(buf, "drop shadows: [%s]", drop_shadows ? "X" : " ");
+    sprintf(buf, "drop shadows: [%s]", g_gzInfo.getDropShadows() ? "X" : " ");
     mpLines[SETTING_DROP_SHADOW]->setString(buf);
 
-    sprintf(buf, "swap equips: [%s]", swap_equips ? "X" : " ");
+    sprintf(buf, "swap equips: [%s]", g_gzInfo.getSwapEquips() ? "X" : " ");
     mpLines[SETTING_SWAP_EQUIPS]->setString(buf);
 
     sprintf(buf, "progressive mode: [%s]", g_progressiveMode ? "X" : " ");
     mpLines[SETTING_PROGRESSIVE_MODE]->setString(buf);
+
+    sprintf(buf, "cursor type: <%s>", g_gzInfo.getCursorType() ? "tp" : "classic");
+    mpLines[SETTING_CURSOR_TYPE]->setString(buf);
 
     // Find current color name
     char* currentColorName = "unknown";
@@ -185,9 +184,13 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
         mpLines[i] = new gzTextBox();
         mpLines[i]->setFont(mDoExt_getMesgFont());
         mpLines[i]->setFontSize(18.0f, 18.0f);
+        mpLines[i]->mBounds.f.x = 330.0f;
+        mpLines[i]->mBounds.f.y = 10.0f;
+        mpLines[i]->setLineSpace(0.0f);
     }
 
     mpLines[SETTING_AREA_RELOAD_BEHAVIOR]->setString("area reload behavior:");
+    mpLines[SETTING_CURSOR_TYPE]->setString("cursor type:");
     mpLines[SETTING_CURSOR_COLOR]->setString("cursor color:");
     mpLines[SETTING_FONT]->setString("font:");
     mpLines[SETTING_DROP_SHADOW]->setString("drop shadows:");
@@ -199,6 +202,10 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpLines[SETTING_COMMAND_COMBOS]->setString("command combos");
     mpLines[SETTING_MENU_POSITIONS]->setString("menu positions");
     mpLines[SETTING_CREDITS]->setString("credits");
+
+    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
+    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
+    mpDrawCursor->setAlphaRate(1.0f);
 }
 
 gzSettingsMenu_c::~gzSettingsMenu_c() {
@@ -211,6 +218,8 @@ void gzSettingsMenu_c::_delete() {
         delete mpLines[i];
         mpLines[i] = NULL;
     }
+
+    delete mpDrawCursor;
 }
 
 void gzSettingsMenu_c::execute() {
@@ -253,6 +262,9 @@ void gzSettingsMenu_c::execute() {
 
     if (gzPad::getTrigRight()) {
         switch (mCursor.y) {
+        case SETTING_CURSOR_TYPE:
+            g_gzInfo.setCursorType(!g_gzInfo.getCursorType());
+            break;
         case SETTING_CURSOR_COLOR:
             g_gzInfo.setCursorColor(nextColor());
             break;
@@ -264,6 +276,9 @@ void gzSettingsMenu_c::execute() {
 
     if (gzPad::getTrigLeft()) {
         switch (mCursor.y) {
+        case SETTING_CURSOR_TYPE:
+            g_gzInfo.setCursorType(!g_gzInfo.getCursorType());
+            break;
         case SETTING_CURSOR_COLOR:
             g_gzInfo.setCursorColor(previousColor());
             break;
@@ -280,10 +295,13 @@ void gzSettingsMenu_c::draw() {
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
             if (mCursor.y == i) {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), g_gzInfo.getDropShadows());
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorType() == true ? 0xFFFFFFFF : g_gzInfo.getCursorColor(), g_gzInfo.getDropShadows());
+                mpDrawCursor->setPos(170.0f, 82.5f + ((i - 1) * 22.0f), (J2DPane*)mpLines[i], true);
             } else {
                 mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, g_gzInfo.getDropShadows());
             }
         }
     }
+
+    if (g_gzInfo.getCursorType()) mpDrawCursor->draw();
 }

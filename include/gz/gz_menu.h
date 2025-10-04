@@ -3,8 +3,10 @@
 
 #include "d/d_drawlist.h"
 #include "JSystem/J2DGraph/J2DTextBox.h"
+#include "d/d_select_cursor.h"
 #include "gz/gz.h"
 
+class dSelect_cursor_c;
 
 class gzMenu_c : public dDlst_base_c {
 public:
@@ -49,6 +51,7 @@ class gzSettingsMenu_c : public gzMenu_c {
 public:
     enum gzSettingsMenu_Settings_e {
         SETTING_AREA_RELOAD_BEHAVIOR,
+        SETTING_CURSOR_TYPE,
         SETTING_CURSOR_COLOR,
         SETTING_FONT,
         SETTING_DROP_SHADOW,
@@ -77,6 +80,7 @@ public:
 
 public:
     gzTextBox* mpLines[LINE_NUM];
+    dSelect_cursor_c* mpDrawCursor;
 };
 
 class gzCreditsMenu_c : public gzMenu_c {

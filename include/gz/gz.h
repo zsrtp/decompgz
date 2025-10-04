@@ -29,6 +29,8 @@ public:
     void setSwapEquips(bool i_swapEquips) { mSwapEquips = i_swapEquips; }
     bool getAreaReload() const { return mAreaReload; }
     void setAreaReload(bool i_areaReload) { mAreaReload = i_areaReload; }
+    bool getCursorType() const { return mCursorType; }
+    void setCursorType(bool i_type) { mCursorType = i_type; }
 
     J2DPicture* mpIcon;
     gzTextBox* mpHeader;
@@ -41,6 +43,7 @@ public:
     bool mDropShadows;
     bool mSwapEquips;
     bool mAreaReload;
+    bool mCursorType;
 };
 
 extern gzInfo_c g_gzInfo;
