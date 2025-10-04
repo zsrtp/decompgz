@@ -23,6 +23,12 @@ public:
     bool isDisplay() const { return mDisplay; }
     u32 getCursorColor() const { return mCursorColor; }
     void setCursorColor(u32 i_cursorColor) { mCursorColor = i_cursorColor; }
+    bool getDropShadows() const { return mDropShadows; }
+    void setDropShadows(bool i_dropShadows) { mDropShadows = i_dropShadows; }
+    bool getSwapEquips() const { return mSwapEquips; }
+    void setSwapEquips(bool i_swapEquips) { mSwapEquips = i_swapEquips; }
+    bool getAreaReload() const { return mAreaReload; }
+    void setAreaReload(bool i_areaReload) { mAreaReload = i_areaReload; }
 
     J2DPicture* mpIcon;
     gzTextBox* mpHeader;
@@ -32,6 +38,9 @@ public:
     s16 mInputWaitTimer;
     bool mDisplay;
     bool mGZInitialized;
+    bool mDropShadows;
+    bool mSwapEquips;
+    bool mAreaReload;
 };
 
 extern gzInfo_c g_gzInfo;

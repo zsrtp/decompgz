@@ -79,6 +79,19 @@ public:
     gzTextBox* mpLines[LINE_NUM];
 };
 
+class gzCreditsMenu_c : public gzMenu_c {
+public:
+    gzCreditsMenu_c();
+    ~gzCreditsMenu_c();
+
+    virtual void _delete();
+    virtual void execute();
+    virtual void draw();
+
+public:
+    // gzTextBox* mpLines[LINE_NUM];
+};
+
 template <typename T>
 inline void gzChangeMenu() {
     gzMenu_c* next = new T();

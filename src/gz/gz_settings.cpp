@@ -236,15 +236,18 @@ void gzSettingsMenu_c::execute() {
     if (gzPad::getTrigA()) {
         switch (mCursor.y) {
         case SETTING_DROP_SHADOW:
-            drop_shadows = !drop_shadows;
+            g_gzInfo.setDropShadows(!g_gzInfo.getDropShadows());
             break;
         case SETTING_SWAP_EQUIPS:
-            swap_equips = !swap_equips;
+            g_gzInfo.setSwapEquips(!g_gzInfo.getSwapEquips());
             break;
         case SETTING_PROGRESSIVE_MODE:
             g_progressiveMode ? mDoMch_render_c::setProgressiveMode() : mDoMch_render_c::setInterlacedMode();
             g_progressiveMode = !g_progressiveMode;
             break;
+        case SETTING_CREDITS:
+            gzChangeMenu<gzCreditsMenu_c>();
+            return;
         }
     }
 
@@ -254,7 +257,7 @@ void gzSettingsMenu_c::execute() {
             g_gzInfo.setCursorColor(nextColor());
             break;
         case SETTING_AREA_RELOAD_BEHAVIOR:
-            area_reload = !area_reload;
+            g_gzInfo.setAreaReload(!g_gzInfo.getAreaReload());
             break;
         }
     }
@@ -265,7 +268,7 @@ void gzSettingsMenu_c::execute() {
             g_gzInfo.setCursorColor(previousColor());
             break;
         case SETTING_AREA_RELOAD_BEHAVIOR:
-            area_reload = !area_reload;
+            g_gzInfo.setAreaReload(!g_gzInfo.getAreaReload());
             break;
         }
     }
@@ -277,9 +280,9 @@ void gzSettingsMenu_c::draw() {
     for (int i = 0; i < LINE_NUM; i++) {
         if (mpLines[i] != NULL) {
             if (mCursor.y == i) {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), drop_shadows);
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), g_gzInfo.getCursorColor(), g_gzInfo.getDropShadows());
             } else {
-                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, drop_shadows);
+                mpLines[i]->draw(30.0f, 90.0f + ((i - 1) * 22.0f), 0xFFFFFFFF, g_gzInfo.getDropShadows());
             }
         }
     }
