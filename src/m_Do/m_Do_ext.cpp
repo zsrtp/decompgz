@@ -2960,6 +2960,97 @@ void drawCube(MtxP mtx, cXyz* pos, const GXColor& color) {
     GXEnd();
 }
 
+extern void* mogaCubeImgBuffer;
+void drawTexCube(MtxP mtx, cXyz* pos) {
+    ResTIMG* img = (ResTIMG*)mogaCubeImgBuffer;
+
+    u32 texSize = img->width * img->height; // C8 format
+
+    DCFlushRange((u8*)img + img->imageOffset, texSize);
+    
+    // C8 format uses a palette
+    if (img->format == GX_TF_C8) {
+        GXTlutObj tlutObj;
+
+        DCFlushRange((u8*)img + img->paletteOffset, img->numColors * 2);
+
+        GXInitTlutObj(&tlutObj, (void*)((u8*)img + img->paletteOffset), 
+                      (GXTlutFmt)img->colorFormat, img->numColors);
+        GXLoadTlut(&tlutObj, GX_TLUT0);
+    }
+    
+    GXInvalidateTexAll();
+
+    GXTexObj texObj;
+    GXInitTexObj(&texObj, (u8*)img + img->imageOffset, img->width, img->height, (GXTexFmt)img->format,
+                (GXTexWrapMode)img->wrapS, (GXTexWrapMode)img->wrapT, GX_FALSE);
+
+    if (img->format == GX_TF_C8) {
+        GXInitTexObjTlut(&texObj, GX_TLUT0);
+    }
+
+    GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&texObj, GX_TEXMAP0);
+
+    GXSetArray(GX_VA_POS, pos, sizeof(cXyz));
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetNumChans(1);
+
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+
+    GXSetNumTevStages(1);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetClipMode(GX_CLIP_ENABLE);
+    GXLoadPosMtxImm(mtx, 0);
+    GXSetCurrentMtx(0);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 24);
+    // Front face
+    GXPosition1x8(0); GXTexCoord2f32(0, 1);
+    GXPosition1x8(1); GXTexCoord2f32(1, 1);
+    GXPosition1x8(3); GXTexCoord2f32(1, 0);
+    GXPosition1x8(2); GXTexCoord2f32(0, 0);
+    
+    // Back face
+    GXPosition1x8(5); GXTexCoord2f32(0, 1);
+    GXPosition1x8(4); GXTexCoord2f32(1, 1);
+    GXPosition1x8(6); GXTexCoord2f32(1, 0);
+    GXPosition1x8(7); GXTexCoord2f32(0, 0);
+    
+    // Top face
+    GXPosition1x8(2); GXTexCoord2f32(0, 1);
+    GXPosition1x8(3); GXTexCoord2f32(1, 1);
+    GXPosition1x8(7); GXTexCoord2f32(1, 0);
+    GXPosition1x8(6); GXTexCoord2f32(0, 0);
+    
+    // Bottom face
+    GXPosition1x8(4); GXTexCoord2f32(0, 1);
+    GXPosition1x8(5); GXTexCoord2f32(1, 1);
+    GXPosition1x8(1); GXTexCoord2f32(1, 0);
+    GXPosition1x8(0); GXTexCoord2f32(0, 0);
+    
+    // Right face
+    GXPosition1x8(1); GXTexCoord2f32(0, 1);
+    GXPosition1x8(5); GXTexCoord2f32(1, 1);
+    GXPosition1x8(7); GXTexCoord2f32(1, 0);
+    GXPosition1x8(3); GXTexCoord2f32(0, 0);
+    
+    // Left face
+    GXPosition1x8(4); GXTexCoord2f32(0, 1);
+    GXPosition1x8(0); GXTexCoord2f32(1, 1);
+    GXPosition1x8(2); GXTexCoord2f32(1, 0);
+    GXPosition1x8(6); GXTexCoord2f32(0, 0);
+    GXEnd();
+}
+
 void mDoExt_cube8pPacket::draw() {
     drawCube(j3dSys.getViewMtx(), mPoints, mColor);
 }
@@ -2982,7 +3073,10 @@ void mDoExt_cubePacket::draw() {
     mDoMtx_stack_c::XYZrotM(mAngle.x, mAngle.y, mAngle.z);
     mDoMtx_stack_c::scaleM(mSize.x, mSize.y, mSize.z);
     mDoMtx_stack_c::revConcat(j3dSys.getViewMtx());
-    drawCube(mDoMtx_stack_c::get(), l_pos, mColor);
+
+    // temp hack cause lazy
+    //drawCube(mDoMtx_stack_c::get(), l_pos, mColor);
+    drawTexCube(mDoMtx_stack_c::get(), l_pos);
 }
 
 mDoExt_quadPacket::mDoExt_quadPacket(cXyz* i_points, const GXColor& i_color, u8 i_clipZ) {

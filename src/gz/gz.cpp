@@ -79,6 +79,7 @@ void gzInfo_c::loadDefaultSettings() {
     mHeaderYPos = mBackgroundYPos + 25.0f;
 }
 
+void* mogaCubeImgBuffer;
 
 int gzInfo_c::_create() {
     OSReport("creating gzInfo_c\n");
@@ -102,6 +103,10 @@ int gzInfo_c::_create() {
     // TODO: replace this with something better or alloc it on ARAM
     void* buf = JKRHeap::alloc(108960, 32, NULL);
     gzDVDLoadFile("/gz/bg.bti", buf, 108960, 0);
+
+    mogaCubeImgBuffer = JKRHeap::alloc(1240, 32, NULL);
+    gzDVDLoadFile("/gz/moga.bti", mogaCubeImgBuffer, 1240, 0);
+
     ResTIMG* bg = (ResTIMG*)buf;
     mpBackground = new J2DPicture(bg);
     mpHeader = new gzTextBox("tpgz v2.0.0", mSettings.mTextColor);
@@ -199,6 +204,21 @@ int gzInfo_c::draw() {
 
     // Draw any notifications
     if (mpNotification != NULL) mpNotification->draw();
+
+    fopAc_ac_c* player = dComIfGp_getPlayer(0);
+    if (player != NULL) {
+        static u32 counter = 0;
+
+        cXyz pos;
+        cXyz offset(0.0f, 100.0f, 100.0f);
+        cLib_offsetPos(&pos, &player->current.pos, player->current.angle.y, &offset);
+
+        cXyz size(32.0f, 32.0f, 32.0f);
+        csXyz rot(counter, 0, counter);
+        GXColor color = {0xFF, 0xFF, 0xFF, 0xFF};
+        dDbVw_drawCubeOpa(pos, size, rot, color);
+        counter += 1000;
+    }
 
     return 1;
 }
