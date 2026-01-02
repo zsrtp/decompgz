@@ -39,11 +39,11 @@ gzFrameworkMenu_c::gzFrameworkMenu_c() {
     mScrollOffset = 0;
 
     for (int i = 0; i < MAX_VISIBLE_ROWS * NUM_COLUMNS; i++) {
-        mpRowTexts[i] = allocateTextBox();
+        mpRowTexts[i] = new gzTextBox();
     }
 
     for (int i = 0; i < NUM_COLUMNS; i++) {
-        mpHeaders[i] = allocateTextBox();
+        mpHeaders[i] = new gzTextBox();
     }
 
     mpHeaders[0]->setString("Name");
@@ -55,7 +55,7 @@ gzFrameworkMenu_c::gzFrameworkMenu_c() {
     mpDrawCursor->setAlphaRate(1.0f);
 
     mpMeterHaihai = new dMeterHaihai_c(3);
-    mpTitle = allocateTextBox();
+    mpTitle = new gzTextBox();
 }
 
 gzFrameworkMenu_c::~gzFrameworkMenu_c() {

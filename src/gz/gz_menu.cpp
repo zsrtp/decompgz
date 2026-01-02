@@ -3,10 +3,10 @@
 #include "gz/gz_menu.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 
-// Init pool statics
-gzTextBox* gzMenu_c::sTextBoxPool = NULL;
-u8* gzMenu_c::sTextBoxUsed = NULL;
-bool gzMenu_c::sPoolInitialized = false;
+// NOTE(Pheenoh): Unused right now
+// gzTextBox* gzMenu_c::sTextBoxPool = NULL;
+// u8* gzMenu_c::sTextBoxUsed = NULL;
+// bool gzMenu_c::sPoolInitialized = false;
 
 void gzMenu_c::drawTextBox(gzTextBox* box, f32 x, f32 y, u32 color, J2DTextBoxHBinding binding) {
     if (!box) return;
@@ -50,86 +50,87 @@ void gzMenu_c::drawDescription(const char* desc, f32 x, f32 y) {
     }
 }
 
-void gzMenu_c::initPool() {
-    if (sPoolInitialized) return;
+// NOTE(Pheenoh): This is unused right now
+// void gzMenu_c::initPool() {
+//     if (sPoolInitialized) return;
 
-    // *Should* always be the heap set in gz/gz.cpp
-    JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
+//     // *Should* always be the heap set in gz/gz.cpp
+//     JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
 
-    u32 poolBytes = TEXTBOX_POOL_SIZE * sizeof(gzTextBox);
-    u32 freeSize = heap->getFreeSize();
-    if (poolBytes + 64 > freeSize) {  // Buffer for overhead/fragmentation
-        gzInfo_sendNotification("Low mem: TextBox pool skipped!", gzNotification_c::NOTIFY_WARNING);
-        return;
-    }
+//     u32 poolBytes = TEXTBOX_POOL_SIZE * sizeof(gzTextBox);
+//     u32 freeSize = heap->getFreeSize();
+//     if (poolBytes + 64 > freeSize) {  // Buffer for overhead/fragmentation
+//         gzInfo_sendNotification("Low mem: TextBox pool skipped!", gzNotification_c::NOTIFY_WARNING);
+//         return;
+//     }
 
-    void* poolMem = heap->alloc(poolBytes, 32);
-    if (!poolMem) {
-        gzInfo_sendNotification("TextBox pool alloc failed!", gzNotification_c::NOTIFY_ERROR);
-        return;
-    }
+//     void* poolMem = heap->alloc(poolBytes, 32);
+//     if (!poolMem) {
+//         gzInfo_sendNotification("TextBox pool alloc failed!", gzNotification_c::NOTIFY_ERROR);
+//         return;
+//     }
 
-    sTextBoxPool = (gzTextBox*)(poolMem);
-    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-        new (&sTextBoxPool[i]) gzTextBox();
-    }
+//     sTextBoxPool = (gzTextBox*)(poolMem);
+//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+//         new (&sTextBoxPool[i]) gzTextBox();
+//     }
 
-    // Alloc bitmap (~25 bytes for 200 slots)
-    u32 bitmapBytes = (TEXTBOX_POOL_SIZE / 8) + 1;
-    sTextBoxUsed = (u8*)(heap->alloc(bitmapBytes, 4));
-    if (!sTextBoxUsed) {
-        for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-            sTextBoxPool[i].~gzTextBox();
-        }
-        heap->free(poolMem);
-        gzInfo_sendNotification("TextBox bitmap alloc failed!", gzNotification_c::NOTIFY_ERROR);
-        return;
-    }
+//     // Alloc bitmap (~25 bytes for 200 slots)
+//     u32 bitmapBytes = (TEXTBOX_POOL_SIZE / 8) + 1;
+//     sTextBoxUsed = (u8*)(heap->alloc(bitmapBytes, 4));
+//     if (!sTextBoxUsed) {
+//         for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+//             sTextBoxPool[i].~gzTextBox();
+//         }
+//         heap->free(poolMem);
+//         gzInfo_sendNotification("TextBox bitmap alloc failed!", gzNotification_c::NOTIFY_ERROR);
+//         return;
+//     }
 
-    memset(sTextBoxUsed, 0, bitmapBytes);
-    sPoolInitialized = true;
-}
+//     memset(sTextBoxUsed, 0, bitmapBytes);
+//     sPoolInitialized = true;
+// }
 
-void gzMenu_c::shutdownPool() {
-    if (!sPoolInitialized) return;
+// void gzMenu_c::shutdownPool() {
+//     if (!sPoolInitialized) return;
 
-    JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
+//     JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
 
-    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-        sTextBoxPool[i].~gzTextBox();
-    }
+//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+//         sTextBoxPool[i].~gzTextBox();
+//     }
 
-    heap->free(sTextBoxPool);
-    heap->free(sTextBoxUsed);
-    sTextBoxPool = NULL;
-    sTextBoxUsed = NULL;
-    sPoolInitialized = false;
-}
+//     heap->free(sTextBoxPool);
+//     heap->free(sTextBoxUsed);
+//     sTextBoxPool = NULL;
+//     sTextBoxUsed = NULL;
+//     sPoolInitialized = false;
+// }
 
-gzTextBox* gzMenu_c::allocateTextBox() {
-    initPool();
-    if (!sPoolInitialized) return NULL;
+// gzTextBox* gzMenu_c::allocateTextBox() {
+//     initPool();
+//     if (!sPoolInitialized) return NULL;
 
-    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; i++) {
-        u8 byte = (u8)(i / 8);
-        u8 bit = (u8)(i % 8);
-        if ((sTextBoxUsed[byte] & (1 << bit)) == 0) {
-            sTextBoxUsed[byte] |= (1 << bit);
-            return &sTextBoxPool[i];
-        }
-    }
-    OSReport("TextBox pool exhausted!\n");
-    return NULL;
-}
+//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; i++) {
+//         u8 byte = (u8)(i / 8);
+//         u8 bit = (u8)(i % 8);
+//         if ((sTextBoxUsed[byte] & (1 << bit)) == 0) {
+//             sTextBoxUsed[byte] |= (1 << bit);
+//             return &sTextBoxPool[i];
+//         }
+//     }
+//     OSReport("TextBox pool exhausted!\n");
+//     return NULL;
+// }
 
-void gzMenu_c::freeTextBox(gzTextBox* box) {
-    if (!sPoolInitialized || box < sTextBoxPool || box >= sTextBoxPool + TEXTBOX_POOL_SIZE) return;
+// void gzMenu_c::freeTextBox(gzTextBox* box) {
+//     if (!sPoolInitialized || box < sTextBoxPool || box >= sTextBoxPool + TEXTBOX_POOL_SIZE) return;
 
-    u32 idx = (u32)(box - sTextBoxPool);
-    u8 byte = (u8)(idx / 8);
-    u8 bit = (u8)(idx % 8);
-    sTextBoxUsed[byte] &= ~(1 << bit);
-}
+//     u32 idx = (u32)(box - sTextBoxPool);
+//     u8 byte = (u8)(idx / 8);
+//     u8 bit = (u8)(idx % 8);
+//     sTextBoxUsed[byte] &= ~(1 << bit);
+// }
 
 gzMenu_c::gzMenu_c() : mXPos(0.0f), mTopLine(0), mVisibleLines(15),  // Adjust default as needed
     mpHaihai(NULL), mpCursor(NULL), mpDescription(NULL) {
@@ -145,7 +146,7 @@ gzMenu_c::gzMenu_c() : mXPos(0.0f), mTopLine(0), mVisibleLines(15),  // Adjust d
         mpCursor->setAlphaRate(1.0f);
     }
 
-    mpDescription = allocateTextBox();
+    mpDescription = new gzTextBox();
     if (!mpDescription) {
         mpDescription = new gzTextBox();
     }
@@ -163,7 +164,7 @@ gzMenu_c::~gzMenu_c() {
     }
 
     if (mpDescription) {
-        freeTextBox(mpDescription);
+        delete mpDescription;
         mpDescription = NULL;
     }
 }

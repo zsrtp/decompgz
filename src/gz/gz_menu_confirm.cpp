@@ -5,10 +5,10 @@
 gzConfirmMenu_c::gzConfirmMenu_c(confirmCallback i_confirmCallback, void* i_data, returnCallback i_returnCallback) {
     gzCursor* l_cursor = gzInfo_getCursor();
     OSReport("creating gzConfirmMenu_c\n");
-    mpLineConfirmPrompt = allocateTextBox();
+    mpLineConfirmPrompt = new gzTextBox();
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     mpLineConfirmPrompt->setString("are you sure?");
@@ -24,10 +24,10 @@ gzConfirmMenu_c::gzConfirmMenu_c(confirmCallback i_confirmCallback, void* i_data
 gzConfirmMenu_c::gzConfirmMenu_c(confirmCallback i_confirmCallback, void* i_data, returnCallback i_returnCallback, const char* msg) {
     gzCursor* l_cursor = gzInfo_getCursor();
     OSReport("creating gzConfirmMenu_c\n");
-    mpLineConfirmPrompt = allocateTextBox();
+    mpLineConfirmPrompt = new gzTextBox();
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     mpLineConfirmPrompt->setString(msg);

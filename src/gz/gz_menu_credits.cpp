@@ -6,7 +6,7 @@ gzCreditsMenu_c::gzCreditsMenu_c() {
     OSReport("creating gzCreditsMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
         if (i % 2 == 0) mpLines[i]->setString("a");
         if (i % 2 == 1) mpLines[i]->setString("b");
         if (i > 20 && i % 2 == 1) mpLines[i]->setString("c");

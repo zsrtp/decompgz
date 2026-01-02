@@ -38,12 +38,13 @@ protected:
     f32 mXPos; // move to private later?
 
 private:
-    static const u32 TEXTBOX_POOL_SIZE = 578;
-    static gzTextBox* sTextBoxPool;            // Dynamic array head
-    static u8* sTextBoxUsed;                   // Dynamic bitmap (u8 array)
-    static bool sPoolInitialized;
-    static void initPool();
-    static void shutdownPool();                // Shouldn't ever need this
+    // NOTE(Pheenoh): Unused for right now
+    // static const u32 TEXTBOX_POOL_SIZE = 578;
+    // static gzTextBox* sTextBoxPool;            // Dynamic array head
+    // static u8* sTextBoxUsed;                   // Dynamic bitmap (u8 array)
+    // static bool sPoolInitialized;
+    // static void initPool();
+    // static void shutdownPool();                // Shouldn't ever need this
     
     s32 mTopLine; // For scroll offset
     s32 mVisibleLines;          

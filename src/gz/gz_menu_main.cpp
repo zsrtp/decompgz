@@ -50,10 +50,10 @@ gzMainMenu_c::gzMainMenu_c() {
     mpMenus[MENU_WARPING] = NULL;
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
-    mpDescription = allocateTextBox();
+    mpDescription = new gzTextBox();
 
     mpLines[MENU_ACTORS]->setStringDesc("actors", "create, read, update or delete actors in the current scene");
     mpLines[MENU_CHEATS]->setStringDesc("cheats", "toggle cheats");

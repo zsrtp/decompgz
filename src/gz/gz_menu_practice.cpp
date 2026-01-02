@@ -8,7 +8,7 @@ gzPracticeMenu_c::gzPracticeMenu_c() {
     OSReport("creating gzPracticeMenu_c\n");
 
     for (int i = 0; i < TAB_MAX; i++) {
-        mpTabHeaders[i] = allocateTextBox();
+        mpTabHeaders[i] = new gzTextBox();
         mpTabHeaders[i]->setFontSize(15.0f,15.0f);
     }
 
@@ -26,7 +26,7 @@ gzPracticeMenu_c::gzPracticeMenu_c() {
     mGlitchlessSavesTab.create();
     mMemfileTab.create();
 
-    mpDescription = allocateTextBox();
+    mpDescription = new gzTextBox();
 
     mTopLine = 0;
 
@@ -234,7 +234,7 @@ void gzPracticeMenu_c::draw() {
 
 void gzPracticeMenu_c::gzMemfileTab_c::create() {
     for (int i = 0; i < MEMFILE_MAX_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
         mpLines[i]->setStringf("%d. -- empty --", i + 1);
     }
 
@@ -427,7 +427,7 @@ int gzPracticeMenu_c::gzMemfileTab_c::execute() {
 
 void gzPracticeMenu_c::gzAnypSavesTab_c::create() {
     for (int i = 0; i < ANY_LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ANYP_e);
@@ -452,7 +452,7 @@ int gzPracticeMenu_c::gzAnypSavesTab_c::execute() {
 
 void gzPracticeMenu_c::gzHundoSavesTab_c::create() {
     for (int i = 0; i < HUNDO_LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_HUNDO_e);
@@ -477,7 +477,7 @@ int gzPracticeMenu_c::gzHundoSavesTab_c::execute() {
 
 void gzPracticeMenu_c::gzADSavesTab_c::create() {
     for (int i = 0; i < ALL_DUNGEONS_LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e);
@@ -502,7 +502,7 @@ int gzPracticeMenu_c::gzADSavesTab_c::execute() {
 
 void gzPracticeMenu_c::gzGlitchlessSavesTab_c::create() {
     for (int i = 0; i < GLITCHLESS_LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e);
@@ -527,7 +527,7 @@ int gzPracticeMenu_c::gzGlitchlessSavesTab_c::execute() {
 
 void gzPracticeMenu_c::gzNoSQSavesTab_c::create() {
     for (int i = 0; i < NOSQ_LINE_NUM; i++) {
-        mpLines[i] = allocateTextBox();
+        mpLines[i] = new gzTextBox();
     }
 
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_NOSQ_e);

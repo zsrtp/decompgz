@@ -46,7 +46,7 @@ void gzNotification_c::send(const char* message) {
     }
 
     
-    mpNotifications[mNumNotifications] = gzMenu_c::allocateTextBox();
+    mpNotifications[mNumNotifications] = new gzTextBox();
     mpNotifications[mNumNotifications]->setString(message);
     mStartFrames[mNumNotifications] = cCt_getFrameCount();
     mNumNotifications++;

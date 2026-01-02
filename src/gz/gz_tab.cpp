@@ -6,11 +6,11 @@
 
 void gzTab_c::create() {
     for (int i = 0; i < mMax; i++) {
-        mpLines[i] = gzMenu_c::allocateTextBox();
+        mpLines[i] = new gzTextBox();
         mpLines[i]->mBounds.f.x = 430.0f;
         mpLines[i]->mBounds.f.y = 10.0f;
 
-        mpLineOptions[i] = gzMenu_c::allocateTextBox();
+        mpLineOptions[i] = new gzTextBox();
         mpLineOptions[i]->mBounds.f.y = 10.0f;
 
         if (mOptions[i].desc) {

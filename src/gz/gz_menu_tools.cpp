@@ -36,7 +36,7 @@ gzToolsMenu_c::gzToolsMenu_c() {
     OSReport("creating gzToolsMenu_c\n");
 
     for (int i = 0; i < TAB_MAX_e; i++) {
-        mpTabHeaders[i] = allocateTextBox();
+        mpTabHeaders[i] = new gzTextBox();
         mpTabHeaders[i]->setFontSize(15.0f,15.0f);
     }
 
@@ -56,7 +56,7 @@ gzToolsMenu_c::gzToolsMenu_c() {
     mTabs[TAB_LINK_e].mMax = sizeof(link_options) / sizeof(gzOption_s);
     mTabs[TAB_LINK_e].create();
 
-    mpDescription = allocateTextBox();
+    mpDescription = new gzTextBox();
 
     mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
     mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
