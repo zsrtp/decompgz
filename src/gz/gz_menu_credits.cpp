@@ -1,7 +1,6 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_credits.h"
 
 gzCreditsMenu_c::gzCreditsMenu_c() {
     OSReport("creating gzCreditsMenu_c\n");
@@ -85,10 +84,10 @@ void gzCreditsMenu_c::draw() {
     u32 arrows = 0;
     if (LINE_NUM > VISIBLE_LINES) {
         if (mTopLine > 0) {
-            arrows |= gzMainMenu_c::ARROW_UP;
+            arrows |= ARROW_UP;
         }
         if (mTopLine < maxTop) {
-            arrows |= gzMainMenu_c::ARROW_DOWN;
+            arrows |= ARROW_DOWN;
         }
     }
 

@@ -1,16 +1,11 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
 #include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_main.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "m_Do/m_Do_MemCard.h"
 #include "dolphin/card.h"
-#include "d/d_meter_HIO.h"
-#include "f_op/f_op_camera_mng.h"
-#include "d/actor/d_a_alink.h"
-
-#include "d/d_debug_viewer.h"
 
 gzInfo_c g_gzInfo;
 
@@ -90,7 +85,7 @@ int gzInfo_c::_create() {
 
     // Alloc on archive heap
     // Set group ID for identifying gz allocations in heaps menu
-    mDoExt_setCurrentHeap(archiveHeap);    
+    mDoExt_setCurrentHeap(archiveHeap);
     archiveHeap->mCurrentGroupId = mGzGroupID = 0x69;
 
     // load default settings. config from mem card will overwrite if it exists

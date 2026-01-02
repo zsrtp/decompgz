@@ -1,6 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_tools.h"
+#include "gz/gz_menu_main.h"
 
 static gzOption_s checker_options[] = {
     {"coro td", NULL, gzInfo_isCoroTD, gzInfo_onCoroTD, gzInfo_offCoroTD},
@@ -62,7 +63,6 @@ gzToolsMenu_c::gzToolsMenu_c() {
     mpDrawCursor->setAlphaRate(1.0f);
 
     mpMeterHaihai = new dMeterHaihai_c(3);
-    mXPos = 200.0f;
 
     mTopLine = 0;
 }

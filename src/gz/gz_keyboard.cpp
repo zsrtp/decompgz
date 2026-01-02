@@ -1,7 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_keyboard.h"
+#include "gz/gz_textbox.h"
 
 #define CHARACTER_ROWS    5
 #define CHARACTER_COLUMNS 13
@@ -24,7 +24,7 @@ static char l_keyboard[] = {
 
 static gzCursor l_key_cursor = {0, 0};
 
-gzKeyboardMenu_c::gzKeyboardMenu_c(kbCallback finishCb, kbCallback returnCb, void* cbData) {
+gzKeyboard_c::gzKeyboard_c(kbCallback finishCb, kbCallback returnCb, void* cbData) {
     gzCursor* l_cursor = gzInfo_getCursor();
     OSReport("creating gzKeyboardMenu_c\n");
 
@@ -43,11 +43,11 @@ gzKeyboardMenu_c::gzKeyboardMenu_c(kbCallback finishCb, kbCallback returnCb, voi
     setCallbacks(finishCb, returnCb, cbData);
 }
 
-gzKeyboardMenu_c::~gzKeyboardMenu_c() {
+gzKeyboard_c::~gzKeyboard_c() {
     _delete();
 }
 
-void gzKeyboardMenu_c::_delete() {
+void gzKeyboard_c::_delete() {
     OSReport("deleting gzKeyboardMenu_c\n");
 
     for (int i = 0; i < 65; i++) {
@@ -59,7 +59,7 @@ void gzKeyboardMenu_c::_delete() {
     mpStringBox = NULL;
 }
 
-int gzKeyboardMenu_c::execute() {
+int gzKeyboard_c::execute() {
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (g_gzInfo.mInputWaitTimer != 0) {
@@ -125,7 +125,7 @@ int gzKeyboardMenu_c::execute() {
     return 0;
 }
 
-void gzKeyboardMenu_c::draw() {
+void gzKeyboard_c::draw() {
     const f32 x_pos_base = 200.0f;
     const f32 y_pos_base = 100.0f;
     const f32 char_spacing = 22.0f;

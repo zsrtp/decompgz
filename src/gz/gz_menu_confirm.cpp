@@ -1,7 +1,6 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_confirm.h"
 
 gzConfirmMenu_c::gzConfirmMenu_c(confirmCallback i_confirmCallback, void* i_data, returnCallback i_returnCallback) {
     gzCursor* l_cursor = gzInfo_getCursor();

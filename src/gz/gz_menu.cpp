@@ -1,200 +1,169 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
 #include "gz/gz_menu.h"
-#include "f_op/f_op_scene_mng.h"
-#include "SSystem/SComponent/c_counter.h"
+#include "JSystem/JKernel/JKRExpHeap.h"
 
-void gzMainMenu_c::startForwardTransition() {
-    mTransitioning = true;
-    mTransitionForward = true;
-    mTransitionStart = cCt_getFrameCount();
-    mMainStartX = mMainVisibleX;
-    mMainEndX = mMainHiddenX;
-    mSubStartX = mSubHiddenX;
-    mSubEndX = mSubVisibleX;
-}
+// Init pool statics
+gzTextBox* gzMenu_c::sTextBoxPool = NULL;
+u8* gzMenu_c::sTextBoxUsed = NULL;
+bool gzMenu_c::sPoolInitialized = false;
 
-void gzMainMenu_c::startReverseTransition() {
-    mTransitioning = true;
-    mTransitionForward = false;
-    mTransitionStart = cCt_getFrameCount();
-    mMainStartX = mMainHiddenX;
-    mMainEndX = mMainVisibleX;
-    mSubStartX = mSubVisibleX;
-    mSubEndX = mSubHiddenX;
-    g_gzInfo.mInputWaitTimer = 2;
-}
+void gzMenu_c::drawTextBox(gzTextBox* box, f32 x, f32 y, u32 color, J2DTextBoxHBinding binding) {
+    if (!box) return;
 
-gzMainMenu_c::gzMainMenu_c() {
-    OSReport("creating gzMainMenu_c\n");
-
-    mpMenus[MENU_ACTORS] = NULL;
-    mpMenus[MENU_CHEATS] = new gzCheatsMenu_c();
-    mpMenus[MENU_FLAGS] = new gzFlagsMenu_c();
-    mpMenus[MENU_FRAMEWORK] = new gzFrameworkMenu_c();
-    mpMenus[MENU_HEAPS] = new gzHeapsMenu_c();
-    mpMenus[MENU_INVENTORY] = NULL;
-    mpMenus[MENU_MEMORY] = new gzMemoryMenu_c();
-    mpMenus[MENU_PRACTICE] = new gzPracticeMenu_c();
-    mpMenus[MENU_SCENE] = NULL;
-    mpMenus[MENU_SETTINGS] = new gzSettingsMenu_c();
-    mpMenus[MENU_TOOLS] = new gzToolsMenu_c();
-    mpMenus[MENU_WARPING] = NULL;
-
-    for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox();
+    if (gzInfo_isDropShadows()) {
+        box->setCharColor(0x00000080u);  // Shadow color (ARGB)
+        box->setGradColor(0x00000080u);
+        box->draw(x + 2.0f, y + 2.0f, 608.0f, binding);  // Shadow offset
     }
 
-    mpDescription = new gzTextBox();
-
-    mpLines[MENU_ACTORS]->setStringDesc("actors", "create, read, update or delete actors in the current scene");
-    mpLines[MENU_CHEATS]->setStringDesc("cheats", "toggle cheats");
-    mpLines[MENU_FLAGS]->setStringDesc("flags", "toggle in-game flags");
-    mpLines[MENU_FRAMEWORK]->setStringDesc("framework", "view and edit running processes");
-    mpLines[MENU_HEAPS]->setStringDesc("heaps", "see how cooked we are");
-    mpLines[MENU_INVENTORY]->setStringDesc("inventory", "set items and equipment");
-    mpLines[MENU_MEMORY]->setStringDesc("memory", "view and edit memory");
-    mpLines[MENU_PRACTICE]->setStringDesc("practice", "load practice files");
-    mpLines[MENU_SCENE]->setStringDesc("scene", "adjust current scene settings");
-    mpLines[MENU_SETTINGS]->setStringDesc("settings", "configure tpgz settings");
-    mpLines[MENU_TOOLS]->setStringDesc("tools", "use various tools for practice and testing");
-    mpLines[MENU_WARPING]->setStringDesc("warping", "warp to any area");
-
-    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpDrawCursor->setAlphaRate(1.0f);
-
-    mpMeterHaihai = new dMeterHaihai_c(3);
-
-    mTransitioning = false;
-    mTransitionForward = true;
-    mTransitionStart = 0;
-    mTransitionDuration = 5.0f;
-
-    mXPos = mMainVisibleX = mSubVisibleX = g_gzInfo.mBackgroundXPos + 15.0f;
-    mMainHiddenX = mXPos - 160.0f;
-    mSubHiddenX = mXPos + 180.0f;
+    box->setCharColor(color);
+    box->setGradColor(color);
+    box->draw(x, y, 608.0f, binding);  // Main draw
 }
 
+void gzMenu_c::updateScrolling(s32 maxLines) {
+    gzCursor* cursor = gzInfo_getCursor();
 
-gzMainMenu_c::~gzMainMenu_c() {
-    _delete();
+    if (cursor->y < mTopLine) {
+        mTopLine = cursor->y;
+    } else if (cursor->y >= mTopLine + mVisibleLines) {
+        mTopLine = cursor->y - mVisibleLines + 1;
+    }
+    
+    s32 maxTop = maxLines - mVisibleLines;
+    if (maxTop < 0) maxTop = 0;
+    if (mTopLine > maxTop) mTopLine = maxTop;
+    if (mTopLine < 0) mTopLine = 0;
 }
 
-void gzMainMenu_c::_delete() {
-    OSReport("deleting gzMainMenu_c\n");
-
-    for (int i = 0; i < LINE_NUM; i++) {
-        delete mpLines[i];
-        mpLines[i] = NULL;
-
-        delete mpMenus[i];
-        mpMenus[i] = NULL;
+void gzMenu_c::drawHaihaiArrows(u8 flags, f32 x, f32 y, f32 width, f32 height) {
+    if (flags != 0 && gzInfo_isSubMenuVisible()) {
+        mpHaihai->drawHaihai(flags, x, y, width, height);
     }
 }
 
-void gzMainMenu_c::execute() {
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigDown()) {
-        l_cursor->y = (l_cursor->y + 1) % LINE_NUM;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-        gzChangeMenu(mpMenus[l_cursor->y]);
+void gzMenu_c::drawDescription(const char* desc, f32 x, f32 y) {
+    if (gzInfo_isSubMenuVisible() && desc && *desc != 0) {
+        mpDescription->setString(desc);
+        drawTextBox(mpDescription, x, y, gzInfo_getCursorColor(), HBIND_CENTER);
     }
+}
 
-    if (gzPad::getTrigUp()) {
-        l_cursor->y = (l_cursor->y - 1 + LINE_NUM) % LINE_NUM;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-        gzChangeMenu(mpMenus[l_cursor->y]);
-    }
+void gzMenu_c::initPool() {
+    if (sPoolInitialized) return;
 
-    if (gzPad::getTrigB()) {
-        g_gzInfo.mDisplay = false;
+    // *Should* always be the heap set in gz/gz.cpp
+    JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
+
+    u32 poolBytes = TEXTBOX_POOL_SIZE * sizeof(gzTextBox);
+    u32 freeSize = heap->getFreeSize();
+    if (poolBytes + 64 > freeSize) {  // Buffer for overhead/fragmentation
+        gzInfo_sendNotification("Low mem: TextBox pool skipped!", gzNotification_c::NOTIFY_WARNING);
         return;
     }
 
-    if (gzPad::getTrigA()) {
-        if (g_gzInfo.mpCurrentMenu != NULL) {
-            startForwardTransition();
-            l_cursor->x++;
-            l_cursor->y = 0;
-            g_gzInfo.mInputWaitTimer = 2;
-            gzInfo_seStart(Z2SE_SY_EXP_WIN_OPEN);
-        }
+    void* poolMem = heap->alloc(poolBytes, 32);
+    if (!poolMem) {
+        gzInfo_sendNotification("TextBox pool alloc failed!", gzNotification_c::NOTIFY_ERROR);
+        return;
+    }
 
-        switch (l_cursor->y) {
-        case MENU_WARPING:
-            scene_class* playScene = fopScnM_SearchByID(dStage_roomControl_c::getProcID());
-            if (playScene != NULL)
-                fopScnM_ChangeReq(playScene, PROC_MENU_SCENE, 0, 5);
-            g_gzInfo.mDisplay = false;
-            return;
+    sTextBoxPool = (gzTextBox*)(poolMem);
+    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+        new (&sTextBoxPool[i]) gzTextBox();
+    }
+
+    // Alloc bitmap (~25 bytes for 200 slots)
+    u32 bitmapBytes = (TEXTBOX_POOL_SIZE / 8) + 1;
+    sTextBoxUsed = (u8*)(heap->alloc(bitmapBytes, 4));
+    if (!sTextBoxUsed) {
+        for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+            sTextBoxPool[i].~gzTextBox();
         }
+        heap->free(poolMem);
+        gzInfo_sendNotification("TextBox bitmap alloc failed!", gzNotification_c::NOTIFY_ERROR);
+        return;
+    }
+
+    memset(&sTextBoxUsed, 0, sizeof(sTextBoxUsed));
+    sPoolInitialized = true;
+}
+
+void gzMenu_c::shutdownPool() {
+    if (!sPoolInitialized) return;
+
+    JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
+
+    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
+        sTextBoxPool[i].~gzTextBox();
+    }
+
+    heap->free(sTextBoxPool);
+    heap->free(sTextBoxUsed);
+    sTextBoxPool = NULL;
+    sTextBoxUsed = NULL;
+    sPoolInitialized = false;
+}
+
+gzTextBox* gzMenu_c::allocateTextBox() {
+    initPool();
+    if (!sPoolInitialized) return NULL;
+
+    for (u32 i = 0; i < TEXTBOX_POOL_SIZE; i++) {
+        u8 byte = (u8)(i / 8);
+        u8 bit = (u8)(i % 8);
+        if ((sTextBoxUsed[byte] & (1 << bit)) == 0) {
+            sTextBoxUsed[byte] |= (1 << bit);
+            return &sTextBoxPool[i];
+        }
+    }
+    gzInfo_sendNotification("TextBox pool exhausted!", gzNotification_c::NOTIFY_ERROR);
+    return NULL;
+}
+
+void gzMenu_c::freeTextBox(gzTextBox* box) {
+    if (!sPoolInitialized || box < sTextBoxPool || box >= sTextBoxPool + TEXTBOX_POOL_SIZE) return;
+
+    u32 idx = (u32)(box - sTextBoxPool);
+    u8 byte = (u8)(idx / 8);
+    u8 bit = (u8)(idx % 8);
+    sTextBoxUsed[byte] &= ~(1 << bit);
+}
+
+gzMenu_c::gzMenu_c() : mXPos(0.0f), mTopLine(0), mVisibleLines(15),  // Adjust default as needed
+    mpHaihai(NULL), mpCursor(NULL), mpDescription(NULL) {
+
+    if (mpHaihai == NULL) {
+        mpHaihai = new dMeterHaihai_c(3);
+        mpHaihai->setScale(0.04f);
+    }
+
+    if (mpCursor == NULL) {
+        mpCursor = new dSelect_cursor_c(2, 1.0f, NULL);
+        mpCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
+        mpCursor->setAlphaRate(1.0f);
+    }
+
+    mpDescription = allocateTextBox();
+    if (!mpDescription) {
+        mpDescription = new gzTextBox();
     }
 }
 
-void gzMainMenu_c::draw() {
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    static const f32 Y_ALIGNMENT = 100.0f;
-    static const f32 LINE_SPACING = 22.0f;
-    static const f32 DESCRIPTION_X = 0.0f;
-
-    u32 cursor_color = gzInfo_getCursorColor();
-
-    if (mTransitioning) {
-        u32 currentFrame = cCt_getFrameCount();
-        f32 age = (f32)(currentFrame - mTransitionStart);
-
-        if (age >= mTransitionDuration) {
-            mTransitioning = false;
-            mXPos = mMainEndX;
-            if (g_gzInfo.mpCurrentMenu != NULL) {
-                g_gzInfo.mpCurrentMenu->setXPos(mSubEndX);
-            }
-        } else {
-            mXPos = calcSlidePosition(currentFrame, mTransitionStart, mMainStartX, mMainEndX, mTransitionDuration);
-
-            if (g_gzInfo.mpCurrentMenu != NULL)
-                g_gzInfo.mpCurrentMenu->setXPos(calcSlidePosition(currentFrame, mTransitionStart, mSubStartX, mSubEndX, mTransitionDuration));
-        }
-
-        for (int i = 0; i < LINE_NUM; i++) {
-            if (mpLines[i] != NULL && mXPos >= g_gzInfo.mBackgroundXPos) {
-                f32 y_pos = Y_ALIGNMENT + ((i - 1) * LINE_SPACING);
-                u32 color = (l_cursor->y == i && gzInfo_isMainMenuVisible()) ? gzInfo_getTextColor() : COLOR_WHITE;
-                mpLines[i]->draw(mXPos, y_pos, color);
-            }
-        }
-    } else {
-        for (int i = 0; i < LINE_NUM; i++) {
-            if (mpLines[i] != NULL) {
-                f32 y_pos = Y_ALIGNMENT + ((i - 1) * LINE_SPACING);
-
-                if (l_cursor->y == i && gzInfo_isMainMenuVisible()) {
-                    mpLines[i]->draw(mXPos, y_pos, gzInfo_getTextColor());
-                } else {
-                    mpLines[i]->draw(mXPos, y_pos, COLOR_WHITE);
-                }
-            }
-        }
+gzMenu_c::~gzMenu_c() {
+    if (mpHaihai == NULL) {
+        delete mpHaihai;
+        mpHaihai = NULL;
     }
 
-    // Draw description if valid and on menu
-    if (gzInfo_isMainMenuVisible()) {
-        if (mpLines[l_cursor->y] && *mpLines[l_cursor->y]->m_description != 0) {
-            f32 description_x = DESCRIPTION_X;
-            f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
-
-            mpDescription->setString(mpLines[l_cursor->y]->m_description);
-            mpDescription->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
-        }
+    if (mpCursor) {
+        delete mpCursor;
+        mpCursor = NULL;
     }
 
-    if (gzInfo_isCursorTypeTP()) {
-        if (mpDrawCursor != NULL) {
-            mpDrawCursor->draw();
-        }
+    if (mpDescription) {
+        freeTextBox(mpDescription);
+        mpDescription = NULL;
     }
 }

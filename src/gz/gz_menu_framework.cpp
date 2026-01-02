@@ -1,7 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_framework.h"
+#include "gz/gz_menu_main.h"
 
 char* gzFrameworkMenu_c::getProcessName(base_process_class* process) {
     switch (process->name) {
@@ -56,8 +56,6 @@ gzFrameworkMenu_c::gzFrameworkMenu_c() {
 
     mpMeterHaihai = new dMeterHaihai_c(3);
     mpTitle = new gzTextBox();
-
-    mXPos = 200.0f;
 }
 
 gzFrameworkMenu_c::~gzFrameworkMenu_c() {
@@ -260,10 +258,10 @@ void gzFrameworkMenu_c::draw() {
     u8 arrows = 0;
     if (mNumProcesses > MAX_VISIBLE_ROWS) {
         if (mScrollOffset > 0) {
-            arrows |= gzMainMenu_c::ARROW_UP;
+            arrows |= ARROW_UP;
         }
         if (mScrollOffset < mNumProcesses - MAX_VISIBLE_ROWS) {
-            arrows |= gzMainMenu_c::ARROW_DOWN;
+            arrows |= ARROW_DOWN;
         }
     }
 

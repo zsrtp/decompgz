@@ -1,9 +1,7 @@
 #include "d/dolzel.h"  // IWYU pragma: keep
 
-#include "c/c_damagereaction.h"
-
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_flags.h"
+#include "gz/gz_menu_main.h"
 
 // General flags
 static const BoolFlagInfo generalFlags[15] = {
@@ -174,7 +172,6 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     mSelectedDungeon = 0;
     mSelectedRegion = 0;
     mOption = false;
-    mXPos = 200.0f;
 }
 
 gzFlagsMenu_c::~gzFlagsMenu_c() {
@@ -220,13 +217,13 @@ void gzFlagsMenu_c::_delete() {
 }
 
 u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
-    u8 haihai_flags = gzMainMenu_c::ARROW_LEFT | gzMainMenu_c::ARROW_RIGHT;
+    u8 haihai_flags = ARROW_LEFT | ARROW_RIGHT;
     switch (mCurrentTab) {
     case TAB_GENERAL:
         if (generalFlags[idx].mIsOn()) {
-            haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+            haihai_flags &= ~ARROW_RIGHT;
         } else {
-            haihai_flags &= ~gzMainMenu_c::ARROW_LEFT;
+            haihai_flags &= ~ARROW_LEFT;
         }
         break;
     case TAB_DUNGEON:
@@ -236,9 +233,9 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
         } else if (idx >= D_FLAG_BOSS_KEY && idx <= D_FLAG_DEFEAT_MINIBOSS) {
             int bIdx = idx - D_FLAG_BOSS_KEY;
             if (dungeonFlags[bIdx].mIsOn(mSelectedDungeon + 16)) {
-                haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+                haihai_flags &= ~ARROW_RIGHT;
             } else {
-                haihai_flags &= ~gzMainMenu_c::ARROW_LEFT;
+                haihai_flags &= ~ARROW_LEFT;
             }
         }
         break;
@@ -246,16 +243,16 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
         if (idx == P_FLAG_SELECT_REGION) {
         } else if (idx == P_FLAG_REGION) {
             if (getRegionFlag(mSelectedRegion + 1)) {
-                haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+                haihai_flags &= ~ARROW_RIGHT;
             } else {
-                haihai_flags &= ~gzMainMenu_c::ARROW_LEFT;
+                haihai_flags &= ~ARROW_LEFT;
             }
         } else if (idx >= P_FLAG_SPRING_WARP && idx < P_FLAG_MAX) {
             int wIdx = idx - P_FLAG_SPRING_WARP;
             if (warpFlags[wIdx].mIsOn()) {
-                haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+                haihai_flags &= ~ARROW_RIGHT;
             } else {
-                haihai_flags &= ~gzMainMenu_c::ARROW_LEFT;
+                haihai_flags &= ~ARROW_LEFT;
             }
         }
         break;
@@ -264,9 +261,9 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
         } else if (idx >= R_FLAG_FUNDRAISING_1 && idx < R_FLAG_MAX) {
             int rIdx = idx - R_FLAG_FUNDRAISING_1;
             if (rupeeFlags[rIdx].mIsOn()) {
-                haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+                haihai_flags &= ~ARROW_RIGHT;
             } else {
-                haihai_flags &= ~gzMainMenu_c::ARROW_LEFT;
+                haihai_flags &= ~ARROW_LEFT;
             }
         }
         break;

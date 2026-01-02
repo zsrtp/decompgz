@@ -1,4 +1,5 @@
 #include "gz/gz.h"
+#include "gz/gz_textbox.h"
 #include "SSystem/SComponent/c_counter.h"
 #include "JSystem/J2DGraph/J2DAnimation.h"
 

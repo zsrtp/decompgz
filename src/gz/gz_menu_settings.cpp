@@ -1,7 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_settings.h"
+#include "gz/gz_menu_main.h"
 
 #define COLOR_AMETHYST 0x9966FFFF
 #define COLOR_AQUAMARINE 0x71D9E2FF
@@ -236,8 +236,6 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpDrawCursor->setAlphaRate(1.0f);
 
     mpMeterHaihai = new dMeterHaihai_c(3);
-
-    mXPos = 200.0f;
 }
 
 gzSettingsMenu_c::~gzSettingsMenu_c() {

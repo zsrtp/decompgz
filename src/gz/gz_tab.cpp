@@ -1,6 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
 #include "gz/gz_tab.h"
+#include "gz/gz_textbox.h"
 
 void gzTab_c::create() {
     for (int i = 0; i < mMax; i++) {

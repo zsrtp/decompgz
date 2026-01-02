@@ -1,9 +1,7 @@
-// gz_memory.cpp
-
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_memory.h"
+#include "gz/gz_menu_main.h"
 
 gzMemoryMenu_c::gzMemoryMenu_c() {
     OSReport("creating gzMemoryMenu_c\n");
@@ -13,7 +11,6 @@ gzMemoryMenu_c::gzMemoryMenu_c() {
     }
 
     mTopLine = 0;
-    mXPos = 200.0f;
 }
 
 gzMemoryMenu_c::~gzMemoryMenu_c() {

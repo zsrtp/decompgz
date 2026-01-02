@@ -1,7 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
-#include "m_Do/m_Do_ext.h"
+
+#include "gz/gz_menu_heaps.h"
+#include "gz/gz_menu_main.h"
 #include "SSystem/SComponent/c_counter.h"
 
 static int partition(u32* starts, JKRExpHeap::CMemBlock** blocks, int low, int high) {
@@ -178,8 +178,6 @@ gzHeapsMenu_c::gzHeapsMenu_c() {
 
     mViewMode = 0;  // Start with KB view
     mpDescription = new gzTextBox();
-
-    mXPos = 200.0f;
 }
 
 gzHeapsMenu_c::~gzHeapsMenu_c() {

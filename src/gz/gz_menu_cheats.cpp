@@ -1,56 +1,56 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_cheats.h"
+#include "gz/gz_menu_main.h"
 
 u8 gzCheatsMenu_c::getHaihaiFlags(int idx) {
-    u8 haihai_flags = gzMainMenu_c::ARROW_LEFT | gzMainMenu_c::ARROW_RIGHT;
+    u8 haihai_flags = ARROW_LEFT | ARROW_RIGHT;
 
     switch (idx) {
     case CHEAT_DISABLE_ITEM_TIMER:
-        !gzInfo_isDisableItemTimer() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isDisableItemTimer() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_DISABLE_WALLS:
-        !gzInfo_isDisableWalls() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isDisableWalls() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_AIR:
-        !gzInfo_isInfiniteAir() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteAir() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_ARROWS:
-        !gzInfo_isInfiniteArrows() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteArrows() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_BOMBS:
-        !gzInfo_isInfiniteBombs() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteBombs() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_HEARTS:
-        !gzInfo_isInfiniteHearts() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteHearts() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_OIL:
-        !gzInfo_isInfiniteOil() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteOil() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_RUPEES:
-        !gzInfo_isInfiniteRupees() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteRupees() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INF_SLINGSHOT:
-        !gzInfo_isInfiniteSlingshot() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInfiniteSlingshot() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INVINCIBLE_LINK:
-        !gzInfo_isInvincibleLink() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInvincibleLink() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_INVINCIBLE_ENEMIES:
-        !gzInfo_isInvincibleEnemies() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isInvincibleEnemies() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_MOON_JUMP:
-        !gzInfo_isMoonJump() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isMoonJump() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_SUPER_CLAWSHOT:
-        !gzInfo_isSuperClawshot() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isSuperClawshot() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_TRANSFORM_ANYWHERE:
-        !gzInfo_isTransformAnywhere() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isTransformAnywhere() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     case CHEAT_UNRESTRICTED_ITEMS:
-        !gzInfo_isUnrestrictedItems() ? haihai_flags &= ~gzMainMenu_c::ARROW_LEFT : haihai_flags &= ~gzMainMenu_c::ARROW_RIGHT;
+        !gzInfo_isUnrestrictedItems() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
         break;
     }
 
@@ -119,8 +119,6 @@ gzCheatsMenu_c::gzCheatsMenu_c() {
     mpMeterHaihai = new dMeterHaihai_c(3);
 
     mpDescription = new gzTextBox();
-
-    mXPos = 200.0f;
 }
 
 gzCheatsMenu_c::~gzCheatsMenu_c() {

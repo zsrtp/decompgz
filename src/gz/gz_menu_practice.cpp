@@ -1,7 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_menu_practice.h"
+#include "gz/gz_menu_main.h"
 #include "m_Do/m_Do_MemCard.h"
 
 gzPracticeMenu_c::gzPracticeMenu_c() {
@@ -32,7 +32,6 @@ gzPracticeMenu_c::gzPracticeMenu_c() {
 
     mpMeterHaihai = new dMeterHaihai_c(3);
     mpMeterHaihai->setScale(0.04f);
-    mXPos = 200.0f;
 }
 
 gzPracticeMenu_c::~gzPracticeMenu_c() {
@@ -229,7 +228,7 @@ void gzPracticeMenu_c::draw() {
     }
 
     if (mpMeterHaihai != NULL && gzInfo_isSubMenuVisible()) {
-        mpMeterHaihai->drawHaihai(gzMainMenu_c::ARROW_LEFT | gzMainMenu_c::ARROW_RIGHT, x_alignment_haihai, y_alignment_haihai, HAIHAI_X_SIZE, 0.0f);
+        mpMeterHaihai->drawHaihai(ARROW_LEFT | ARROW_RIGHT, x_alignment_haihai, y_alignment_haihai, HAIHAI_X_SIZE, 0.0f);
     }
 }
 
@@ -280,7 +279,7 @@ int gzPracticeMenu_c::gzMemfileTab_c::readMemfileNames() {
     return 1;
 }
 
-int gzPracticeMenu_c::gzMemfileTab_c::memfileNameFinishCb(gzKeyboardMenu_c* i_keyboard, void* i_data) {
+int gzPracticeMenu_c::gzMemfileTab_c::memfileNameFinishCb(gzKeyboard_c* i_keyboard, void* i_data) {
     gzPracticeMenu_c::gzMemfileTab_c* menu = (gzPracticeMenu_c::gzMemfileTab_c*)i_data;
     gzCursor* l_cursor = gzInfo_getCursor();
     int slot_no = l_cursor->y + 1;
@@ -411,7 +410,7 @@ int gzPracticeMenu_c::gzMemfileTab_c::execute() {
         if (isMemfileExist(l_cursor->y)) {
             loadMemfile(l_cursor->y);
         } else {
-            mpKeyboard = new gzKeyboardMenu_c(memfileNameFinishCb, NULL, this);
+            mpKeyboard = new gzKeyboard_c(memfileNameFinishCb, NULL, this);
             gzInfo_seStart(Z2SE_SY_CURSOR_OK);
         }
     }
