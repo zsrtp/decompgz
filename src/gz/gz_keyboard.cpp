@@ -2,6 +2,7 @@
 
 #include "gz/gz_keyboard.h"
 #include "gz/gz_textbox.h"
+#include "gz/gz_menu.h"
 
 #define CHARACTER_ROWS    5
 #define CHARACTER_COLUMNS 13
@@ -29,14 +30,14 @@ gzKeyboard_c::gzKeyboard_c(kbCallback finishCb, kbCallback returnCb, void* cbDat
     OSReport("creating gzKeyboardMenu_c\n");
 
     for (int i = 0; i < 65; i++) {
-        mpCharacters[i] = new gzTextBox();
+        mpCharacters[i] = gzMenu_c::allocateTextBox();
 
         char buf[2];
         sprintf(buf, "%c", l_keyboard[i]);
         mpCharacters[i]->setString(buf);
     }
 
-    mpStringBox = new gzTextBox();
+    mpStringBox = gzMenu_c::allocateTextBox();
     memset(mString, 0, sizeof(mString));
     mStringIndex = 0;
 

@@ -50,10 +50,10 @@ gzMainMenu_c::gzMainMenu_c() {
     mpMenus[MENU_WARPING] = NULL;
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox();
+        mpLines[i] = allocateTextBox();
     }
 
-    // mpDescription = new gzTextBox();
+    mpDescription = allocateTextBox();
 
     mpLines[MENU_ACTORS]->setStringDesc("actors", "create, read, update or delete actors in the current scene");
     mpLines[MENU_CHEATS]->setStringDesc("cheats", "toggle cheats");
@@ -68,11 +68,11 @@ gzMainMenu_c::gzMainMenu_c() {
     mpLines[MENU_TOOLS]->setStringDesc("tools", "use various tools for practice and testing");
     mpLines[MENU_WARPING]->setStringDesc("warping", "warp to any area");
 
-    // mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    // mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    // mpDrawCursor->setAlphaRate(1.0f);
+    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
+    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
+    mpDrawCursor->setAlphaRate(1.0f);
 
-    // mpMeterHaihai = new dMeterHaihai_c(3);
+    mpMeterHaihai = new dMeterHaihai_c(3);
 
     mTransitioning = false;
     mTransitionForward = true;
@@ -83,7 +83,6 @@ gzMainMenu_c::gzMainMenu_c() {
     mMainHiddenX = mXPos - 160.0f;
     mSubHiddenX = mXPos + 180.0f;
 }
-
 
 gzMainMenu_c::~gzMainMenu_c() {
     _delete();

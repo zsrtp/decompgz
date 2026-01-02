@@ -90,7 +90,7 @@ static const char* regionNames[] = {"ordon", "faron", "eldin", "lanayru", "deser
 gzFlagsMenu_c::gzFlagsMenu_c() {
     OSReport("creating gzFlagsMenu_c\n");
     for (int i = 0; i < TAB_MAX; i++) {
-        mpTabHeaders[i] = new gzTextBox;
+        mpTabHeaders[i] = allocateTextBox();
         mpTabHeaders[i]->setFontSize(15.0f, 15.0f);
     }
     mpTabHeaders[TAB_GENERAL]->setString("general");
@@ -99,19 +99,19 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     mpTabHeaders[TAB_RUPEE]->setString("rupee");
 
     for (int i = 0; i < G_FLAG_MAX; i++) {
-        mpLinesGeneral[i] = new gzTextBox();
+        mpLinesGeneral[i] = allocateTextBox();
         mpLinesGeneral[i]->mBounds.f.x = 430.0f;
         mpLinesGeneral[i]->mBounds.f.y = 10.0f;
         mpLinesGeneral[i]->setStringDesc(generalFlags[i].mName, generalFlags[i].mDesc);
-        mpLineOptionsGeneral[i] = new gzTextBox();
+        mpLineOptionsGeneral[i] = allocateTextBox();
         mpLineOptionsGeneral[i]->mBounds.f.y = 10.0f;
     }
 
     for (int i = 0; i < D_FLAG_MAX; i++) {
-        mpLinesDungeon[i] = new gzTextBox();
+        mpLinesDungeon[i] = allocateTextBox();
         mpLinesDungeon[i]->mBounds.f.x = 430.0f;
         mpLinesDungeon[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsDungeon[i] = new gzTextBox();
+        mpLineOptionsDungeon[i] = allocateTextBox();
         mpLineOptionsDungeon[i]->mBounds.f.y = 10.0f;
     }
 
@@ -128,10 +128,10 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
                                                         "Clear all selected dungeon flags");
 
     for (int i = 0; i < P_FLAG_MAX; i++) {
-        mpLinesPortal[i] = new gzTextBox();
+        mpLinesPortal[i] = allocateTextBox();
         mpLinesPortal[i]->mBounds.f.x = 430.0f;
         mpLinesPortal[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsPortal[i] = new gzTextBox();
+        mpLineOptionsPortal[i] = allocateTextBox();
         mpLineOptionsPortal[i]->mBounds.f.y = 10.0f;
     }
 
@@ -145,10 +145,10 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     }
 
     for (int i = 0; i < R_FLAG_MAX; i++) {
-        mpLinesRupee[i] = new gzTextBox();
+        mpLinesRupee[i] = allocateTextBox();
         mpLinesRupee[i]->mBounds.f.x = 430.0f;
         mpLinesRupee[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsRupee[i] = new gzTextBox();
+        mpLineOptionsRupee[i] = allocateTextBox();
         mpLineOptionsRupee[i]->mBounds.f.y = 10.0f;
     }
     // Set strings for rupee tab
@@ -162,7 +162,7 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
                                                               rupeeFlags[i].mDesc);
     }
 
-    mpDescription = new gzTextBox();
+    mpDescription = allocateTextBox();
     mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
     mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
     mpDrawCursor->setAlphaRate(1.0f);

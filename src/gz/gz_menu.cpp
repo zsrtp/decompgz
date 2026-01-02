@@ -86,7 +86,7 @@ void gzMenu_c::initPool() {
         return;
     }
 
-    memset(&sTextBoxUsed, 0, sizeof(sTextBoxUsed));
+    memset(sTextBoxUsed, 0, bitmapBytes);
     sPoolInitialized = true;
 }
 
@@ -118,7 +118,7 @@ gzTextBox* gzMenu_c::allocateTextBox() {
             return &sTextBoxPool[i];
         }
     }
-    gzInfo_sendNotification("TextBox pool exhausted!", gzNotification_c::NOTIFY_ERROR);
+    OSReport("TextBox pool exhausted!\n");
     return NULL;
 }
 

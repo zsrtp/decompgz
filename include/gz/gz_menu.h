@@ -25,6 +25,9 @@ public:
     virtual f32 getXPos() { return mXPos; }
     virtual void setXPos(f32 x) { mXPos = x; }
 
+    static gzTextBox* allocateTextBox();
+    static void freeTextBox(gzTextBox* box);
+
 protected:
     void handleCursorMovement(s32 maxLines);
     void updateScrolling(s32 maxLines);
@@ -32,13 +35,10 @@ protected:
     void drawHaihaiArrows(u8 flags, f32 x, f32 y, f32 width, f32 height);
     void drawDescription(const char* desc, f32 x, f32 y);
 
-    static gzTextBox* allocateTextBox();
-    static void freeTextBox(gzTextBox* box);
-
     f32 mXPos; // move to private later?
 
 private:
-    static const u32 TEXTBOX_POOL_SIZE = 200;
+    static const u32 TEXTBOX_POOL_SIZE = 578;
     static gzTextBox* sTextBoxPool;            // Dynamic array head
     static u8* sTextBoxUsed;                   // Dynamic bitmap (u8 array)
     static bool sPoolInitialized;

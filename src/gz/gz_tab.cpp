@@ -2,14 +2,15 @@
 
 #include "gz/gz_tab.h"
 #include "gz/gz_textbox.h"
+#include "gz/gz_menu.h"
 
 void gzTab_c::create() {
     for (int i = 0; i < mMax; i++) {
-        mpLines[i] = new gzTextBox();
+        mpLines[i] = gzMenu_c::allocateTextBox();
         mpLines[i]->mBounds.f.x = 430.0f;
         mpLines[i]->mBounds.f.y = 10.0f;
 
-        mpLineOptions[i] = new gzTextBox();
+        mpLineOptions[i] = gzMenu_c::allocateTextBox();
         mpLineOptions[i]->mBounds.f.y = 10.0f;
 
         if (mOptions[i].desc) {

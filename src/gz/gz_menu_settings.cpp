@@ -204,16 +204,16 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpCreditsMenu = new gzCreditsMenu_c();
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox();
+        mpLines[i] = allocateTextBox();
         mpLines[i]->mBounds.f.x = 430.0f;
         mpLines[i]->mBounds.f.y = 10.0f;
         // mpLines[i]->setLineSpace(0.0f);
 
-        mpLineOptions[i] = new gzTextBox();
+        mpLineOptions[i] = allocateTextBox();
         mpLineOptions[i]->mBounds.f.y = 10.0f;
     }
 
-    mpDescription = new gzTextBox();
+    mpDescription = allocateTextBox();
 
     mpLines[SETTING_CURSOR_TYPE]->setStringDesc("cursor type", "sets the cursor type to classic, tp or both");
     mpLines[SETTING_DISPLAY_MODE]->setStringDesc("display mode", "change between progressive and interlaced display modes");

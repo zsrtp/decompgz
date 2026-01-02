@@ -1,5 +1,6 @@
 #include "gz/gz.h"
 #include "gz/gz_textbox.h"
+#include "gz/gz_menu.h"
 #include "SSystem/SComponent/c_counter.h"
 #include "JSystem/J2DGraph/J2DAnimation.h"
 
@@ -45,7 +46,7 @@ void gzNotification_c::send(const char* message) {
     }
 
     
-    mpNotifications[mNumNotifications] = new gzTextBox();
+    mpNotifications[mNumNotifications] = gzMenu_c::allocateTextBox();
     mpNotifications[mNumNotifications]->setString(message);
     mStartFrames[mNumNotifications] = cCt_getFrameCount();
     mNumNotifications++;

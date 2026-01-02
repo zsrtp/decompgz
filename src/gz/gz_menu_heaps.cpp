@@ -177,7 +177,7 @@ gzHeapsMenu_c::gzHeapsMenu_c() {
     mTrackers[HEAP_ZELDA_e]->mpTitle->setString("zelda heap");
 
     mViewMode = 0;  // Start with KB view
-    mpDescription = new gzTextBox();
+    mpDescription = allocateTextBox();
 }
 
 gzHeapsMenu_c::~gzHeapsMenu_c() {
