@@ -2,38 +2,7 @@
 #define GZ_MENU_FLAGS_H
 
 #include "gz/gz_menu.h"
-
-struct BoolFlagInfo {
-    const char* mName;
-    const char* mDesc;
-    bool (*mIsOn)();
-    void (*mOn)();
-    void (*mOff)();
-};
-
-struct DungeonBoolFlagInfo {
-    const char* mName;
-    const char* mDesc;
-    bool (*mIsOn)(int);
-    void (*mOn)(int);
-    void (*mOff)(int);
-};
-
-struct WarpBoolFlagInfo {
-    const char* mName;
-    const char* mDesc;
-    bool (*mIsOn)();
-    void (*mOn)();
-    void (*mOff)();
-};
-
-struct RupeeBoolFlagInfo {
-    const char* mName;
-    const char* mDesc;
-    bool (*mIsOn)();
-    void (*mOn)();
-    void (*mOff)();
-};
+#include "gz/gz_tab.h"
 
 class gzFlagsMenu_c : public gzMenu_c {
 public:
@@ -43,7 +12,7 @@ public:
         TAB_PORTAL,
         TAB_RUPEE,
 
-        TAB_MAX
+        TAB_MAX_e
     };
 
     enum gzFlagsMenu_General_e {
@@ -126,7 +95,7 @@ private:
     bool getRegionFlag(int);
 
 private:
-    gzTextBox* mpTabHeaders[TAB_MAX];
+    gzTextBox* mpTabHeaders[TAB_MAX_e];
     gzTextBox* mpLinesGeneral[G_FLAG_MAX];
     gzTextBox* mpLineOptionsGeneral[G_FLAG_MAX];
     gzTextBox* mpLinesDungeon[D_FLAG_MAX];

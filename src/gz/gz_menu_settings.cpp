@@ -94,34 +94,34 @@ static u32 l_textColorValue[] = {
 };
 
 u8 gzSettingsMenu_c::getHaihaiFlags(int i) {
-    u8 haihai_flags = ARROW_LEFT | ARROW_RIGHT;
+    u8 haihai_flags = gzMenu_c::ARROW_LEFT | gzMenu_c::ARROW_RIGHT;
 
     switch (i) {
-    case SETTING_RELOAD_TYPE:
-        !gzInfo_getReloadType() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
+    case gzSettingsMenu_c::SETTING_RELOAD_TYPE:
+        !gzInfo_getReloadType() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
-    case SETTING_CURSOR_TYPE: {
+    case gzSettingsMenu_c::SETTING_CURSOR_TYPE: {
         break;
     }
-    case SETTING_DISPLAY_MODE:
-        !gzInfo_getDisplayMode() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
+    case gzSettingsMenu_c::SETTING_DISPLAY_MODE:
+        !gzInfo_getDisplayMode() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
-    case SETTING_DROP_SHADOW:
-        !gzInfo_isDropShadows() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
+    case gzSettingsMenu_c::SETTING_DROP_SHADOW:
+        !gzInfo_isDropShadows() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
-    case SETTING_MENU_PAUSES_GAME:
+    case gzSettingsMenu_c::SETTING_MENU_PAUSES_GAME:
         haihai_flags = 0;
         break;
-    case SETTING_MENU_SFX:
-        !gzInfo_isMenuSfx() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
+    case gzSettingsMenu_c::SETTING_MENU_SFX:
+        !gzInfo_isMenuSfx() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
-    case SETTING_FONT:
+    case gzSettingsMenu_c::SETTING_FONT:
         haihai_flags = 0;
         break;
-    case SETTING_SWAP_EQUIPS:
-        !gzInfo_isSwapEquips() ? haihai_flags &= ~ARROW_LEFT : haihai_flags &= ~ARROW_RIGHT;
+    case gzSettingsMenu_c::SETTING_SWAP_EQUIPS:
+        !gzInfo_isSwapEquips() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
-    case SETTING_TEXT_COLOR: {
+    case gzSettingsMenu_c::SETTING_TEXT_COLOR: {
         break;
     }
     }
@@ -207,13 +207,10 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
         mpLines[i] = new gzTextBox();
         mpLines[i]->mBounds.f.x = 430.0f;
         mpLines[i]->mBounds.f.y = 10.0f;
-        // mpLines[i]->setLineSpace(0.0f);
 
         mpLineOptions[i] = new gzTextBox();
         mpLineOptions[i]->mBounds.f.y = 10.0f;
     }
-
-    mpDescription = new gzTextBox();
 
     mpLines[SETTING_CURSOR_TYPE]->setStringDesc("cursor type", "sets the cursor type to classic, tp or both");
     mpLines[SETTING_DISPLAY_MODE]->setStringDesc("display mode", "change between progressive and interlaced display modes");
@@ -230,12 +227,6 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpLines[SETTING_COMMAND_COMBOS]->setStringDesc("command combos", "change default command combos");
     mpLines[SETTING_MENU_POSITIONS]->setStringDesc("menu positions", "set positions of overlay menus");
     mpLines[SETTING_CREDITS]->setStringDesc("credits", "show the tpgz credits");
-
-    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpDrawCursor->setAlphaRate(1.0f);
-
-    mpMeterHaihai = new dMeterHaihai_c(3);
 }
 
 gzSettingsMenu_c::~gzSettingsMenu_c() {
@@ -253,15 +244,6 @@ void gzSettingsMenu_c::_delete() {
     }
 
     delete mpCreditsMenu;
-
-    delete mpDescription;
-    mpDescription = NULL;
-
-    delete mpDrawCursor;
-    mpDrawCursor = NULL;
-
-    delete mpMeterHaihai;
-    mpMeterHaihai = NULL;
 }
 
 void gzSettingsMenu_c::execute() {
@@ -271,16 +253,6 @@ void gzSettingsMenu_c::execute() {
     }
     
     gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigDown() && !mOption) {
-        l_cursor->y = (l_cursor->y + 1) % LINE_NUM;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-    }
-
-    if (gzPad::getTrigUp() && !mOption) {
-        l_cursor->y = (l_cursor->y - 1 + LINE_NUM) % LINE_NUM;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-    }
 
     if (gzPad::getTrigA()) {
         switch (l_cursor->y) {
@@ -292,7 +264,6 @@ void gzSettingsMenu_c::execute() {
         case SETTING_MENU_SFX:
         case SETTING_TEXT_COLOR:
             mOption = !mOption;
-            mOption ? gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK) : gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
             break;
         case SETTING_SAVE_CARD:
             //gzChangeMenu<gzConfirmMenu_c>(storeSettingsCallbackWrapper, NULL, returnToSettings, "save settings?");
@@ -318,7 +289,6 @@ void gzSettingsMenu_c::execute() {
     if (gzPad::getTrigB()) {
         if (mOption) {
             mOption = false;
-            gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
         } else {
             l_cursor->x--;
             l_cursor->y = gzMainMenu_c::MENU_SETTINGS;
@@ -423,71 +393,18 @@ void gzSettingsMenu_c::execute() {
         }
     }
 
-    mpMeterHaihai->_execute(0);
+    gzMenu_c::execute();
 }
 
 void gzSettingsMenu_c::draw() {
     gzCursor* l_cursor = gzInfo_getCursor();
-
-    static const f32 Y_ALIGNMENT = 100.0f;
-    static const f32 OPTIONS_X_OFFSET = -20.0f;
-    static const f32 HAIHAI_X_OFFSET = 305.0f;
-    static const f32 HAIHAI_Y_OFFSET = -7.0f;
-    static const f32 HAIHAI_SCALE_FACTOR = 0.04f;
-    static const f32 HAIHAI_EXTRA_SPACING = 30.0f;
-    static const f32 TP_CURSOR_X_OFFSET = 20.0f;
-    static const f32 CURSOR_Y_BASE = 90.0f;
-    static const f32 LINE_SPACING = 22.0f;
-    static const f32 DESCRIPTION_X = 0.0f;
-    static const f32 DESCRIPTION_Y = 420.0f;
-
     updateDynamicLines();
-
-    J2DTextBox::TFontSize font_size;
-    mpLineOptions[0]->getFontSize(font_size);  // assume that all lines have the same font size
-    mpMeterHaihai->setScale(font_size.mSizeY * HAIHAI_SCALE_FACTOR);
-
-    u32 cursor_color = gzInfo_getCursorColor();
-
-    f32 x_alignment_opts = mXPos + OPTIONS_X_OFFSET;
-    f32 x_alignment_haihai = x_alignment_opts + HAIHAI_X_OFFSET;
-    f32 y_alignment_haihai = Y_ALIGNMENT + HAIHAI_Y_OFFSET;
-    f32 x_alignment_tp_cursor = mXPos + TP_CURSOR_X_OFFSET;
+    u8 haihai_flags = 0;
 
     for (int i = 0; i < LINE_NUM; i++) {
-        f32 y_pos = Y_ALIGNMENT + ((i - 1) * LINE_SPACING);
-        f32 y_pos_haihai = y_alignment_haihai + ((i - 1) * LINE_SPACING);
-        f32 y_pos_cursor = CURSOR_Y_BASE + ((i - 1) * LINE_SPACING);
-
-        if (l_cursor->y == i && gzInfo_isSubMenuVisible()) {
-            // Spacing between arrows determined by text box bound size
-            f32 x_size_haihai = mpLineOptions[i]->mBounds.f.x + HAIHAI_EXTRA_SPACING;
-            if (mpLineOptions[i]->mStringLength != 0 && mOption) {
-                mpMeterHaihai->drawHaihai(getHaihaiFlags(i), x_alignment_haihai, y_pos_haihai, x_size_haihai, 0.0f);
-            }
-
-            mpLines[i]->draw(mXPos, y_pos, cursor_color);
-            mpDrawCursor->setPos(x_alignment_tp_cursor, y_pos_cursor, (J2DPane*)mpLines[i], false);
-            mpLineOptions[i]->draw(x_alignment_opts, y_pos, cursor_color, HBIND_CENTER);
-        } else {
-            mpLines[i]->draw(mXPos, y_pos, COLOR_WHITE);
-            mpLineOptions[i]->draw(x_alignment_opts, y_pos, COLOR_WHITE, HBIND_CENTER);
-        }
+        if (l_cursor->y == i)
+            haihai_flags = getHaihaiFlags(i);
     }
 
-    if (gzInfo_isSubMenuVisible()) {
-        if (mpLines[l_cursor->y] && *mpLines[l_cursor->y]->m_description != 0) {
-            f32 description_x = DESCRIPTION_X;
-            f32 description_y = g_gzInfo.mBackgroundHeight + 40.0f;
-
-            mpDescription->setString(mpLines[l_cursor->y]->m_description);
-            mpDescription->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
-        }
-    }
-
-    if (gzInfo_isCursorTypeTP()) {
-        if (mpDrawCursor != NULL) {
-            mpDrawCursor->draw();
-        }
-    }
+    drawLines(mpLines, mpLineOptions, haihai_flags, LINE_NUM);
 }

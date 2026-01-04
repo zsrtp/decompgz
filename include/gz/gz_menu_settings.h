@@ -62,17 +62,12 @@ public:
 
     static const int LINE_NUM = SETTING_MAX;
 
+    u8 getHaihaiFlags(int i);
+
 private:
     gzTextBox* mpLines[LINE_NUM];
     gzTextBox* mpLineOptions[LINE_NUM];
-    gzTextBox* mpDescription;
-    dSelect_cursor_c* mpDrawCursor;
-    dMeterHaihai_c* mpMeterHaihai;
     gzCreditsMenu_c* mpCreditsMenu;
-    bool mOption;
-
-private:
-    u8 getHaihaiFlags(int idx);
 };
 
 #endif

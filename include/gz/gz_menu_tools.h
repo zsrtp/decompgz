@@ -19,13 +19,12 @@ public:
     virtual void execute();
     virtual void draw();
 
+    u8 getHaihaiFlags(int i);
+
+private:
     gzTextBox* mpTabHeaders[TAB_MAX_e];
-    int mCurrentTab;
-    int mTopLine;
     gzTab_c mTabs[TAB_MAX_e];
-    gzTextBox* mpDescription;
-    dSelect_cursor_c* mpDrawCursor;
-    dMeterHaihai_c* mpMeterHaihai;
+    int mCurrentTab;
 };
 
 #endif // GZ_MENU_TOOLS_H

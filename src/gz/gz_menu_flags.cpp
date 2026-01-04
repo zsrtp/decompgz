@@ -4,7 +4,7 @@
 #include "gz/gz_menu_main.h"
 
 // General flags
-static const BoolFlagInfo generalFlags[15] = {
+static gzBoolOption_s generalFlags[] = {
     {"boss flag", "sets the boss flag value", gzInfo_isBossFlag, gzInfo_onBossFlag,
      gzInfo_offBossFlag},
     {"coro td", "toggle temporary flag for coro text displacement", gzInfo_isCoroTD,
@@ -33,8 +33,8 @@ static const BoolFlagInfo generalFlags[15] = {
      gzInfo_offWolfSense}
 };
 
-// Dungeon bool flags
-static const DungeonBoolFlagInfo dungeonFlags[7] = {
+// Dungeon bool and int flags
+static gzIntOption_s dungeonFlags[] = {
     {"have boss key", "Give selected dungeon boss key", gzInfo_isDungeonBossKey,
      gzInfo_onDungeonBossKey, gzInfo_offDungeonBossKey},
     {"have compass", "Give selected dungeon compass", gzInfo_isDungeonCompass,
@@ -52,8 +52,8 @@ static const DungeonBoolFlagInfo dungeonFlags[7] = {
      gzInfo_onMiniBossDefeated, gzInfo_offMiniBossDefeated},
 };
 
-// Portal warp flags
-static const WarpBoolFlagInfo warpFlags[15] = {
+// Portal warp bool flags
+static gzBoolOption_s warpFlags[] = {
     {"ordon spring", "Ordon Spring warp portal", isSpringWarp, onSpringWarp, offSpringWarp},
     {"south faron", "South Faron warp portal", isSFaronWarp, onSFaronWarp, offSFaronWarp},
     {"north faron", "North Faron warp portal", isNFaronWarp, onNFaronWarp, offNFaronWarp},
@@ -73,7 +73,7 @@ static const WarpBoolFlagInfo warpFlags[15] = {
     {"mirror chamber", "Mirror Chamber warp portal", isMirrorWarp, onMirrorWarp, offMirrorWarp}};
 
 // Rupee bool flags
-static const RupeeBoolFlagInfo rupeeFlags[3] = {
+static gzBoolOption_s rupeeFlags[] = {
     {"fundraising 1", "Toggle flag for first fundraising being complete", isFundraising1, onFundraising1, offFundraising1},
     {"fundraising 2", "Toggle flag for second fundraising being complete", isFundraising2, onFundraising2, offFundraising2},
     {"rupee cutscenes", "Toggle rupee cutscenes being enabled", isRupeeCS, onRupeeCS, offRupeeCS}};
@@ -89,7 +89,7 @@ static const char* regionNames[] = {"ordon", "faron", "eldin", "lanayru", "deser
 
 gzFlagsMenu_c::gzFlagsMenu_c() {
     OSReport("creating gzFlagsMenu_c\n");
-    for (int i = 0; i < TAB_MAX; i++) {
+    for (int i = 0; i < TAB_MAX_e; i++) {
         mpTabHeaders[i] = new gzTextBox();
         mpTabHeaders[i]->setFontSize(15.0f, 15.0f);
     }
@@ -102,7 +102,7 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
         mpLinesGeneral[i] = new gzTextBox();
         mpLinesGeneral[i]->mBounds.f.x = 430.0f;
         mpLinesGeneral[i]->mBounds.f.y = 10.0f;
-        mpLinesGeneral[i]->setStringDesc(generalFlags[i].mName, generalFlags[i].mDesc);
+        mpLinesGeneral[i]->setStringDesc(generalFlags[i].name, generalFlags[i].desc);
         mpLineOptionsGeneral[i] = new gzTextBox();
         mpLineOptionsGeneral[i]->mBounds.f.y = 10.0f;
     }
@@ -120,8 +120,8 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     mpLinesDungeon[D_FLAG_SMALL_KEY]->setStringDesc("small keys", "Selected dungeon small keys");
 
     for (int i = 0; i < 7; i++) {
-        mpLinesDungeon[D_FLAG_BOSS_KEY + i]->setStringDesc(dungeonFlags[i].mName,
-                                                           dungeonFlags[i].mDesc);
+        mpLinesDungeon[D_FLAG_BOSS_KEY + i]->setStringDesc(dungeonFlags[i].name,
+                                                           dungeonFlags[i].desc);
     }
 
     mpLinesDungeon[D_FLAG_CLEAR_DUNGEON]->setStringDesc("clear flags",
@@ -140,8 +140,8 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     mpLinesPortal[P_FLAG_REGION]->setStringDesc("region unlocked", "Unlock selected map region");
 
     for (int i = 0; i < 15; i++) {
-        mpLinesPortal[P_FLAG_SPRING_WARP + i]->setStringDesc(warpFlags[i].mName,
-                                                             warpFlags[i].mDesc);
+        mpLinesPortal[P_FLAG_SPRING_WARP + i]->setStringDesc(warpFlags[i].name,
+                                                             warpFlags[i].desc);
     }
 
     for (int i = 0; i < R_FLAG_MAX; i++) {
@@ -158,8 +158,8 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
                                                         "Sets the current fundraising amount");
 
     for (int i = 0; i < 3; i++) {
-        mpLinesRupee[R_FLAG_FUNDRAISING_1 + i]->setStringDesc(rupeeFlags[i].mName,
-                                                              rupeeFlags[i].mDesc);
+        mpLinesRupee[R_FLAG_FUNDRAISING_1 + i]->setStringDesc(rupeeFlags[i].name,
+                                                              rupeeFlags[i].desc);
     }
 
     mpDescription = new gzTextBox();
@@ -180,7 +180,7 @@ gzFlagsMenu_c::~gzFlagsMenu_c() {
 
 void gzFlagsMenu_c::_delete() {
     OSReport("deleting gzFlagsMenu_c\n");
-    for (int i = 0; i < TAB_MAX; i++) {
+    for (int i = 0; i < TAB_MAX_e; i++) {
         delete mpTabHeaders[i];
         mpTabHeaders[i] = NULL;
     }
@@ -218,9 +218,10 @@ void gzFlagsMenu_c::_delete() {
 
 u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
     u8 haihai_flags = ARROW_LEFT | ARROW_RIGHT;
+
     switch (mCurrentTab) {
     case TAB_GENERAL:
-        if (generalFlags[idx].mIsOn()) {
+        if (generalFlags[idx].is()) {
             haihai_flags &= ~ARROW_RIGHT;
         } else {
             haihai_flags &= ~ARROW_LEFT;
@@ -232,7 +233,7 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
             haihai_flags = 0;
         } else if (idx >= D_FLAG_BOSS_KEY && idx <= D_FLAG_DEFEAT_MINIBOSS) {
             int bIdx = idx - D_FLAG_BOSS_KEY;
-            if (dungeonFlags[bIdx].mIsOn(mSelectedDungeon + 16)) {
+            if (dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
@@ -249,7 +250,7 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
             }
         } else if (idx >= P_FLAG_SPRING_WARP && idx < P_FLAG_MAX) {
             int wIdx = idx - P_FLAG_SPRING_WARP;
-            if (warpFlags[wIdx].mIsOn()) {
+            if (warpFlags[wIdx].is()) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
@@ -260,7 +261,7 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
         if (idx == R_FLAG_DONATION_AMT || idx == R_FLAG_FUNDRAISING_AMT) {
         } else if (idx >= R_FLAG_FUNDRAISING_1 && idx < R_FLAG_MAX) {
             int rIdx = idx - R_FLAG_FUNDRAISING_1;
-            if (rupeeFlags[rIdx].mIsOn()) {
+            if (rupeeFlags[rIdx].is()) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
@@ -295,7 +296,7 @@ void gzFlagsMenu_c::updateDynamicLines() {
         currentLineOptions = mpLineOptionsGeneral;
         currentLineNum = G_FLAG_MAX;
         for (int i = 0; i < G_FLAG_MAX; i++) {
-            currentLineOptions[i]->setStringf("%s", generalFlags[i].mIsOn() ? "on" : "off");
+            currentLineOptions[i]->setStringf("%s", generalFlags[i].is() ? "on" : "off");
         }
         break;
     case TAB_DUNGEON:
@@ -306,7 +307,7 @@ void gzFlagsMenu_c::updateDynamicLines() {
         currentLineOptions[D_FLAG_SMALL_KEY]->setStringf("%d", getDungeonSmallKeys(mSelectedDungeon + 16));
         for (int i = 0; i < 7; i++) {
             currentLineOptions[D_FLAG_BOSS_KEY + i]->setStringf(
-                "%s", dungeonFlags[i].mIsOn(mSelectedDungeon + 16) ? "yes" : "no");
+                "%s", dungeonFlags[i].is(mSelectedDungeon + 16) ? "yes" : "no");
         }
         currentLineOptions[D_FLAG_CLEAR_DUNGEON]->setString("");
         break;
@@ -319,7 +320,7 @@ void gzFlagsMenu_c::updateDynamicLines() {
         OSReport("mSelectedRegion: %d\n", mSelectedRegion);
         for (int i = 0; i < 15; i++) {
             currentLineOptions[P_FLAG_SPRING_WARP + i]->setStringf(
-                "%s", warpFlags[i].mIsOn() ? "on" : "off");
+                "%s", warpFlags[i].is() ? "on" : "off");
         }
         break;
     case TAB_RUPEE:
@@ -330,7 +331,7 @@ void gzFlagsMenu_c::updateDynamicLines() {
         currentLineOptions[R_FLAG_FUNDRAISING_AMT]->setStringf("%d", getFundraisingAmt());
         for (int i = 0; i < 3; i++) {
             currentLineOptions[R_FLAG_FUNDRAISING_1 + i]->setStringf(
-                "%s", rupeeFlags[i].mIsOn() ? "on" : "off");
+                "%s", rupeeFlags[i].is() ? "on" : "off");
         }
         break;
     default:
@@ -362,30 +363,24 @@ void gzFlagsMenu_c::execute() {
         g_gzInfo.mInputWaitTimer--;
         return;
     }
+
     gzCursor* l_cursor = gzInfo_getCursor();
+
     if (!mOption) {
-        if (gzPad::getTrigDown()) {
-            l_cursor->y = (l_cursor->y + 1) % getCurrentLineNum();
-            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-        }
-        if (gzPad::getTrigUp()) {
-            l_cursor->y = (l_cursor->y - 1 + getCurrentLineNum()) % getCurrentLineNum();
-            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-        }
         if (gzPad::getTrigRight()) {
-            mCurrentTab = (mCurrentTab + 1) % TAB_MAX;
+            mCurrentTab = (mCurrentTab + 1) % TAB_MAX_e;
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
         }
         if (gzPad::getTrigLeft()) {
-            mCurrentTab = (mCurrentTab - 1 + TAB_MAX) % TAB_MAX;
+            mCurrentTab = (mCurrentTab - 1 + TAB_MAX_e) % TAB_MAX_e;
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
         }
     } else {
         if (gzPad::getTrigRight()) {
             switch (mCurrentTab) {
             case TAB_GENERAL:
-                if (l_cursor->y < G_FLAG_MAX && !generalFlags[l_cursor->y].mIsOn()) {
-                    generalFlags[l_cursor->y].mOn();
+                if (l_cursor->y < G_FLAG_MAX && !generalFlags[l_cursor->y].is()) {
+                    generalFlags[l_cursor->y].on();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
@@ -400,8 +395,8 @@ void gzFlagsMenu_c::execute() {
                 } else if (l_cursor->y >= D_FLAG_BOSS_KEY && l_cursor->y <= D_FLAG_DEFEAT_MINIBOSS)
                 {
                     int bIdx = l_cursor->y - D_FLAG_BOSS_KEY;
-                    if (!dungeonFlags[bIdx].mIsOn(mSelectedDungeon + 16)) {
-                        dungeonFlags[bIdx].mOn(mSelectedDungeon + 16);
+                    if (!dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
+                        dungeonFlags[bIdx].on(mSelectedDungeon + 16);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -417,8 +412,8 @@ void gzFlagsMenu_c::execute() {
                     }
                 } else if (l_cursor->y >= P_FLAG_SPRING_WARP && l_cursor->y < P_FLAG_MAX) {
                     int wIdx = l_cursor->y - P_FLAG_SPRING_WARP;
-                    if (!warpFlags[wIdx].mIsOn()) {
-                        warpFlags[wIdx].mOn();
+                    if (!warpFlags[wIdx].is()) {
+                        warpFlags[wIdx].on();
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -434,8 +429,8 @@ void gzFlagsMenu_c::execute() {
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= R_FLAG_FUNDRAISING_1 && l_cursor->y < R_FLAG_MAX) {
                     int rIdx = l_cursor->y - R_FLAG_FUNDRAISING_1;
-                    if (!rupeeFlags[rIdx].mIsOn()) {
-                        rupeeFlags[rIdx].mOn();
+                    if (!rupeeFlags[rIdx].is()) {
+                        rupeeFlags[rIdx].on();
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -445,8 +440,8 @@ void gzFlagsMenu_c::execute() {
         if (gzPad::getTrigLeft()) {
             switch (mCurrentTab) {
             case TAB_GENERAL:
-                if (l_cursor->y < G_FLAG_MAX && generalFlags[l_cursor->y].mIsOn()) {
-                    generalFlags[l_cursor->y].mOff();
+                if (l_cursor->y < G_FLAG_MAX && generalFlags[l_cursor->y].is()) {
+                    generalFlags[l_cursor->y].off();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
@@ -463,8 +458,8 @@ void gzFlagsMenu_c::execute() {
                 } else if (l_cursor->y >= D_FLAG_BOSS_KEY && l_cursor->y <= D_FLAG_DEFEAT_MINIBOSS)
                 {
                     int bIdx = l_cursor->y - D_FLAG_BOSS_KEY;
-                    if (dungeonFlags[bIdx].mIsOn(mSelectedDungeon + 16)) {
-                        dungeonFlags[bIdx].mOff(mSelectedDungeon + 16);
+                    if (dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
+                        dungeonFlags[bIdx].off(mSelectedDungeon + 16);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -480,8 +475,8 @@ void gzFlagsMenu_c::execute() {
                     }
                 } else if (l_cursor->y >= P_FLAG_SPRING_WARP && l_cursor->y < P_FLAG_MAX) {
                     int wIdx = l_cursor->y - P_FLAG_SPRING_WARP;
-                    if (warpFlags[wIdx].mIsOn()) {
-                        warpFlags[wIdx].mOff();
+                    if (warpFlags[wIdx].is()) {
+                        warpFlags[wIdx].off();
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -501,8 +496,8 @@ void gzFlagsMenu_c::execute() {
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= R_FLAG_FUNDRAISING_1 && l_cursor->y < R_FLAG_MAX) {
                     int rIdx = l_cursor->y - R_FLAG_FUNDRAISING_1;
-                    if (rupeeFlags[rIdx].mIsOn()) {
-                        rupeeFlags[rIdx].mOff();
+                    if (rupeeFlags[rIdx].is()) {
+                        rupeeFlags[rIdx].off();
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
@@ -539,7 +534,8 @@ void gzFlagsMenu_c::execute() {
             }
         }
     }
-    mpMeterHaihai->_execute(0);
+    
+    gzMenu_c::execute();
 }
 
 void gzFlagsMenu_c::draw() {
@@ -560,7 +556,7 @@ void gzFlagsMenu_c::draw() {
 
     // manually set tab header text distances for now
     // need to support scrolling tabs at some point
-    f32 X_POS[TAB_MAX];
+    f32 X_POS[TAB_MAX_e];
     f32 tab_header_x_alignment = mXPos + TAB_HEADER_OFFSET;
     X_POS[TAB_GENERAL] = tab_header_x_alignment;
     X_POS[TAB_DUNGEON] = tab_header_x_alignment + 70.0f;
@@ -606,7 +602,7 @@ void gzFlagsMenu_c::draw() {
         break;
     }
 
-    for (int i = 0; i < TAB_MAX; i++) {
+    for (int i = 0; i < TAB_MAX_e; i++) {
         mpTabHeaders[i]->draw(X_POS[i], y_header_alignment,
                               i == mCurrentTab ? cursor_color : COLOR_WHITE);
     }

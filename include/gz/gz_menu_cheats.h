@@ -56,10 +56,6 @@ private:
 private:
     gzTextBox* mpLines[LINE_NUM];
     gzTextBox* mpLineOptions[LINE_NUM];
-    gzTextBox* mpDescription;
-    dSelect_cursor_c* mpDrawCursor;
-    dMeterHaihai_c* mpMeterHaihai;
-    bool mOption;
 };
 
 #endif // GZ_MENU_CHEATS_H
