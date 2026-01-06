@@ -9,7 +9,6 @@
 #include "JSystem/J2DGraph/J2DTextBox.h"
 #include "SSystem/SComponent/c_API_controller_pad.h"
 #include "c/c_damagereaction.h"
-#include <cstring.h>
 
 class gzMenu_c;
 class gzTextBox;
