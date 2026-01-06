@@ -21,6 +21,33 @@ class gzNotification_c;
 #define COLOR_BLUE 0x0000FFFFu
 #define COLOR_GREEN 0x00FF00FFu
 
+#define COLOR_AMETHYST 0x9966FFFF
+#define COLOR_AQUAMARINE 0x71D9E2FF
+#define COLOR_BANANA_MANIA 0xFAE7B5FF
+#define COLOR_BOLD_CRIMSON 0xDC143CFF
+#define COLOR_BUBBLEGUM_PINK 0xFF69B4FF
+#define COLOR_CERULEAN 0x007BA7FF
+#define COLOR_COSMIC_COBALT 0x2E2D88FF
+#define COLOR_ELECTRIC_BLUE 0x7DF9FFFF
+#define COLOR_FIERY_ORANGE 0xFF4500FF
+#define COLOR_FLAMINGO_FEATHER 0xFC8EACFF
+#define COLOR_GOLD_DROP 0xEE8000FF
+#define COLOR_LEMON_YELLOW 0xFFF44FFF
+#define COLOR_LIME_GREEN 0x32CD32FF
+#define COLOR_MAGENTA_MAGIC 0xFF00FFFF
+#define COLOR_MIDNIGHT_BLUE 0x191970FF
+#define COLOR_MYSTICAL_PURPLE 0x9370DBFF
+#define COLOR_NEON_CARROT 0xFFA343FF
+#define COLOR_PERIWINKLE 0xCCCCFFFF
+#define COLOR_SAPPHIRE_SPARKLE 0x0F52BAFF
+#define COLOR_SHAMROCK_GREEN 0x009E60FF
+#define COLOR_SUNNY_YELLOW 0xFFFF00FF
+#define COLOR_TANGERINE_TWIST 0xFFA500FF
+#define COLOR_TROPICAL_TURQUOISE 0x40E0D0FF
+#define COLOR_VIVID_VIOLET 0x9F00FFFF
+#define COLOR_WILD_STRAWBERRY 0xFF43A4FF
+#define COLOR_ZESTY_CHARTREUSE 0x7FFF00FF
+
 struct gzCommandCombos_s {
     u32 mMoveLink;
     u32 mMoonJump;
@@ -389,7 +416,7 @@ public:
         }
     }
 
-    u8 previousCursorType() {
+    u8 prevCursorType() {
         switch (getCursorType()) {
         case CURSOR_CLASSIC:
             return CURSOR_BOTH;
@@ -399,6 +426,70 @@ public:
             return CURSOR_CLASSIC;
         default:
             return CURSOR_CLASSIC;
+        }
+    }
+
+    u32 nextTextColor() {
+        switch (getTextColor()) {
+        case COLOR_AMETHYST: return COLOR_AQUAMARINE;
+        case COLOR_AQUAMARINE: return COLOR_BANANA_MANIA;
+        case COLOR_BANANA_MANIA: return COLOR_BOLD_CRIMSON;
+        case COLOR_BOLD_CRIMSON: return COLOR_BUBBLEGUM_PINK;
+        case COLOR_BUBBLEGUM_PINK: return COLOR_CERULEAN;
+        case COLOR_CERULEAN: return COLOR_COSMIC_COBALT;
+        case COLOR_COSMIC_COBALT: return COLOR_ELECTRIC_BLUE;
+        case COLOR_ELECTRIC_BLUE: return COLOR_FIERY_ORANGE;
+        case COLOR_FIERY_ORANGE: return COLOR_FLAMINGO_FEATHER;
+        case COLOR_FLAMINGO_FEATHER: return COLOR_GOLD_DROP;
+        case COLOR_GOLD_DROP: return COLOR_LEMON_YELLOW;
+        case COLOR_LEMON_YELLOW: return COLOR_LIME_GREEN;
+        case COLOR_LIME_GREEN: return COLOR_MAGENTA_MAGIC;
+        case COLOR_MAGENTA_MAGIC: return COLOR_MIDNIGHT_BLUE;
+        case COLOR_MIDNIGHT_BLUE: return COLOR_MYSTICAL_PURPLE;
+        case COLOR_MYSTICAL_PURPLE: return COLOR_NEON_CARROT;
+        case COLOR_NEON_CARROT: return COLOR_PERIWINKLE;
+        case COLOR_PERIWINKLE: return COLOR_SAPPHIRE_SPARKLE;
+        case COLOR_SAPPHIRE_SPARKLE: return COLOR_SHAMROCK_GREEN;
+        case COLOR_SHAMROCK_GREEN: return COLOR_SUNNY_YELLOW;
+        case COLOR_SUNNY_YELLOW: return COLOR_TANGERINE_TWIST;
+        case COLOR_TANGERINE_TWIST: return COLOR_TROPICAL_TURQUOISE;
+        case COLOR_TROPICAL_TURQUOISE: return COLOR_VIVID_VIOLET;
+        case COLOR_VIVID_VIOLET: return COLOR_WILD_STRAWBERRY;
+        case COLOR_WILD_STRAWBERRY: return COLOR_ZESTY_CHARTREUSE;
+        case COLOR_ZESTY_CHARTREUSE: return COLOR_AMETHYST;
+        default: return COLOR_WHITE;
+        }
+    }
+
+    u32 prevTextColor() {
+        switch (getTextColor()) {
+        case COLOR_AMETHYST: return COLOR_ZESTY_CHARTREUSE;
+        case COLOR_AQUAMARINE: return COLOR_AMETHYST;
+        case COLOR_BANANA_MANIA: return COLOR_AQUAMARINE;
+        case COLOR_BOLD_CRIMSON: return COLOR_BANANA_MANIA;
+        case COLOR_BUBBLEGUM_PINK: return COLOR_BOLD_CRIMSON;
+        case COLOR_CERULEAN: return COLOR_BUBBLEGUM_PINK;
+        case COLOR_COSMIC_COBALT: return COLOR_CERULEAN;
+        case COLOR_ELECTRIC_BLUE: return COLOR_COSMIC_COBALT;
+        case COLOR_FIERY_ORANGE: return COLOR_ELECTRIC_BLUE;
+        case COLOR_FLAMINGO_FEATHER: return COLOR_FIERY_ORANGE;
+        case COLOR_GOLD_DROP: return COLOR_FLAMINGO_FEATHER;
+        case COLOR_LEMON_YELLOW: return COLOR_GOLD_DROP;
+        case COLOR_LIME_GREEN: return COLOR_LEMON_YELLOW;
+        case COLOR_MAGENTA_MAGIC: return COLOR_LIME_GREEN;
+        case COLOR_MIDNIGHT_BLUE: return COLOR_MAGENTA_MAGIC;
+        case COLOR_MYSTICAL_PURPLE: return COLOR_MIDNIGHT_BLUE;
+        case COLOR_NEON_CARROT: return COLOR_MYSTICAL_PURPLE;
+        case COLOR_PERIWINKLE: return COLOR_NEON_CARROT;
+        case COLOR_SAPPHIRE_SPARKLE: return COLOR_PERIWINKLE;
+        case COLOR_SHAMROCK_GREEN: return COLOR_SAPPHIRE_SPARKLE;
+        case COLOR_SUNNY_YELLOW: return COLOR_SHAMROCK_GREEN;
+        case COLOR_TANGERINE_TWIST: return COLOR_SUNNY_YELLOW;
+        case COLOR_TROPICAL_TURQUOISE: return COLOR_TANGERINE_TWIST;
+        case COLOR_VIVID_VIOLET: return COLOR_TROPICAL_TURQUOISE;
+        case COLOR_WILD_STRAWBERRY: return COLOR_VIVID_VIOLET;
+        case COLOR_ZESTY_CHARTREUSE: return COLOR_WILD_STRAWBERRY;
+        default: return COLOR_WHITE;
         }
     }
 
@@ -440,16 +531,22 @@ extern gzInfo_c g_gzInfo;
 
 inline gzCursor* gzInfo_getCursor() { return g_gzInfo.getCursor(); }
 inline u32 gzInfo_getCursorColor() { return g_gzInfo.getCursorColor(); }
-inline const u32 gzInfo_getTextColor() { return g_gzInfo.getTextColor(); }
-inline const u8 gzInfo_getCursorType() { return g_gzInfo.getCursorType(); }
-inline const bool gzInfo_getDisplayMode() { return g_gzInfo.getDisplayMode(); }
-inline const bool gzInfo_getReloadType() { return g_gzInfo.getReloadType(); }
+inline u32 gzInfo_getTextColor() { return g_gzInfo.getTextColor(); }
+inline u8 gzInfo_getCursorType() { return g_gzInfo.getCursorType(); }
+inline bool gzInfo_getDisplayMode() { return g_gzInfo.getDisplayMode(); }
+inline bool gzInfo_getReloadType() { return g_gzInfo.getReloadType(); }
 inline u8 gzInfo_getBossFlag() { return g_gzInfo.getBossFlag(); }
 
 inline int gzInfo_deleteSettingsMemcard() { return g_gzInfo.deleteSettingsMemcard(); }
 inline int gzInfo_loadSettingsMemcard() { return g_gzInfo.loadSettingsMemcard(); }
-inline u8 gzInfo_nextCursorType() { return g_gzInfo.nextCursorType(); }
-inline u8 gzInfo_previousCursorType() { return g_gzInfo.previousCursorType(); }
+inline u32 gzInfo_nextCursorType() { return g_gzInfo.nextCursorType(); }
+inline u32 gzInfo_prevCursorType() { return g_gzInfo.prevCursorType(); }
+inline u32 gzInfo_nextTextColor() { return g_gzInfo.nextTextColor(); }
+inline u32 gzInfo_prevTextColor() { return g_gzInfo.prevTextColor(); }
+//implementation tbd
+inline u32 gzInfo_nextFont() { return 0; }
+inline u32 gzInfo_prevFont() { return 0; }
+
 inline void gzInfo_seStart(u32 i_sfxID) { g_gzInfo.seStart(i_sfxID); }
 inline void gzInfo_sendNotification(const char* msg) { g_gzInfo.sendNotification(msg); }
 inline void gzInfo_sendNotification(const char* msg, int i_notificationType) { g_gzInfo.sendNotification(msg, i_notificationType); }
@@ -564,6 +661,7 @@ inline bool gzInfo_isLadderFreezardCancel() { return g_gzInfo.isLadderFreezardCa
 inline bool gzInfo_isMaloMartCT() { return g_gzInfo.isMaloMartCT(); }
 inline bool gzInfo_isMainMenuVisible() { return g_gzInfo.mCursor.x == 0;}
 inline bool gzInfo_isMapWarping() { return g_gzInfo.isMapWarping(); }
+inline bool gzInfo_isMenuPausesGame() { return g_gzInfo.isMenuPausesGame(); }
 inline bool gzInfo_isMenuSfx() { return g_gzInfo.isMenuSfx(); }
 inline bool gzInfo_isMidnaCharge() { return g_gzInfo.isMidnaCharge(); }
 inline bool gzInfo_isMidnaHealthy() { return g_gzInfo.isMidnaHealthy(); }
@@ -672,6 +770,7 @@ inline void gzInfo_offLinkDebugInfo() { g_gzInfo.setLinkDebugInfo(false); }
 inline void gzInfo_offLoadTimer() { g_gzInfo.setLoadTimer(false); }
 inline void gzInfo_offMaloMartCT() { g_gzInfo.setMaloMartCT(false); }
 inline void gzInfo_offMapWarping() { g_gzInfo.setMapWarping(false); }
+inline void gzInfo_offMenuPausesGame() { g_gzInfo.setMenuPausesGame(false); }
 inline void gzInfo_offMenuSfx() { g_gzInfo.setMenuSfx(false); }
 inline void gzInfo_offMidnaCharge() { g_gzInfo.setMidnaCharge(false); }
 inline void gzInfo_offMidnaHealthy() { g_gzInfo.setMidnaHealthy(false); }
@@ -757,6 +856,7 @@ inline void gzInfo_onLinkDebugInfo() { g_gzInfo.setLinkDebugInfo(true); }
 inline void gzInfo_onLoadTimer() { g_gzInfo.setLoadTimer(true); }
 inline void gzInfo_onMaloMartCT() { g_gzInfo.setMaloMartCT(true); }
 inline void gzInfo_onMapWarping() { g_gzInfo.setMapWarping(true); }
+inline void gzInfo_onMenuPausesGame() { g_gzInfo.setMenuPausesGame(true); }
 inline void gzInfo_onMenuSfx() { g_gzInfo.setMenuSfx(true); }
 inline void gzInfo_onMidnaCharge() { g_gzInfo.setMidnaCharge(true); }
 inline void gzInfo_onMidnaHealthy() { g_gzInfo.setMidnaHealthy(true); }

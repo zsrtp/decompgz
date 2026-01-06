@@ -75,4 +75,66 @@ public:
     char m_description[80]; // todo: is this the best way to handle this?
 };
 
+class gzLine {
+public:
+    gzLine(char* i_text, char* i_description) {
+        mText = new gzTextBox();
+        mText->setStringDesc(i_text, i_description);
+        mText->mBounds.f.x = 430.0f;
+        mText->mBounds.f.y = 10.0f;
+    }
+
+    virtual gzTextBox* getOptionBox() const { return NULL; }
+    virtual void updateOptionText() {}
+
+public:
+    gzTextBox* mText;
+    char m_description[80];
+};
+
+class gzBoolOptionLine : public gzLine {
+public:
+    typedef bool (*IsFunc)();
+    typedef void (*OnFunc)();
+    typedef void (*OffFunc)();
+
+    gzBoolOptionLine(char* i_text, char* i_description, 
+                    IsFunc i_isFunc, OnFunc i_onFunc, 
+                    OffFunc i_offFunc) : gzLine(i_text, i_description) {
+        mOption = new gzTextBox();
+        mIs = i_isFunc;
+        mOn = i_onFunc;
+        mOff = i_offFunc;
+    }
+
+    virtual gzTextBox* getOptionBox() const { return mOption; }
+    virtual void updateOptionText() {}
+
+public:
+    gzTextBox* mOption;
+    IsFunc mIs;
+    OnFunc mOn;
+    OffFunc mOff;
+};
+
+class gzListOptionLine : public gzLine {
+public:
+    typedef u32 (*NextFunc)();
+    typedef u32 (*PrevFunc)();
+
+    gzListOptionLine(char* i_text, char* i_description, NextFunc i_nextFunc, PrevFunc i_prevFunc) : gzLine(i_text, i_description) {
+        mpOption = new gzTextBox();
+        mpNext = i_nextFunc;
+        mpPrev = i_prevFunc;
+    }
+
+    virtual gzTextBox* getOptionBox() const { return mpOption; }
+    virtual void updateOptionText() {}
+
+public:
+    gzTextBox* mpOption;
+    NextFunc mpNext;
+    PrevFunc mpPrev;
+};
+
 #endif // GZ_TEXTBOX_H

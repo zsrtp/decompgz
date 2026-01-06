@@ -52,6 +52,7 @@ protected:
     void drawDescription(const char* desc);
     void drawLineWithOption(gzTextBox* line, gzTextBox* option, f32 lineX, f32 optionX, f32 lineY, bool isSelected, u32 selectedColor, bool showHaihai, u8 haihaiFlags, f32 haihaiX, f32 haihaiY, f32 haihaiWidth);
     void drawLines(gzTextBox** lines, gzTextBox** lineOptions, u8 haihaiFlags, s32 numLines);
+    void drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topLine, s32 visibleLines);
 
     f32 mXPos; // move to private later?
     s32 mTopLine; // For scroll offset

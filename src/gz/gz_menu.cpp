@@ -63,6 +63,60 @@ void gzMenu_c::drawLines(gzTextBox** lines, gzTextBox** lineOptions, u8 haihaiFl
     drawDescription(lines[l_cursor->y]->m_description);
 }
 
+void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topLine, s32 visibleLines) {
+    gzCursor* l_cursor = gzInfo_getCursor();
+    J2DTextBox::TFontSize font_size;
+
+    if (numLines > 0 && lines[0] != NULL) {
+        lines[0]->mText->getFontSize(font_size);
+        mpHaihai->setScale(font_size.mSizeY * 0.04f);
+    }
+
+    f32 lineX = mXPos;
+    f32 lineY_start = g_gzInfo.mBackgroundYPos + 95.0f;
+    f32 line_spacing = g_gzInfo.mBackgroundHeight / 20;
+    f32 optionX = mXPos - 20.0f;
+    f32 haihaiX = optionX + 305.0f;
+    u32 cursorColor = gzInfo_getCursorColor();
+    s32 endLine = topLine + visibleLines;
+
+    if (endLine > numLines) endLine = numLines;
+    for (s32 i = topLine; i < endLine; i++) {
+        gzLine* line = lines[i];
+        if (line == NULL) continue;
+        
+        f32 lineY = lineY_start + ((i - topLine) * line_spacing);
+        f32 haihaiY = lineY - 7.0f;
+        bool isSelected = (l_cursor->y == i && gzInfo_isSubMenuVisible());
+        u32 color = isSelected ? cursorColor : COLOR_WHITE;
+        f32 haihaiWidth = 0.0f;
+        gzTextBox* opt = line->getOptionBox();
+
+        if (opt != NULL && opt->mStringLength != 0) {
+            haihaiWidth = opt->mBounds.f.x + 30.0f;
+        }
+
+        bool showHaihai = mOption && l_cursor->y == i && haihai_flags != 0;
+        line->mText->draw(lineX, lineY, color);
+
+        if (opt != NULL) {
+            opt->draw(optionX, lineY, color, HBIND_CENTER);
+        }
+
+        if (showHaihai && mpHaihai != NULL) {
+            mpHaihai->drawHaihai(haihai_flags, haihaiX, haihaiY, haihaiWidth, 0.0f);
+        }
+
+        if (isSelected && gzInfo_isCursorTypeTP() && mpCursor != NULL) {
+            f32 cursorY = lineY - 10.0f;
+            mpCursor->setPos(lineX - 20.0f, cursorY, (J2DPane*)line->mText, false);
+            mpCursor->draw();
+        }
+    }
+
+    drawDescription((l_cursor->y < numLines && lines[l_cursor->y] != NULL) ? lines[l_cursor->y]->m_description : NULL);
+}
+
 // Draws the line, line option, haihai arrows (for option boxes), and TP cursor if enabled
 void gzMenu_c::drawLineWithOption(gzTextBox* line, gzTextBox* option, f32 lineX, f32 optionX, f32 lineY, bool isSelected, u32 selectedColor, bool showHaihai, u8 haihaiFlags, f32 haihaiX, f32 haihaiY, f32 haihaiWidth) {
     u32 color = isSelected ? selectedColor : COLOR_WHITE;
