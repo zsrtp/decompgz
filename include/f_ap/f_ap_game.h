@@ -6,7 +6,7 @@
 #include "JSystem/JFramework/JFWDisplay.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "CaptureScreen.h"
-#include <string.h>
+#include <string>
 
 void fapGm_After();
 void fapGm_Create();
@@ -22,19 +22,22 @@ public:
     #endif
     virtual ~fapGm_HIO_c();
 
-    #if DEBUG
     static void startCpuTimer();
     static void stopCpuTimer(const char*);
     static void printCpuTimer(const char*);
-    static void executeCaptureScreen();
+    static void executeCaptureScreen() {}
 
     static void createCaptureScreen() {
         mCaptureScreen = new CaptureScreen(JFWDisplay::getManager());
         JUT_ASSERT(46, mCaptureScreen != NULL);
     }
 
-    static u8 isCaptureScreen() {
+    static bool isCaptureScreen() {
+#if DEBUG
         return mCaptureScreenFlag;
+#else
+        return false;
+#endif
     }
 
     static void onCpuTimer() {
@@ -44,9 +47,13 @@ public:
     static void offCpuTimer() {
         m_CpuTimerOff = FALSE;
     }
-    #endif
 
-    #if DEBUG
+    static u8 getCaptureScreenNumH() { return mCaptureScreenNumH; }
+    static u8 getCaptureScreenNumV() { return mCaptureScreenNumV; }
+
+    static u8 getCaptureScreenDivH() { return mCaptureScreenDivH; }
+    static u8 getCaptureScreenDivV() { return mCaptureScreenDivV; }
+
     static u8 m_CpuTimerOn;
     static u8 m_CpuTimerOff;
     static u8 m_CpuTimerStart;
@@ -63,7 +70,9 @@ public:
     static u8 mCaptureScreenNumV;
 
     static u8 mParticle254Fix;
-    #endif
+
+    static u8 mCaptureScreenDivH;
+    static u8 mCaptureScreenDivV;
 
     /* 0x04 */ s8 field_0x04;
     /* 0x05 */ u8 field_0x03[3];

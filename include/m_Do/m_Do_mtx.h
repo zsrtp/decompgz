@@ -5,6 +5,9 @@
 #include "SSystem/SComponent/c_xyz.h"
 #include <dolphin/mtx.h>
 
+extern u8 g_printCurrentHeapDebug;
+extern u8 g_printOtherHeapDebug;
+
 void mDoMtx_XYZrotS(Mtx, s16, s16, s16);
 void mDoMtx_XYZrotM(Mtx, s16, s16, s16);
 void mDoMtx_ZXYrotS(Mtx, s16, s16, s16);
@@ -144,6 +147,10 @@ inline void mDoMtx_scale(Mtx m, f32 x, f32 y, f32 z) {
 
 inline void mDoMtx_quat(Mtx m, const Quaternion* q) {
     MTXQuat(m, q);
+}
+
+inline void cMtx_identity(Mtx mtx) {
+    mDoMtx_identity(mtx);
 }
 
 inline void cMtx_inverse(const Mtx a, Mtx b) {

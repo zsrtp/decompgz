@@ -5,7 +5,7 @@
 #include "JSystem/J3DAssert.h"
 #include "JSystem/JUtility/JUTTexture.h"
 #include "global.h"
-#include <stdint.h>
+#include <stdint>
 
 /**
  * @ingroup jsystem-j3d
@@ -29,10 +29,11 @@ public:
 
     ResTIMG* getResTIMG(u16 index) const {
         J3D_ASSERT_RANGE(72, index < mNum);
-        return &mpRes[index];   
+        return &mpRes[index];
     }
 
     void setResTIMG(u16 index, const ResTIMG& timg) {
+        J3D_ASSERT_RANGE(81, index < mNum);
         mpRes[index] = timg;
         mpRes[index].imageOffset = ((mpRes[index].imageOffset + (uintptr_t)&timg - (uintptr_t)(mpRes + index)));
         mpRes[index].paletteOffset = ((mpRes[index].paletteOffset + (uintptr_t)&timg - (uintptr_t)(mpRes + index)));

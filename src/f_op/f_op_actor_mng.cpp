@@ -22,7 +22,7 @@
 #include "f_op/f_op_camera_mng.h"
 #include "f_op/f_op_scene_mng.h"
 #include "m_Do/m_Do_lib.h"
-#include <cstring.h>
+#include <cstring>
 
 #define MAKE_ITEM_PARAMS(itemNo, itemBitNo, param_2, param_3)                                      \
     ((itemNo & 0xFF) << 0x0 | (itemBitNo & 0xFF) << 0x8 | (param_2 & 0xFF) << 0x10 | (param_3 & 0xF) << 0x18)
@@ -391,15 +391,6 @@ int fopAcM::HeapAdjustMargin =
 #else
     0x10000;
 #endif
-
-struct DummyCheckHeap {
-    JKRHeap* getHeap();
-    void setHeap(JKRHeap* heap);
-
-    /* 0x0 */ JKRHeap* dummyHeap;
-};
-
-static DummyCheckHeap* dch = NULL;
 
 bool fopAcM_entrySolidHeap_(fopAc_ac_c* i_actor, heapCallbackFunc i_heapCallback, u32 i_size) {
 #if DEBUG
