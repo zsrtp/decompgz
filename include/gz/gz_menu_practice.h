@@ -1,7 +1,7 @@
 #ifndef GZ_MENU_PRACTICE_H
 #define GZ_MENU_PRACTICE_H
 
-#include "gz/gz_keyboard.h"
+#include "gz/gz_utility_keyboard.h"
 #include "gz/gz_menu.h"
 
 class gzPracticeMenu_c : public gzMenu_c {

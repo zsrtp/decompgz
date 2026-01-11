@@ -108,7 +108,7 @@ const daAlinkHIO_noActAtnMove_c1 daAlinkHIO_noActAtnMove_c0::m = {
 	2.3f,
 };
 
-const daAlinkHIO_frontRoll_c1 daAlinkHIO_frontRoll_c0::m = {
+daAlinkHIO_frontRoll_c1 daAlinkHIO_frontRoll_c0::m = {
 	{
         29,
 	    1.1f,
@@ -1848,7 +1848,7 @@ const daAlinkHIO_bottle_c1 daAlinkHIO_bottle_c0::m = {
 	},
 };
 
-const daAlinkHIO_hookshot_c1 daAlinkHIO_hookshot_c0::m = {
+daAlinkHIO_hookshot_c1 daAlinkHIO_hookshot_c0::m = {
 	{
 		12,
         1.0f,
@@ -2146,7 +2146,7 @@ const daAlinkHIO_grab_c1 daAlinkHIO_grab_c0::m = {
     0.55f,
 };
 
-const daAlinkHIO_swim_c1 daAlinkHIO_swim_c0::m = {
+daAlinkHIO_swim_c1 daAlinkHIO_swim_c0::m = {
 	{
 		25,
         1.0f,
@@ -2224,7 +2224,7 @@ const daAlinkHIO_swim_c1 daAlinkHIO_swim_c0::m = {
     1.3f,
 };
 
-const daAlinkHIO_wlMove_c1 daAlinkHIO_wlMove_c0::m = {
+daAlinkHIO_wlMove_c1 daAlinkHIO_wlMove_c0::m = {
 	{
 		14,
         1.0f,

@@ -1,13 +1,12 @@
-#include "gz/gz.h"
 #include "d/actor/d_a_alink.h"
+#include "m_Do/m_Do_controller_pad.h"
+#include "gz/gz.h"
 
 void gzToolsMng_c::executeFastBonkRecovery() {
     daAlink_c* link = daAlink_getAlinkActorClass();
     if (link != NULL) {
-        // d_a_alink nonmatching still
-
-        // daAlinkHIO_frontRoll_c0::m.mCrashAnm.mStartFrame = 50.0f;
-        // daAlinkHIO_frontRoll_c0::m.mCrashAnm.mSpeed = 0.0f;
+        daAlinkHIO_frontRoll_c0::m.mCrashAnm.mStartFrame = 50.0f;
+        daAlinkHIO_frontRoll_c0::m.mCrashAnm.mSpeed = 0.0f;
         mFastBonkRecovery = true;
     }
 }
@@ -15,23 +14,21 @@ void gzToolsMng_c::executeFastBonkRecovery() {
 void gzToolsMng_c::executeFastMovement() {
     daAlink_c* link = daAlink_getAlinkActorClass();
     if (link != NULL) {
-        // d_a_alink nonmatching still
-
-        // daAlinkHIO_frontRoll_c0::m.mSpeedRate = 3.0f;
-        // daAlinkHIO_swim_c0::m.mMaxUnderwaterSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mMaxBackwardSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mMaxStrafeSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mDMaxSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mMaxForwardSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mUnderwaterMaxSinkSpeed = 50;
-        // daAlinkHIO_swim_c0::m.mBootsMaxSinkSpeed = -50;
-        // daAlinkHIO_swim_c0::m.mBootsGravity = -50;
-        // daAlinkHIO_wlMove_c0::m.mDashInitSpeed = 100;
-        // daAlinkHIO_wlMove_c0::m.mDashMaxSpeed = 100;
-        // daAlinkHIO_wlMove_c0::m.mDashInitSpeedSlow = 70;
-        // daAlinkHIO_wlMove_c0::m.mDashMaxSpeedSlow = 70;
-        // daAlinkHIO_wlMove_c0::m.mMaxSpeed = 50;
-        // daAlinkHIO_wlMove_c0::m.mMaxSpeedWeak = 50;
+        daAlinkHIO_frontRoll_c0::m.mSpeedRate = 3.0f;
+        daAlinkHIO_swim_c0::m.mUnderwaterMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mBackwardMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mStrafeMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mDashMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mForwardMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mUnderwaterFallMaxSpeed = 50;
+        daAlinkHIO_swim_c0::m.mBootsMaxFallSpeed = -50;
+        daAlinkHIO_swim_c0::m.mBootsGravity = -50;
+        daAlinkHIO_wlMove_c0::m.mADashInitSpeed = 100;
+        daAlinkHIO_wlMove_c0::m.mADashMaxSpeed = 100;
+        daAlinkHIO_wlMove_c0::m.mADashInitSpeedSlow = 70;
+        daAlinkHIO_wlMove_c0::m.mADashMaxSpeedSlow = 70;
+        daAlinkHIO_wlMove_c0::m.mMaxSpeed = 50;
+        // daAlinkHIO_wlMove_c0::m.mAMaxSpeedWeak = 50;
         mFastMovement = true;
     }
 }
@@ -69,6 +66,10 @@ void gzToolsMng_c::executeTeleport() {
             mLinkPos = link->current.pos;
             mLinkAngle = link->shape_angle;
         }
+
+        // Null the inputs before returning
+        mDoCPd_c::getCpadInfo(PAD_1).mPressedButtonFlags = 0;
+        mDoCPd_c::getCpadInfo(PAD_1).mButtonFlags = 0;
     }
 
     if (loadCombo && ((gzPad::getHold() & loadCombo) == loadCombo)) {
@@ -77,6 +78,10 @@ void gzToolsMng_c::executeTeleport() {
             link->current.pos = mLinkPos;
             link->shape_angle = mLinkAngle;
         }
+
+        // Null the inputs before returning
+        mDoCPd_c::getCpadInfo(PAD_1).mPressedButtonFlags = 0;
+        mDoCPd_c::getCpadInfo(PAD_1).mButtonFlags = 0;
     }
 }
 
@@ -84,33 +89,28 @@ void gzToolsMng_c::execute() {
     if (gzInfo_isFastBonkRecovery()) {
         executeFastBonkRecovery();
     } else if (mFastBonkRecovery) {
-        // d_a_alink nonmatching still
-
-        // daAlinkHIO_frontRoll_c0::m.mCrashAnm.mStartFrame = 3.0f;
-        // daAlinkHIO_frontRoll_c0::m.mCrashAnm.mSpeed = 0.8f;
+        daAlinkHIO_frontRoll_c0::m.mCrashAnm.mStartFrame = 3.0f;
+        daAlinkHIO_frontRoll_c0::m.mCrashAnm.mSpeed = 0.8f;
         mFastBonkRecovery = false;
     }
 
     if (gzInfo_isFastMovement()) {
         executeFastMovement();
     } else if (mFastMovement) {
-        // d_a_alink nonmatching still
-
-        // daAlinkHIO_frontRoll_c0::m.mSpeedRate = 1.3;
-        // daAlinkHIO_swim_c0::m.mMaxUnderwaterSpeed = 12;
-        // daAlinkHIO_swim_c0::m.mMaxForwardSpeed = 8;
-        // daAlinkHIO_swim_c0::m.mMaxBackwardSpeed = 6;
-        // daAlinkHIO_swim_c0::m.mMaxStrafeSpeed = 8;
-        // daAlinkHIO_swim_c0::m.mDMaxSpeed = 13;
-        // daAlinkHIO_swim_c0::m.mUnderwaterMaxSinkSpeed = 8;
-        // daAlinkHIO_swim_c0::m.mBootsMaxSinkSpeed = -20;
-        // daAlinkHIO_swim_c0::m.mBootsGravity = -0.699999988;
-        // daAlinkHIO_wlMove_c0::m.mDashInitSpeed = 65;
-        // daAlinkHIO_wlMove_c0::m.mDashMaxSpeed = 45;
-        // daAlinkHIO_wlMove_c0::m.mDashInitSpeedSlow = 35;
-        // daAlinkHIO_wlMove_c0::m.mDashMaxSpeedSlow = 33;
-        // daAlinkHIO_wlMove_c0::m.mMaxSpeed = 20;
-        // daAlinkHIO_wlMove_c0::m.mMaxSpeedWeak = 9;
+        daAlinkHIO_frontRoll_c0::m.mSpeedRate = 1.3f;
+        daAlinkHIO_swim_c0::m.mUnderwaterMaxSpeed = 12;
+        daAlinkHIO_swim_c0::m.mForwardMaxSpeed = 8;
+        daAlinkHIO_swim_c0::m.mBackwardMaxSpeed = 6;
+        daAlinkHIO_swim_c0::m.mStrafeMaxSpeed = 8;
+        daAlinkHIO_swim_c0::m.mDashMaxSpeed = 13;
+        daAlinkHIO_swim_c0::m.mUnderwaterFallMaxSpeed = 8;
+        daAlinkHIO_swim_c0::m.mBootsMaxFallSpeed = -20;
+        daAlinkHIO_swim_c0::m.mBootsGravity = -0.699999988;
+        daAlinkHIO_wlMove_c0::m.mADashInitSpeed = 65;
+        daAlinkHIO_wlMove_c0::m.mADashMaxSpeed = 45;
+        daAlinkHIO_wlMove_c0::m.mADashInitSpeedSlow = 35;
+        daAlinkHIO_wlMove_c0::m.mADashMaxSpeedSlow = 33;
+        daAlinkHIO_wlMove_c0::m.mMaxSpeed = 20;
         mFastMovement = false;
     }
 

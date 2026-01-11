@@ -73,6 +73,20 @@ static int daKytag14_Execute(kytag14_class* i_this) {
             dComIfGp_getStartStageName(), i_this->mSaveRoomNo, i_this->mSavePoint);
     }
 
+#if 0
+    OSReport("Kytag14 setting small key spawn room: %d\n", i_this->mSaveRoomNo == 10 ? 1 : 0);
+    OSReport("SavMem TAG STAGE[%s] Room[%d] Lp[%d]\n",
+              dComIfGp_getStartStageName(), i_this->mSaveRoomNo, i_this->mSavePoint);
+    OSReport(" Event1[%d] Event2[%d] Sw1[%d] Sw2[%d]\n",
+              i_this->mEventID1, i_this->mEventID2, i_this->mSwitchNo1, i_this->mSwitchNo2);
+    OSReport(" Result E1[%d] E2[%d] S1[%d] S2[%d]\n",
+              event1_set, event2_unset, switch1_set, switch2_unset);
+    OSReport(" Final Result [%d]\n",
+              (event1_set == true && event2_unset == true && switch1_set == true && switch2_unset == true) ? 1 : 0);
+    OSReport("Player Return Place StayNo: [%d]\n", g_dComIfG_gameInfo.info.getPlayer().getPlayerReturnPlace().getRoomNo());
+    OSReport("------------------\n");
+#endif 
+
     return 1;
 }
 

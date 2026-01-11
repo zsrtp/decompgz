@@ -752,7 +752,7 @@ config.libs = [
             Object(Custom, "d/d_debug_viewer.cpp"),
             Object(NonMatching, "d/d_debug_pad.cpp"),
             Object(NonMatching, "d/d_debug_camera.cpp"),
-            Object(Equivalent, "d/actor/d_a_alink.cpp"), # weak func order, vtable order
+            Object(Custom, "d/actor/d_a_alink.cpp"), # weak func order, vtable order
             Object(MatchingFor(ALL_GCN), "d/actor/d_a_itembase.cpp"),
             Object(MatchingFor(ALL_GCN), "d/actor/d_a_no_chg_room.cpp"),
             Object(MatchingFor(ALL_GCN), "d/actor/d_a_npc.cpp"),
@@ -2868,9 +2868,9 @@ config.libs = [
         "cflags": cflags_framework,
         "objects": [
             Object(Custom, "dolphin/card/CARDDelete.c"),
-            Object(Custom, "gz/gz_notification.cpp"),
+            Object(Custom, "gz/gz_utility_notification.cpp"),
             Object(Custom, "gz/gz.cpp"),
-            Object(Custom, "gz/gz_keyboard.cpp"),
+            Object(Custom, "gz/gz_utility_keyboard.cpp"),
             Object(Custom, "gz/gz_menu.cpp"),
             Object(Custom, "gz/gz_tab.cpp"),
             Object(Custom, "gz/gz_menu_settings.cpp"),
@@ -2884,9 +2884,9 @@ config.libs = [
             Object(Custom, "gz/gz_menu_flags.cpp"),
             Object(Custom, "gz/gz_menu_heaps.cpp"),
             Object(Custom, "gz/gz_menu_main.cpp"),
-            Object(Custom, "gz/gz_savemgr.cpp"),
-            Object(Custom, "gz/gz_cheatsmgr.cpp"),
-            Object(Custom, "gz/gz_toolsmgr.cpp"),
+            Object(Custom, "gz/gz_manager_practice.cpp"),
+            Object(Custom, "gz/gz_manager_cheats.cpp"),
+            Object(Custom, "gz/gz_manager_tools.cpp"),
         ],
     },
 ]
@@ -2960,9 +2960,9 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
         return objects + [
                 "dolphin/card/CARDDelete.c",
                 "d/d_debug_viewer.cpp",
-                "gz/gz_notification.cpp",
+                "gz/gz_utility_notification.cpp",
                 "gz/gz.cpp",
-                "gz/gz_keyboard.cpp",
+                "gz/gz_utility_keyboard.cpp",
                 "gz/gz_menu.cpp",
                 "gz/gz_tab.cpp",
                 "gz/gz_menu_flags.cpp",
@@ -2976,9 +2976,9 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
                 "gz/gz_menu_cheats.cpp",
                 "gz/gz_menu_heaps.cpp",
                 "gz/gz_menu_main.cpp",
-                "gz/gz_savemgr.cpp",
-                "gz/gz_cheatsmgr.cpp",
-                "gz/gz_toolsmgr.cpp",
+                "gz/gz_manager_practice.cpp",
+                "gz/gz_manager_cheats.cpp",
+                "gz/gz_manager_tools.cpp",
             ]
     return objects
 

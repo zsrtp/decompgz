@@ -90,11 +90,14 @@ void gzCheatsMng_c::executeMoonJump() {
 }
 
 void gzCheatsMng_c::executeSuperClawshot() {
-    // d_a_alink nonmatching still
-}
-
-void gzCheatsMng_c::executeUnrestrictedItems() {
-    // d_a_alink nonmatching still
+    daAlink_c* link = daAlink_getAlinkActorClass();
+    if (link != NULL) {
+        daAlinkHIO_hookshot_c0::m.mShootSpeed= 2870.0f;
+        daAlinkHIO_hookshot_c0::m.mMaxLength = 69420.0f;
+        daAlinkHIO_hookshot_c0::m.mReturnSpeed = 2870.0f;
+        daAlinkHIO_hookshot_c0::m.mStickReturnSpeed = 500.0f;
+        mSuperClawshot = true;
+    }
 }
 
 void gzCheatsMng_c::execute() {
@@ -119,6 +122,14 @@ void gzCheatsMng_c::execute() {
     if (gzInfo_isInfiniteOil()) executeInfiniteOil();
     if (gzInfo_isInfiniteRupees()) executeInfiniteRupees();
     if (gzInfo_isInfiniteSlingshot()) executeInfiniteSlingshot();
-    if (gzInfo_isSuperClawshot()) executeSuperClawshot();
-    if (gzInfo_isUnrestrictedItems()) executeUnrestrictedItems();
+
+    if (gzInfo_isSuperClawshot()) {
+        executeSuperClawshot();
+    } else if (mSuperClawshot) {
+        daAlinkHIO_hookshot_c0::m.mShootSpeed = 100.0f;
+        daAlinkHIO_hookshot_c0::m.mMaxLength = 2000.0f;
+        daAlinkHIO_hookshot_c0::m.mReturnSpeed = 150.0f;
+        daAlinkHIO_hookshot_c0::m.mStickReturnSpeed = 60.0f;
+        mSuperClawshot = false;
+}
 }

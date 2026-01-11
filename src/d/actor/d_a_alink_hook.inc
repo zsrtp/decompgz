@@ -8,6 +8,7 @@
 #include "d/actor/d_a_obj_swhang.h"
 #include "d/actor/d_a_obj_chandelier.h"
 #include "JSystem/J3DGraphBase/J3DMaterial.h"
+#include "gz/gz.h"
 
 enum {
     HS_MODE_NONE_e,
@@ -277,6 +278,8 @@ bool daAlink_c::checkLv7BossRoom() {
 }
 
 BOOL daAlink_c::checkHookshotStickBG(cBgS_PolyInfo& i_poly) {
+    if (gzInfo_isSuperClawshot()) return true;
+
     if (dComIfG_Bgsp().ChkPolyHSStick(i_poly)) {
         dBgW_Base* bgw_p = dComIfG_Bgsp().GetBgWBasePointer(i_poly);
         if (bgw_p != NULL && bgw_p->ChkPushPullOk()) {

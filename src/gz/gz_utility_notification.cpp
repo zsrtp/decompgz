@@ -1,8 +1,5 @@
-#include "gz/gz.h"
-#include "gz/gz_textbox.h"
-#include "gz/gz_menu.h"
+#include "gz/gz_utility_notification.h"
 #include "SSystem/SComponent/c_counter.h"
-#include "JSystem/J2DGraph/J2DAnimation.h"
 
 gzNotification_c::gzNotification_c() {
     mNumNotifications = 0;

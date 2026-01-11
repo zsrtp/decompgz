@@ -1,5 +1,5 @@
-#ifndef GZ_KEYBOARD_H
-#define GZ_KEYBOARD_H
+#ifndef GZ_UTILITY_KEYBOARD_H
+#define GZ_UTILITY_KEYBOARD_H
 
 #include "gz/gz.h"
 
@@ -32,4 +32,4 @@ public:
     char mString[MAX_STRING_LEN];
 };
 
-#endif // GZ_KEYBOARD_H
+#endif // GZ_UTILITY_KEYBOARD_H

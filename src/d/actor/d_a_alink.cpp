@@ -13723,6 +13723,8 @@ bool daAlink_c::checkNotAutoJumpStage() {
 }
 
 bool daAlink_c::checkCastleTownUseItem(u16 i_itemNo) {
+    if (gzInfo_isUnrestrictedItems()) return true;
+
     if (checkNotBattleStage()) {
         if (i_itemNo == fpcNm_ITEM_KANTERA || checkTradeItem(i_itemNo) ||
             (i_itemNo == fpcNm_ITEM_DUNGEON_BACK && checkLv7DungeonShop()) ||

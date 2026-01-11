@@ -1,8 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
-#include "gz/gz_keyboard.h"
+#include "gz/gz_utility_keyboard.h"
 #include "gz/gz_textbox.h"
-#include "gz/gz_menu.h"
 
 #define CHARACTER_ROWS    5
 #define CHARACTER_COLUMNS 13

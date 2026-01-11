@@ -28,7 +28,6 @@ static gzBoolOption_s link_options[] = {
     {"fast movement", NULL, gzInfo_isFastMovement, gzInfo_onFastMovement, gzInfo_offFastMovement},
     {"no sinking in sand", NULL, gzInfo_isNoSinkingInSand, gzInfo_onNoSinkingInSand, gzInfo_offNoSinkingInSand},
     {"teleport", NULL, gzInfo_isTeleport, gzInfo_onTeleport, gzInfo_offTeleport},
-    {"displacement", NULL, gzInfo_isDisplacement, gzInfo_onDisplacement, gzInfo_offDisplacement},
     {"move link", "move link around freely. L+R+Y to activate", gzInfo_isMoveLink, gzInfo_onMoveLink, gzInfo_offMoveLink}
 };
 

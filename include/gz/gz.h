@@ -1,19 +1,23 @@
 #ifndef GZ_H
 #define GZ_H
 
+#include "c/c_damagereaction.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_item.h"
-#include "m_Do/m_Do_controller_pad.h"
-#include "m_Do/m_Do_machine.h"
+#include "gz/gz_manager_cheats.h"
+#include "gz/gz_manager_practice.h"
+#include "gz/gz_manager_tools.h"
 #include "JSystem/J2DGraph/J2DPicture.h"
 #include "JSystem/J2DGraph/J2DTextBox.h"
+#include "m_Do/m_Do_controller_pad.h"
+#include "m_Do/m_Do_machine.h"
 #include "SSystem/SComponent/c_API_controller_pad.h"
-#include "c/c_damagereaction.h"
 
 class gzMenu_c;
 class gzTextBox;
 class gzMainMenu_c;
 class gzNotification_c;
+class gzToolsMng_c;
 
 #define COLOR_WHITE 0xFFFFFFFFu
 #define COLOR_RED 0xFF0000FFu
@@ -88,7 +92,6 @@ struct gzSettings_s {
     bool mUniversalMapDelay;
     bool mUnrestrictedItems;
     bool mAbMashRate;
-    bool mDisplacement;
     bool mFastBonkRecovery;
     bool mFastMovement;
     bool mInGameTimer;
@@ -107,136 +110,6 @@ struct gzConfigHeader_s {
     u32 settingsOffset;
 
     u8 reserved[0x20 - 0x8];
-};
-
-class gzSaveLoaderMng_c {
-public:
-    gzSaveLoaderMng_c() {
-        mLoadPhase = PHASE_WAIT_e;
-        mTimer = 0;
-        mSaveInjectReady = false;
-    }
-
-    enum Mode_e {
-        MODE_SAVE_e,
-        MODE_MEMFILE_e,
-    };
-
-    enum LoadPhase_e {
-        PHASE_WAIT_e,         // "do nothing" state
-        PHASE_INIT_e,         // file load process initialization
-        PHASE_STAGE_INIT_e,   // processes to be run during stage initialization
-        PHASE_PLAYER_INIT_e,  // processes to be run after player is initialized
-    };
-
-    enum SaveCategory_e {
-        CATEGORY_ANYP_e,
-        CATEGORY_NOSQ_e,
-        CATEGORY_HUNDO_e,
-        CATEGORY_ALLDUNGEONS_e,
-        CATEGORY_GLITCHLESS_e,
-    };
-
-    enum SaveSetFlags_e {
-        SETFLAG_POS_e = 1,
-        SETFLAG_CAM_e = 2,
-    };
-
-    // container for any extra data to store in the memfile after the main save data
-    struct memfileExData_s {
-        char name[20];
-        cXyz player_pos;
-    };
-
-    struct saveMetadata_s {
-        char name[32];
-        char desc[64];
-        char filename[32];
-        u8 flags;
-        s16 angle;
-        Vec player_pos;
-        Vec camera_center;
-        Vec camera_eye;
-    } ATTRIBUTE_ALIGN(32);  // important that this is aligned to 32
-
-    void execute();
-
-    void loadSave(SaveCategory_e i_category, int i_entryNo);
-    void getSaveMetadata(SaveCategory_e i_category, int i_entryNo, saveMetadata_s* o_data);
-    int getSaveEntryNum(SaveCategory_e i_category);
-
-    void setMode(Mode_e i_mode) { mMode = i_mode; }
-
-    void start() { mLoadPhase = PHASE_INIT_e; }
-    void onStageInit() { mLoadPhase = PHASE_STAGE_INIT_e; }
-    void onPlayerInit() { mLoadPhase = PHASE_PLAYER_INIT_e; }
-    void wait() { mLoadPhase = PHASE_WAIT_e; }
-
-    bool isSaveInject() { return mSaveInjectReady; }
-    
-    void end() {
-        mLoadPhase = PHASE_WAIT_e;
-        mSaveInjectReady = false;
-    }
-
-    memfileExData_s mMemfileExData;
-    saveMetadata_s mSaveMetadata;
-    Mode_e mMode;
-    int mLoadPhase;
-    bool mSaveInjectReady;
-    u8 mTimer;
-};
-
-struct SavedCameraState {
-    cXyz center;
-    cXyz eye;
-    f32 fovy;
-    cSAngle bank;
-};
-
-class gzToolsMng_c {
-public:
-    void execute();
-    void executeFastBonkRecovery();
-    void executeFastMovement();
-    void executeMoveLink();
-    void executeNoSinkSand();
-    void executeTeleport();
-
-private:
-    // for "run once" reenable checks
-    SavedCameraState mCamera;
-    bool mFastBonkRecovery;
-    bool mFastMovement;
-    cXyz mLinkPos;
-    csXyz mLinkAngle;
-    bool mMoveLink;
-};
-
-class gzCheatsMng_c {
-public:
-    void execute();
-    void executeDisableItemTimer();
-    void executeDisableWalls();
-    void executeEnableItemTimer();
-    void executeEnableWalls();
-    void executeInfiniteAir();
-    void executeInfiniteArrows();
-    void executeInfiniteBombs();
-    void executeInfiniteHearts();
-    void executeInfiniteOil();
-    void executeInfiniteRupees();
-    void executeInfiniteSlingshot();
-    void executeInvincibleLink();
-    void executeInvincibleEnemies();
-    void executeMoonJump();
-    void executeSuperClawshot();
-    void executeUnrestrictedItems();
-
-private:
-    // for "run once" reenable checks
-    bool mDisableWalls;
-    bool mDisableItemTimer;
 };
 
 struct gzCursor {
@@ -290,7 +163,6 @@ public:
     bool isCursorTypeTP() { return getCursorType() & CURSOR_TP; }
     bool isDisableItemTimer() { return mSettings.mDisableItemTimer; }
     bool isDisableWalls() { return mSettings.mDisableWalls; }
-    bool isDisplacement() { return mSettings.mDisplacement; }
     bool isDisplay() { return mDisplay; }
     bool isDropShadows() { return mSettings.mDropShadows; }
     bool isElevatorEscape() { return mSettings.mElevatorEscape; }
@@ -347,7 +219,6 @@ public:
     void setCursorType(u8 i_type) { mSettings.mCursorType = i_type; }
     void setDisableItemTimer(bool i_opt) { mSettings.mDisableItemTimer = i_opt; }
     void setDisableWalls(bool i_opt) { mSettings.mDisableWalls = i_opt; }
-    void setDisplacement(bool i_opt) { mSettings.mDisplacement = i_opt; }
     void setDisplayMode(bool i_mode) { mSettings.mDisplayMode = i_mode; }
     void setDropShadows(bool i_dropShadows) { mSettings.mDropShadows = i_dropShadows; }
     void setElevatorEscape(bool i_opt) { mSettings.mElevatorEscape = i_opt; }
@@ -691,7 +562,6 @@ inline bool gzInfo_isFastBonkRecovery() { return g_gzInfo.isFastBonkRecovery(); 
 inline bool gzInfo_isFastMovement() { return g_gzInfo.isFastMovement(); }
 inline bool gzInfo_isNoSinkingInSand() { return g_gzInfo.isNoSinkingInSand(); }
 inline bool gzInfo_isTeleport() { return g_gzInfo.isTeleport(); }
-inline bool gzInfo_isDisplacement() { return g_gzInfo.isDisplacement(); }
 
 
 inline void gzInfo_setBossFlag(u8 value) { g_gzInfo.setBossFlag(value); }
@@ -723,7 +593,6 @@ inline void gzInfo_offBossFlag() { g_gzInfo.setBossFlag(0); }
 inline void gzInfo_offCoroTD() { g_gzInfo.setCoroTD(false); }
 inline void gzInfo_offDisableItemTimer() { g_gzInfo.setDisableItemTimer(false); }
 inline void gzInfo_offDisableWalls() { g_gzInfo.setDisableWalls(false); }
-inline void gzInfo_offDisplacement() { g_gzInfo.setDisplacement(false); }
 inline void gzInfo_offDropShadows() { g_gzInfo.setDropShadows(false); }
 
 inline void gzInfo_offDungeonBossKey(int i_stageNo) { 
@@ -805,7 +674,6 @@ inline void gzInfo_onBossFlag() { g_gzInfo.setBossFlag(50); }
 inline void gzInfo_onCoroTD() { g_gzInfo.setCoroTD(true); }
 inline void gzInfo_onDisableItemTimer() { g_gzInfo.setDisableItemTimer(true); }
 inline void gzInfo_onDisableWalls() { g_gzInfo.setDisableWalls(true); }
-inline void gzInfo_onDisplacement() { g_gzInfo.setDisplacement(true); }
 inline void gzInfo_onDropShadows() { g_gzInfo.setDropShadows(true); }
 
 inline void gzInfo_onDungeonBossKey(int i_stageNo) { 
@@ -925,30 +793,4 @@ namespace gzPad {
 int gzPrint(int x, int y, u32 color, char const* string, ...);
 void gzDVDLoadFile(const char* filePath, void* buffer, int length, int offset);
 
-class gzNotification_c {
-public:
-    enum NotificationType {
-        NOTIFY_INFO,
-        NOTIFY_WARNING,
-        NOTIFY_ERROR
-    };
-
-    gzNotification_c();
-    gzNotification_c(NotificationType mType);
-    ~gzNotification_c();
-
-    void send(const char* message);
-    void send(const char* message, NotificationType notification);
-    void draw();
-    static const int NOTIFICATION_MAX = 3;
-
-private:
-    gzTextBox* mpNotifications[NOTIFICATION_MAX];
-    int mNumNotifications;
-    u32 mStartFrames[NOTIFICATION_MAX];
-    NotificationType mType;
-
-    void removeExpired();
-};
-
-#endif
+#endif // GZ_H

@@ -2,6 +2,7 @@
 
 #include "gz/gz.h"
 #include "gz/gz_menu_main.h"
+#include "gz/gz_utility_notification.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "m_Do/m_Do_MemCard.h"
