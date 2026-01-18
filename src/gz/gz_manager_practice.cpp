@@ -6,6 +6,38 @@
 #include "SSystem/SComponent/c_lib.h"
 #include "Z2AudioLib/Z2SeqMgr.h"
 
+static const char* getCategoryFolder(gzSaveLoaderMng_c::SaveCategory_e i_category) {
+    switch (i_category) {
+    case gzSaveLoaderMng_c::CATEGORY_NOSQ_e:
+        return "nosq_saves";
+    case gzSaveLoaderMng_c::CATEGORY_HUNDO_e:
+        return "hundo_saves";
+    case gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e:
+        return "ad_saves";
+    case gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e:
+        return "glitchless_saves";
+    case gzSaveLoaderMng_c::CATEGORY_ANYP_e:
+    default:
+        return "any_saves";
+    }
+}
+
+static const char* getCategoryMetadataPath(gzSaveLoaderMng_c::SaveCategory_e i_category) {
+    switch (i_category) {
+    case gzSaveLoaderMng_c::CATEGORY_NOSQ_e:
+        return "nosq_saves/nosq";
+    case gzSaveLoaderMng_c::CATEGORY_HUNDO_e:
+        return "hundo_saves/hundo";
+    case gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e:
+        return "ad_saves/ad";
+    case gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e:
+        return "glitchless_saves/glitchless";
+    case gzSaveLoaderMng_c::CATEGORY_ANYP_e:
+    default:
+        return "any_saves/any";
+    }
+}
+
 void gzSaveLoaderMng_c::execute() {
     switch (mLoadPhase) {
     case PHASE_WAIT_e:
@@ -51,30 +83,10 @@ void gzSaveLoaderMng_c::loadSave(SaveCategory_e i_category, int i_entryNo) {
     const int SAVE_READ_SIZE = OSRoundUp32B(sizeof(dSv_save_c));
     mMode = MODE_SAVE_e;
 
-    char* category_str = NULL;
-    switch (i_category) {
-    case CATEGORY_ANYP_e:
-    default:
-        category_str = "any_saves";
-        break;
-    case CATEGORY_NOSQ_e:
-        category_str = "nosq_saves";
-        break;
-    case CATEGORY_HUNDO_e:
-        category_str = "hundo_saves";
-        break;
-    case CATEGORY_ALLDUNGEONS_e:
-        category_str = "ad_saves";
-        break;
-    case CATEGORY_GLITCHLESS_e:
-        category_str = "glitchless_saves";
-        break;
-    }
-
     getSaveMetadata(i_category, i_entryNo, &mSaveMetadata);
 
     char pathbuf[64];
-    sprintf(pathbuf, "/gz/%s/%s.bin", category_str, mSaveMetadata.filename);
+    sprintf(pathbuf, "/gz/%s/%s.bin", getCategoryFolder(i_category), mSaveMetadata.filename);
     gzDVDLoadFile(pathbuf, mDoMemCd_Ctrl_c::sTmpBuf, SAVE_READ_SIZE, 0);
 
     dSv_save_c* savep = (dSv_save_c*)mDoMemCd_Ctrl_c::sTmpBuf;
@@ -96,58 +108,18 @@ void gzSaveLoaderMng_c::loadSave(SaveCategory_e i_category, int i_entryNo) {
 void gzSaveLoaderMng_c::getSaveMetadata(SaveCategory_e i_category, int i_entryNo, saveMetadata_s* o_data) {
     const int METADATA_OFFSET = 32;
 
-    char* category_str = NULL;
-    switch (i_category) {
-    case CATEGORY_ANYP_e:
-    default:
-        category_str = "any_saves/any";
-        break;
-    case CATEGORY_NOSQ_e:
-        category_str = "nosq_saves/nosq";
-        break;
-    case CATEGORY_HUNDO_e:
-        category_str = "hundo_saves/hundo";
-        break;
-    case CATEGORY_ALLDUNGEONS_e:
-        category_str = "ad_saves/ad";
-        break;
-    case CATEGORY_GLITCHLESS_e:
-        category_str = "glitchless_saves/glitchless";
-        break;
-    }
-
     char pathbuf[64];
-    sprintf(pathbuf, "/gz/%s.bin", category_str);
+    sprintf(pathbuf, "/gz/%s.bin", getCategoryMetadataPath(i_category));
     gzDVDLoadFile(pathbuf, o_data, sizeof(saveMetadata_s), METADATA_OFFSET + (i_entryNo * sizeof(saveMetadata_s)));
 }
 
 int gzSaveLoaderMng_c::getSaveEntryNum(SaveCategory_e i_category) {
     const int MIN_READ_SIZE = 32;
 
-    char* category_str = NULL;
-    switch (i_category) {
-    case CATEGORY_ANYP_e:
-    default:
-        category_str = "any_saves/any";
-        break;
-    case CATEGORY_NOSQ_e:
-        category_str = "nosq_saves/nosq";
-        break;
-    case CATEGORY_HUNDO_e:
-        category_str = "hundo_saves/hundo";
-        break;
-    case CATEGORY_ALLDUNGEONS_e:
-        category_str = "ad_saves/ad";
-        break;
-    case CATEGORY_GLITCHLESS_e:
-        category_str = "glitchless_saves/glitchless";
-        break;
-    }
-
     u8 ATTRIBUTE_ALIGN(32) read_buffer[MIN_READ_SIZE];
 
     char pathbuf[64];
-    sprintf(pathbuf, "/gz/%s.bin", category_str);
+    sprintf(pathbuf, "/gz/%s.bin", getCategoryMetadataPath(i_category));
     gzDVDLoadFile(pathbuf, read_buffer, MIN_READ_SIZE, 0);
 
     int entry_num = *(int*)read_buffer;

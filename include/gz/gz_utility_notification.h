@@ -24,7 +24,7 @@ private:
     gzTextBox* mpNotifications[NOTIFICATION_MAX];
     int mNumNotifications;
     u32 mStartFrames[NOTIFICATION_MAX];
-    NotificationType mType;
+    NotificationType mTypes[NOTIFICATION_MAX];
 
     void removeExpired();
 };

@@ -52,6 +52,7 @@ gzHeapsMenu_c::HeapTracker_c::HeapTracker_c(int block_max) : mpHeap(NULL),
     mpTotalSize(NULL),
     mpLargestFree(NULL),
     mNumBlocks(0),
+    mPrevNumBlocks(-1),
     mUsedBlocks(0),
     mFreeBlocks(0),
     mBlocks(NULL),
@@ -400,7 +401,10 @@ void gzHeapsMenu_c::updateHeapTracker(HeapTracker_c* tracker) {
             }
         }
 
-        quicksort(tracker->mStarts, tracker->mBlocks, 0, totalCount - 1);
+        if (totalCount != tracker->mPrevNumBlocks) {
+            quicksort(tracker->mStarts, tracker->mBlocks, 0, totalCount - 1);
+            tracker->mPrevNumBlocks = totalCount;
+        }
 
         tracker->mTotalSizeKB = tracker->mpHeap->getSize() / 1024;
         tracker->mUsedSizeKB = tracker->mpHeap->getTotalUsedSize() / 1024;

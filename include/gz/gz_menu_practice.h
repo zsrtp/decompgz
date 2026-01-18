@@ -36,48 +36,19 @@ public:
         TAB_MAX
     };
 
-    class gzAnypSavesTab_c {
+    class gzSavesTab_c {
     public:
+        gzSavesTab_c(int i_category, int i_maxLines)
+            : mCategory(i_category), mMaxLines(i_maxLines), mLoaded(false) {
+            mpLines = NULL;
+        }
+
         void create();
         int execute();
 
-        gzLine* mpLines[ANY_LINE_NUM];
-        bool mLoaded;
-    };
-
-    class gzHundoSavesTab_c {
-    public:
-        void create();
-        int execute();
-
-        gzLine* mpLines[HUNDO_LINE_NUM];
-        bool mLoaded;
-    };
-
-    class gzADSavesTab_c {
-    public:
-        void create();
-        int execute();
-
-        gzLine* mpLines[ALL_DUNGEONS_LINE_NUM];
-        bool mLoaded;
-    };
-
-    class gzGlitchlessSavesTab_c {
-    public:
-        void create();
-        int execute();
-
-        gzLine* mpLines[GLITCHLESS_LINE_NUM];
-        bool mLoaded;
-    };
-
-    class gzNoSQSavesTab_c {
-    public:
-        void create();
-        int execute();
-
-        gzLine* mpLines[NOSQ_LINE_NUM];
+        gzLine** mpLines;
+        int mCategory;
+        int mMaxLines;
         bool mLoaded;
     };
 
@@ -109,11 +80,11 @@ public:
     };
 
     gzTextBox* mpTabHeaders[TAB_MAX];
-    gzAnypSavesTab_c mAnypSavesTab;
-    gzNoSQSavesTab_c mNoSQSavesTab;
-    gzADSavesTab_c mAllDungeonsSavesTab;
-    gzHundoSavesTab_c mHundoSavesTab;
-    gzGlitchlessSavesTab_c mGlitchlessSavesTab;
+    gzSavesTab_c mAnypSavesTab;
+    gzSavesTab_c mNoSQSavesTab;
+    gzSavesTab_c mAllDungeonsSavesTab;
+    gzSavesTab_c mHundoSavesTab;
+    gzSavesTab_c mGlitchlessSavesTab;
     gzMemfileTab_c mMemfileTab;
     int mCurrentTab;
 };

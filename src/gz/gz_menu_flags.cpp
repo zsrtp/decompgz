@@ -416,11 +416,21 @@ void gzFlagsMenu_c::execute() {
                 break;
             case TAB_RUPEE:
                 if (l_cursor->y == R_FLAG_DONATION_AMT) {
-                    u16 val = getDonationAmt() + 1;
+                    u16 val = getDonationAmt();
+                    if (val >= 1000) {
+                        val = 0;
+                    } else {
+                        val = val + 1;
+                    }
                     setDonationAmt(val);
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == R_FLAG_FUNDRAISING_AMT) {
-                    u16 val = getFundraisingAmt() + 1;
+                    u16 val = getFundraisingAmt();
+                    if (val >= 2000) {
+                        val = 0;
+                    } else {
+                        val = val + 1;
+                    }
                     setFundraisingAmt(val);
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= R_FLAG_FUNDRAISING_1 && l_cursor->y < R_FLAG_MAX) {
@@ -476,16 +486,22 @@ void gzFlagsMenu_c::execute() {
                 break;
             case TAB_RUPEE:
                 if (l_cursor->y == R_FLAG_DONATION_AMT) {
-                    u16 val = getDonationAmt() - 1;
-                    if (val >= 0) {
-                        setDonationAmt(val);
+                    u16 val = getDonationAmt();
+                    if (val == 0) {
+                        val = 1000;
+                    } else {
+                        val = val - 1;
                     }
+                    setDonationAmt(val);
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == R_FLAG_FUNDRAISING_AMT) {
-                    u16 val = getFundraisingAmt() - 1;
-                    if (val >= 0) {
-                        setFundraisingAmt(val);
+                    u16 val = getFundraisingAmt();
+                    if (val == 0) {
+                        val = 2000;
+                    } else {
+                        val = val - 1;
                     }
+                    setFundraisingAmt(val);
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= R_FLAG_FUNDRAISING_1 && l_cursor->y < R_FLAG_MAX) {
                     int rIdx = l_cursor->y - R_FLAG_FUNDRAISING_1;

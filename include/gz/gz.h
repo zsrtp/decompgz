@@ -314,67 +314,45 @@ public:
     }
 
     u32 nextTextColor() {
-        switch (getTextColor()) {
-        case COLOR_AMETHYST: return COLOR_AQUAMARINE;
-        case COLOR_AQUAMARINE: return COLOR_BANANA_MANIA;
-        case COLOR_BANANA_MANIA: return COLOR_BOLD_CRIMSON;
-        case COLOR_BOLD_CRIMSON: return COLOR_BUBBLEGUM_PINK;
-        case COLOR_BUBBLEGUM_PINK: return COLOR_CERULEAN;
-        case COLOR_CERULEAN: return COLOR_COSMIC_COBALT;
-        case COLOR_COSMIC_COBALT: return COLOR_ELECTRIC_BLUE;
-        case COLOR_ELECTRIC_BLUE: return COLOR_FIERY_ORANGE;
-        case COLOR_FIERY_ORANGE: return COLOR_FLAMINGO_FEATHER;
-        case COLOR_FLAMINGO_FEATHER: return COLOR_GOLD_DROP;
-        case COLOR_GOLD_DROP: return COLOR_LEMON_YELLOW;
-        case COLOR_LEMON_YELLOW: return COLOR_LIME_GREEN;
-        case COLOR_LIME_GREEN: return COLOR_MAGENTA_MAGIC;
-        case COLOR_MAGENTA_MAGIC: return COLOR_MIDNIGHT_BLUE;
-        case COLOR_MIDNIGHT_BLUE: return COLOR_MYSTICAL_PURPLE;
-        case COLOR_MYSTICAL_PURPLE: return COLOR_NEON_CARROT;
-        case COLOR_NEON_CARROT: return COLOR_PERIWINKLE;
-        case COLOR_PERIWINKLE: return COLOR_SAPPHIRE_SPARKLE;
-        case COLOR_SAPPHIRE_SPARKLE: return COLOR_SHAMROCK_GREEN;
-        case COLOR_SHAMROCK_GREEN: return COLOR_SUNNY_YELLOW;
-        case COLOR_SUNNY_YELLOW: return COLOR_TANGERINE_TWIST;
-        case COLOR_TANGERINE_TWIST: return COLOR_TROPICAL_TURQUOISE;
-        case COLOR_TROPICAL_TURQUOISE: return COLOR_VIVID_VIOLET;
-        case COLOR_VIVID_VIOLET: return COLOR_WILD_STRAWBERRY;
-        case COLOR_WILD_STRAWBERRY: return COLOR_ZESTY_CHARTREUSE;
-        case COLOR_ZESTY_CHARTREUSE: return COLOR_AMETHYST;
-        default: return COLOR_WHITE;
+        static const u32 sTextColors[] = {
+            COLOR_AMETHYST, COLOR_AQUAMARINE, COLOR_BANANA_MANIA, COLOR_BOLD_CRIMSON,
+            COLOR_BUBBLEGUM_PINK, COLOR_CERULEAN, COLOR_COSMIC_COBALT, COLOR_ELECTRIC_BLUE,
+            COLOR_FIERY_ORANGE, COLOR_FLAMINGO_FEATHER, COLOR_GOLD_DROP, COLOR_LEMON_YELLOW,
+            COLOR_LIME_GREEN, COLOR_MAGENTA_MAGIC, COLOR_MIDNIGHT_BLUE, COLOR_MYSTICAL_PURPLE,
+            COLOR_NEON_CARROT, COLOR_PERIWINKLE, COLOR_SAPPHIRE_SPARKLE, COLOR_SHAMROCK_GREEN,
+            COLOR_SUNNY_YELLOW, COLOR_TANGERINE_TWIST, COLOR_TROPICAL_TURQUOISE, COLOR_VIVID_VIOLET,
+            COLOR_WILD_STRAWBERRY, COLOR_ZESTY_CHARTREUSE
+        };
+        static const int sNumColors = sizeof(sTextColors) / sizeof(sTextColors[0]);
+
+        u32 current = getTextColor();
+        for (int i = 0; i < sNumColors; i++) {
+            if (sTextColors[i] == current) {
+                return sTextColors[(i + 1) % sNumColors];
+            }
         }
+        return COLOR_WHITE;
     }
 
     u32 prevTextColor() {
-        switch (getTextColor()) {
-        case COLOR_AMETHYST: return COLOR_ZESTY_CHARTREUSE;
-        case COLOR_AQUAMARINE: return COLOR_AMETHYST;
-        case COLOR_BANANA_MANIA: return COLOR_AQUAMARINE;
-        case COLOR_BOLD_CRIMSON: return COLOR_BANANA_MANIA;
-        case COLOR_BUBBLEGUM_PINK: return COLOR_BOLD_CRIMSON;
-        case COLOR_CERULEAN: return COLOR_BUBBLEGUM_PINK;
-        case COLOR_COSMIC_COBALT: return COLOR_CERULEAN;
-        case COLOR_ELECTRIC_BLUE: return COLOR_COSMIC_COBALT;
-        case COLOR_FIERY_ORANGE: return COLOR_ELECTRIC_BLUE;
-        case COLOR_FLAMINGO_FEATHER: return COLOR_FIERY_ORANGE;
-        case COLOR_GOLD_DROP: return COLOR_FLAMINGO_FEATHER;
-        case COLOR_LEMON_YELLOW: return COLOR_GOLD_DROP;
-        case COLOR_LIME_GREEN: return COLOR_LEMON_YELLOW;
-        case COLOR_MAGENTA_MAGIC: return COLOR_LIME_GREEN;
-        case COLOR_MIDNIGHT_BLUE: return COLOR_MAGENTA_MAGIC;
-        case COLOR_MYSTICAL_PURPLE: return COLOR_MIDNIGHT_BLUE;
-        case COLOR_NEON_CARROT: return COLOR_MYSTICAL_PURPLE;
-        case COLOR_PERIWINKLE: return COLOR_NEON_CARROT;
-        case COLOR_SAPPHIRE_SPARKLE: return COLOR_PERIWINKLE;
-        case COLOR_SHAMROCK_GREEN: return COLOR_SAPPHIRE_SPARKLE;
-        case COLOR_SUNNY_YELLOW: return COLOR_SHAMROCK_GREEN;
-        case COLOR_TANGERINE_TWIST: return COLOR_SUNNY_YELLOW;
-        case COLOR_TROPICAL_TURQUOISE: return COLOR_TANGERINE_TWIST;
-        case COLOR_VIVID_VIOLET: return COLOR_TROPICAL_TURQUOISE;
-        case COLOR_WILD_STRAWBERRY: return COLOR_VIVID_VIOLET;
-        case COLOR_ZESTY_CHARTREUSE: return COLOR_WILD_STRAWBERRY;
-        default: return COLOR_WHITE;
+        static const u32 sTextColors[] = {
+            COLOR_AMETHYST, COLOR_AQUAMARINE, COLOR_BANANA_MANIA, COLOR_BOLD_CRIMSON,
+            COLOR_BUBBLEGUM_PINK, COLOR_CERULEAN, COLOR_COSMIC_COBALT, COLOR_ELECTRIC_BLUE,
+            COLOR_FIERY_ORANGE, COLOR_FLAMINGO_FEATHER, COLOR_GOLD_DROP, COLOR_LEMON_YELLOW,
+            COLOR_LIME_GREEN, COLOR_MAGENTA_MAGIC, COLOR_MIDNIGHT_BLUE, COLOR_MYSTICAL_PURPLE,
+            COLOR_NEON_CARROT, COLOR_PERIWINKLE, COLOR_SAPPHIRE_SPARKLE, COLOR_SHAMROCK_GREEN,
+            COLOR_SUNNY_YELLOW, COLOR_TANGERINE_TWIST, COLOR_TROPICAL_TURQUOISE, COLOR_VIVID_VIOLET,
+            COLOR_WILD_STRAWBERRY, COLOR_ZESTY_CHARTREUSE
+        };
+        static const int sNumColors = sizeof(sTextColors) / sizeof(sTextColors[0]);
+
+        u32 current = getTextColor();
+        for (int i = 0; i < sNumColors; i++) {
+            if (sTextColors[i] == current) {
+                return sTextColors[(i - 1 + sNumColors) % sNumColors];
+            }
         }
+        return COLOR_WHITE;
     }
 
     J2DPicture* mpIcon;

@@ -50,6 +50,7 @@ public:
         gzTextBox* mpUsedBlocks;
         gzTextBox* mpFreeBlocks;
         int mNumBlocks;
+        int mPrevNumBlocks;
         int mUsedBlocks;
         int mFreeBlocks;
         int mMaxBlocks;

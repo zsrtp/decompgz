@@ -139,50 +139,53 @@ gzSettingsMenu_c::~gzSettingsMenu_c() {
 void gzSettingsMenu_c::_delete() {
     OSReport("deleting gzSettingsMenu_c\n");
 
-    mpCursorType = NULL;
     delete mpCursorType;
+    mpCursorType = NULL;
 
-    mpDisplayMode = NULL;
     delete mpDisplayMode;
+    mpDisplayMode = NULL;
 
-    mpDropShadows = NULL;
     delete mpDropShadows;
-    
-    mpFont = NULL;
-    delete mpFont;
-    
-    mpMenuPausesGame = NULL;
-    delete mpMenuPausesGame;
-    
-    mpMenuSfx = NULL;
-    delete mpMenuSfx;
-    
-    mpReloadType = NULL;
-    delete mpReloadType;
-    
-    mpTextColor = NULL;
-    delete mpTextColor;
+    mpDropShadows = NULL;
 
-    mpSwapEquips = NULL;
+    delete mpFont;
+    mpFont = NULL;
+
+    delete mpMenuPausesGame;
+    mpMenuPausesGame = NULL;
+
+    delete mpMenuSfx;
+    mpMenuSfx = NULL;
+
+    delete mpReloadType;
+    mpReloadType = NULL;
+
+    delete mpTextColor;
+    mpTextColor = NULL;
+
     delete mpSwapEquips;
-    
-    mpSaveCard = NULL;
+    mpSwapEquips = NULL;
+
     delete mpSaveCard;
-    
-    mpLoadCard = NULL;
+    mpSaveCard = NULL;
+
     delete mpLoadCard;
-    
-    mpDeleteCard = NULL;
+    mpLoadCard = NULL;
+
     delete mpDeleteCard;
-    
-    mpCommandCombos = NULL;
+    mpDeleteCard = NULL;
+
     delete mpCommandCombos;
-    
-    mpMenuPositions = NULL;
+    mpCommandCombos = NULL;
+
     delete mpMenuPositions;
-    
-    mpCredits = NULL;
+    mpMenuPositions = NULL;
+
     delete mpCredits;
+    mpCredits = NULL;
+
+    delete mpBootToMenu;
+    mpBootToMenu = NULL;
 
     for (int i = 0; i < LINE_NUM; i++) {
         delete mpLines[i];

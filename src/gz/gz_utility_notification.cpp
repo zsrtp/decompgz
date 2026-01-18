@@ -6,8 +6,8 @@ gzNotification_c::gzNotification_c() {
     for (int i = 0; i < NOTIFICATION_MAX; i++) {
         mpNotifications[i] = NULL;
         mStartFrames[i] = 0;
+        mTypes[i] = NOTIFY_INFO;
     }
-    mType = NOTIFY_INFO;
 }
 
 gzNotification_c::gzNotification_c(NotificationType i_type) {
@@ -15,8 +15,8 @@ gzNotification_c::gzNotification_c(NotificationType i_type) {
     for (int i = 0; i < NOTIFICATION_MAX; i++) {
         mpNotifications[i] = NULL;
         mStartFrames[i] = 0;
+        mTypes[i] = i_type;
     }
-    mType = i_type;
 }
 
 gzNotification_c::~gzNotification_c() {
@@ -27,26 +27,26 @@ gzNotification_c::~gzNotification_c() {
 }
 
 void gzNotification_c::send(const char* message, NotificationType i_notificationType) {
-    mType = i_notificationType;
-    send(message);
-}
-
-void gzNotification_c::send(const char* message) {
     if (mNumNotifications == NOTIFICATION_MAX) {
         // FIFO
         gzTextBox_free(mpNotifications[0]);
         for (int i = 0; i < NOTIFICATION_MAX - 1; i++) {
             mpNotifications[i] = mpNotifications[i + 1];
             mStartFrames[i] = mStartFrames[i + 1];
+            mTypes[i] = mTypes[i + 1];
         }
         mNumNotifications--;
     }
 
-
     mpNotifications[mNumNotifications] = gzTextBox_allocate();
     mpNotifications[mNumNotifications]->setString(message);
     mStartFrames[mNumNotifications] = cCt_getFrameCount();
+    mTypes[mNumNotifications] = i_notificationType;
     mNumNotifications++;
+}
+
+void gzNotification_c::send(const char* message) {
+    send(message, NOTIFY_INFO);
 }
 
 void gzNotification_c::draw() {
@@ -73,9 +73,8 @@ void gzNotification_c::draw() {
                 alpha = 0;
             }
         }
-        // TODO(Pheenoh): fix this
         u32 color;
-        switch (mType) {
+        switch (mTypes[i]) {
         case NOTIFY_INFO:
             color = 0xFFFFFF00;
             break;
@@ -116,6 +115,7 @@ void gzNotification_c::removeExpired() {
         for (int i = 0; i < mNumNotifications - 1; i++) {
             mpNotifications[i] = mpNotifications[i + 1];
             mStartFrames[i] = mStartFrames[i + 1];
+            mTypes[i] = mTypes[i + 1];
         }
         mNumNotifications--;
     }

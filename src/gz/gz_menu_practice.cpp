@@ -6,7 +6,12 @@
 #include "d/d_select_cursor.h"
 #include "m_Do/m_Do_MemCard.h"
 
-gzPracticeMenu_c::gzPracticeMenu_c() {
+gzPracticeMenu_c::gzPracticeMenu_c()
+    : mAnypSavesTab(gzSaveLoaderMng_c::CATEGORY_ANYP_e, ANY_LINE_NUM),
+      mNoSQSavesTab(gzSaveLoaderMng_c::CATEGORY_NOSQ_e, NOSQ_LINE_NUM),
+      mAllDungeonsSavesTab(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e, ALL_DUNGEONS_LINE_NUM),
+      mHundoSavesTab(gzSaveLoaderMng_c::CATEGORY_HUNDO_e, HUNDO_LINE_NUM),
+      mGlitchlessSavesTab(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e, GLITCHLESS_LINE_NUM) {
     OSReport("creating gzPracticeMenu_c\n");
     mXPos = g_gzInfo.mBackgroundXPos + 195.0f;
 
@@ -21,23 +26,6 @@ gzPracticeMenu_c::gzPracticeMenu_c() {
     mpTabHeaders[TAB_ALLDUNGEONS]->setString("all dungeons");
     mpTabHeaders[TAB_GLITCHLESS]->setString("glitchless");
     mpTabHeaders[TAB_MEMFILES]->setString("memfiles");
-
-    // Defer tab data loading until they are first accessed to avoid blocking boot
-    // Initialize all mpLines arrays to NULL to prevent crashes if draw() is called before loading
-    mAnypSavesTab.mLoaded = false;
-    for (int i = 0; i < ANY_LINE_NUM; i++) mAnypSavesTab.mpLines[i] = NULL;
-
-    mNoSQSavesTab.mLoaded = false;
-    for (int i = 0; i < NOSQ_LINE_NUM; i++) mNoSQSavesTab.mpLines[i] = NULL;
-
-    mAllDungeonsSavesTab.mLoaded = false;
-    for (int i = 0; i < ALL_DUNGEONS_LINE_NUM; i++) mAllDungeonsSavesTab.mpLines[i] = NULL;
-
-    mHundoSavesTab.mLoaded = false;
-    for (int i = 0; i < HUNDO_LINE_NUM; i++) mHundoSavesTab.mpLines[i] = NULL;
-
-    mGlitchlessSavesTab.mLoaded = false;
-    for (int i = 0; i < GLITCHLESS_LINE_NUM; i++) mGlitchlessSavesTab.mpLines[i] = NULL;
 
     mMemfileTab.mNamesLoaded = false;
     for (int i = 0; i < MEMFILE_MAX_NUM; i++) mMemfileTab.mpLines[i] = NULL;
@@ -183,7 +171,7 @@ void gzPracticeMenu_c::draw() {
     if (isMemfileTab) {
         // Memfile tab uses gzTextBox* instead of gzLine*, draw manually
         mMemfileTab.draw(mXPos);
-    } else {
+    } else if (currentLines != NULL) {
         drawLines(currentLines, currentLineNum, 0, topLine, gzMenuLayout::VISIBLE_LINES);
     }
 }
@@ -459,13 +447,14 @@ void gzPracticeMenu_c::gzMemfileTab_c::draw(f32 xPos) {
     }
 }
 
-void gzPracticeMenu_c::gzAnypSavesTab_c::create() {
-    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ANYP_e);
+void gzPracticeMenu_c::gzSavesTab_c::create() {
+    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum((gzSaveLoaderMng_c::SaveCategory_e)mCategory);
 
+    mpLines = new gzLine*[mMaxLines];
     gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
-    for (int i = 0; i < ANY_LINE_NUM; i++) {
+    for (int i = 0; i < mMaxLines; i++) {
         if (i < save_num) {
-            g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_ANYP_e, i, &metadata);
+            g_gzInfo.mSaveLoaderMng.getSaveMetadata((gzSaveLoaderMng_c::SaveCategory_e)mCategory, i, &metadata);
             mpLines[i] = new gzLine(metadata.name, metadata.desc);
         } else {
             mpLines[i] = new gzLine("", "");
@@ -473,7 +462,7 @@ void gzPracticeMenu_c::gzAnypSavesTab_c::create() {
     }
 }
 
-int gzPracticeMenu_c::gzAnypSavesTab_c::execute() {
+int gzPracticeMenu_c::gzSavesTab_c::execute() {
     if (!mLoaded) {
         create();
         mLoaded = true;
@@ -482,127 +471,7 @@ int gzPracticeMenu_c::gzAnypSavesTab_c::execute() {
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
-        g_gzInfo.mSaveLoaderMng.loadSave(gzSaveLoaderMng_c::CATEGORY_ANYP_e, l_cursor->y);
-        gzInfo_seStart(Z2SE_SY_CURSOR_OK);
-    }
-
-    return 1;
-}
-
-void gzPracticeMenu_c::gzHundoSavesTab_c::create() {
-    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_HUNDO_e);
-
-    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
-    for (int i = 0; i < HUNDO_LINE_NUM; i++) {
-        if (i < save_num) {
-            g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_HUNDO_e, i, &metadata);
-            mpLines[i] = new gzLine(metadata.name, metadata.desc);
-        } else {
-            mpLines[i] = new gzLine("", "");
-        }
-    }
-}
-
-int gzPracticeMenu_c::gzHundoSavesTab_c::execute() {
-    if (!mLoaded) {
-        create();
-        mLoaded = true;
-    }
-
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigA()) {
-        g_gzInfo.mSaveLoaderMng.loadSave(gzSaveLoaderMng_c::CATEGORY_HUNDO_e, l_cursor->y);
-        gzInfo_seStart(Z2SE_SY_CURSOR_OK);
-    }
-
-    return 1;
-}
-
-void gzPracticeMenu_c::gzADSavesTab_c::create() {
-    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e);
-
-    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
-    for (int i = 0; i < ALL_DUNGEONS_LINE_NUM; i++) {
-        if (i < save_num) {
-            g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e, i, &metadata);
-            mpLines[i] = new gzLine(metadata.name, metadata.desc);
-        } else {
-            mpLines[i] = new gzLine("", "");
-        }
-    }
-}
-
-int gzPracticeMenu_c::gzADSavesTab_c::execute() {
-    if (!mLoaded) {
-        create();
-        mLoaded = true;
-    }
-
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigA()) {
-        g_gzInfo.mSaveLoaderMng.loadSave(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e, l_cursor->y);
-        gzInfo_seStart(Z2SE_SY_CURSOR_OK);
-    }
-
-    return 1;
-}
-
-void gzPracticeMenu_c::gzGlitchlessSavesTab_c::create() {
-    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e);
-
-    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
-    for (int i = 0; i < GLITCHLESS_LINE_NUM; i++) {
-        if (i < save_num) {
-            g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e, i, &metadata);
-            mpLines[i] = new gzLine(metadata.name, metadata.desc);
-        } else {
-            mpLines[i] = new gzLine("", "");
-        }
-    }
-}
-
-int gzPracticeMenu_c::gzGlitchlessSavesTab_c::execute() {
-    if (!mLoaded) {
-        create();
-        mLoaded = true;
-    }
-
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigA()) {
-        g_gzInfo.mSaveLoaderMng.loadSave(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e, l_cursor->y);
-        gzInfo_seStart(Z2SE_SY_CURSOR_OK);
-    }
-
-    return 1;
-}
-
-void gzPracticeMenu_c::gzNoSQSavesTab_c::create() {
-    int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_NOSQ_e);
-
-    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
-    for (int i = 0; i < NOSQ_LINE_NUM; i++) {
-        if (i < save_num) {
-            g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_NOSQ_e, i, &metadata);
-            mpLines[i] = new gzLine(metadata.name, metadata.desc);
-        } else {
-            mpLines[i] = new gzLine("", "");
-        }
-    }
-}
-
-int gzPracticeMenu_c::gzNoSQSavesTab_c::execute() {
-    if (!mLoaded) {
-        create();
-        mLoaded = true;
-    }
-
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    if (gzPad::getTrigA()) {
-        g_gzInfo.mSaveLoaderMng.loadSave(gzSaveLoaderMng_c::CATEGORY_NOSQ_e, l_cursor->y);
+        g_gzInfo.mSaveLoaderMng.loadSave((gzSaveLoaderMng_c::SaveCategory_e)mCategory, l_cursor->y);
         gzInfo_seStart(Z2SE_SY_CURSOR_OK);
     }
 
