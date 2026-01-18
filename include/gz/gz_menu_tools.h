@@ -14,38 +14,9 @@ public:
         TAB_MAX_e
     };
 
-    enum gzToolsMenu_Checkers_e {
-        C_LINK_DEBUG_INFO,
-        C_STAGE_INFO,
-
-        C_MAX
-    };
-
-    enum gzToolsMenu_Displays_e {
-        D_TIMER,
-        D_IN_GAME_TIMER,
-        D_LOAD_TIMER,
-        D_INPUT_VIEWER,
-        D_DISABLE_ITEM_TIMER,
-
-        D_MAX
-    };
-
-    enum gzToolsMenu_Link_e {
-        L_MOVE_LINK,
-        L_FAST_MOVEMENT,
-        L_FAST_BONK_RECOVERY,
-        L_ROLLING,
-        L_MOON_JUMP,
-        L_SUPER_CLAWSHOT,
-        L_TRANSFORM_ANYWHERE,
-        L_NO_SINKING_IN_SAND,
-        L_DISABLE_WALLS,
-        L_TELEPORT,
-        L_AB_MASH_RATE,
-
-        L_MAX
-    };
+    static const int C_MAX = 7;  // checkers tab count
+    static const int D_MAX = 7;  // displays tab count
+    static const int L_MAX = 5;  // link tab count
 
     gzToolsMenu_c();
     ~gzToolsMenu_c();

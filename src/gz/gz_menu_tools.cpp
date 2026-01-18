@@ -5,32 +5,33 @@
 
 // Checkers tab
 static gzBoolOption_s checkerFlags[] = {
-    {"link debug info", "Display link position and angle info", gzInfo_isLinkDebugInfo, gzInfo_onLinkDebugInfo, gzInfo_offLinkDebugInfo},
-    {"stage info", "Display current stage information", gzInfo_isStageInfo, gzInfo_onStageInfo, gzInfo_offStageInfo},
+    {"coro td", "show frame info when doing coro td", gzInfo_isCoroTD, gzInfo_onCoroTD, gzInfo_offCoroTD},
+    {"ebmb", "show frame info for ending blow moon boots", gzInfo_isEndingBlowMoonBoots, gzInfo_onEndingBlowMoonBoots, gzInfo_offEndingBlowMoonBoots},
+    {"elevator escape", "show frame info when doing elevator escape", gzInfo_isElevatorEscape, gzInfo_onElevatorEscape, gzInfo_offElevatorEscape},
+    {"gorge void", "warp to kakariko gorge", gzInfo_isGorgeVoid, gzInfo_onGorgeVoid, gzInfo_offGorgeVoid},
+    {"ladder freezard cancel", "ladder freezard cancel checker", gzInfo_isLadderFreezardCancel, gzInfo_onLadderFreezardCancel, gzInfo_offLadderFreezardCancel},
+    {"rolling", "frame counter for chaining rolls", gzInfo_isRolling, gzInfo_onRolling, gzInfo_offRolling},
+    {"universal map delay", "practice snowpeak universal map delay timing", gzInfo_isUniversalMapDelay, gzInfo_onUniversalMapDelay, gzInfo_offUniversalMapDelay},
 };
 
 // Displays tab
 static gzBoolOption_s displayFlags[] = {
-    {"timer", "Toggle timer display", gzInfo_isTimer, gzInfo_onTimer, gzInfo_offTimer},
-    {"in-game timer", "Toggle in-game timer display", gzInfo_isInGameTimer, gzInfo_onInGameTimer, gzInfo_offInGameTimer},
-    {"load timer", "Toggle load timer display", gzInfo_isLoadTimer, gzInfo_onLoadTimer, gzInfo_offLoadTimer},
-    {"input viewer", "Toggle input viewer display", gzInfo_isInputViewer, gzInfo_onInputViewer, gzInfo_offInputViewer},
-    {"disable item timer", "Disable item timer display", gzInfo_isDisableItemTimer, gzInfo_onDisableItemTimer, gzInfo_offDisableItemTimer},
+    {"a/b mash rate", "display a/b button mashing speeds", gzInfo_isAbMashRate, gzInfo_onAbMashRate, gzInfo_offAbMashRate},
+    {"in-game timer", "in-game time timer", gzInfo_isInGameTimer, gzInfo_onInGameTimer, gzInfo_offInGameTimer},
+    {"input viewer", "show current inputs", gzInfo_isInputViewer, gzInfo_onInputViewer, gzInfo_offInputViewer},
+    {"link debug info", "show link's position, angle, and speed", gzInfo_isLinkDebugInfo, gzInfo_onLinkDebugInfo, gzInfo_offLinkDebugInfo},
+    {"load timer", "loading zone timer", gzInfo_isLoadTimer, gzInfo_onLoadTimer, gzInfo_offLoadTimer},
+    {"stage info", "show link's current stage info", gzInfo_isStageInfo, gzInfo_onStageInfo, gzInfo_offStageInfo},
+    {"timer", "frame timer", gzInfo_isTimer, gzInfo_onTimer, gzInfo_offTimer},
 };
 
 // Link tab
 static gzBoolOption_s linkFlags[] = {
-    {"move link", "Enable free movement of Link", gzInfo_isMoveLink, gzInfo_onMoveLink, gzInfo_offMoveLink},
-    {"fast movement", "Enable fast movement speed", gzInfo_isFastMovement, gzInfo_onFastMovement, gzInfo_offFastMovement},
-    {"fast bonk recovery", "Enable fast bonk recovery", gzInfo_isFastBonkRecovery, gzInfo_onFastBonkRecovery, gzInfo_offFastBonkRecovery},
-    {"rolling", "Enable infinite rolling", gzInfo_isRolling, gzInfo_onRolling, gzInfo_offRolling},
-    {"moon jump", "Enable moon jump", gzInfo_isMoonJump, gzInfo_onMoonJump, gzInfo_offMoonJump},
-    {"super clawshot", "Enable super clawshot distance", gzInfo_isSuperClawshot, gzInfo_onSuperClawshot, gzInfo_offSuperClawshot},
-    {"transform anywhere", "Enable transform anywhere", gzInfo_isTransformAnywhere, gzInfo_onTransformAnywhere, gzInfo_offTransformAnywhere},
-    {"no sinking in sand", "Disable sinking in sand", gzInfo_isNoSinkingInSand, gzInfo_onNoSinkingInSand, gzInfo_offNoSinkingInSand},
-    {"disable walls", "Disable wall collision", gzInfo_isDisableWalls, gzInfo_onDisableWalls, gzInfo_offDisableWalls},
-    {"teleport", "Enable teleport functionality", gzInfo_isTeleport, gzInfo_onTeleport, gzInfo_offTeleport},
-    {"ab mash rate", "Toggle A/B mash rate display", gzInfo_isAbMashRate, gzInfo_onAbMashRate, gzInfo_offAbMashRate},
+    {"fast bonk recovery", "reduces bonk animation significantly", gzInfo_isFastBonkRecovery, gzInfo_onFastBonkRecovery, gzInfo_offFastBonkRecovery},
+    {"fast movement", "link's movement is much faster", gzInfo_isFastMovement, gzInfo_onFastMovement, gzInfo_offFastMovement},
+    {"no sinking in sand", "link won't sink in sand", gzInfo_isNoSinkingInSand, gzInfo_onNoSinkingInSand, gzInfo_offNoSinkingInSand},
+    {"move link", "move link around freely", gzInfo_isMoveLink, gzInfo_onMoveLink, gzInfo_offMoveLink},
+    {"teleport", "store and load link's position", gzInfo_isTeleport, gzInfo_onTeleport, gzInfo_offTeleport},
 };
 
 gzToolsMenu_c::gzToolsMenu_c() {
