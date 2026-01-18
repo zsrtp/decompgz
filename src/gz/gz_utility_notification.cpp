@@ -98,7 +98,7 @@ void gzNotification_c::draw() {
             f32 tan_in1 = 0.0f;
 
             f32 current_time = (f32)age;
-            y_offset = J2DHermiteInterpolation<f32>(current_time, &time0, &value0, &tan_out0, &time1, &value1, &tan_in1);
+            y_offset = J2DHermiteInterpolation(current_time, &time0, &value0, &tan_out0, &time1, &value1, &tan_in1);
         }
 
         f32 y_pos = y_alignment + ((mNumNotifications - 1 - i) * 22.0f) + y_offset;

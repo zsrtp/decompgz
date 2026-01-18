@@ -2,7 +2,6 @@
 
 #include "gz/gz_menu_flags.h"
 #include "gz/gz_menu_main.h"
-#include "d/d_select_cursor.h"
 
 // General flags
 static gzBoolOption_s generalFlags[] = {
@@ -157,9 +156,10 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
 
     // Portal tab
     mpLinesPortal[P_FLAG_SELECT_REGION] = new gzListOptionLine("region:", "Select region to view flags", nextRegion, prevRegion);
-    for (int i = 0; i < 16; i++) {
-        mpLinesPortal[P_FLAG_REGION + i] = new gzBoolOptionLine(warpFlags[i].name, warpFlags[i].desc,
-                                                                 warpFlags[i].is, warpFlags[i].on, warpFlags[i].off);
+    mpLinesPortal[P_FLAG_REGION] = new gzBoolOptionLine("enabled:", "Toggle the selected region flag");
+    for (int i = 0; i < 15; i++) {
+        mpLinesPortal[P_FLAG_SPRING_WARP + i] = new gzBoolOptionLine(warpFlags[i].name, warpFlags[i].desc,
+                                                                      warpFlags[i].is, warpFlags[i].on, warpFlags[i].off);
     }
 
     // Rupee tab
@@ -170,7 +170,6 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
                                                                        rupeeFlags[i].is, rupeeFlags[i].on, rupeeFlags[i].off);
     }
 
-    mpMeterHaihai = new dMeterHaihai_c(3);
     mCurrentTab = TAB_GENERAL;
 }
 
@@ -200,8 +199,6 @@ void gzFlagsMenu_c::_delete() {
         delete mpLinesRupee[i];
         mpLinesRupee[i] = NULL;
     }
-    delete mpMeterHaihai;
-    mpMeterHaihai = NULL;
 }
 
 u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
@@ -307,9 +304,11 @@ void gzFlagsMenu_c::updateDynamicLines() {
         {
             gzTextBox* regionOpt = currentLines[P_FLAG_SELECT_REGION]->getOptionBox();
             if (regionOpt) regionOpt->setString(regionNames[sSelectedRegion]);
+            gzTextBox* regionEnabledOpt = currentLines[P_FLAG_REGION]->getOptionBox();
+            if (regionEnabledOpt) regionEnabledOpt->setStringf("%s", getRegionFlag(sSelectedRegion + 1) ? "on" : "off");
         }
-        for (int i = 0; i < 16; i++) {
-            gzTextBox* opt = currentLines[P_FLAG_REGION + i]->getOptionBox();
+        for (int i = 0; i < 15; i++) {
+            gzTextBox* opt = currentLines[P_FLAG_SPRING_WARP + i]->getOptionBox();
             if (opt) opt->setStringf("%s", warpFlags[i].is() ? "on" : "off");
         }
         break;
@@ -354,13 +353,10 @@ bool gzFlagsMenu_c::getRegionFlag(int regionBit) {
 }
 
 void gzFlagsMenu_c::execute() {
-    if (g_gzInfo.mInputWaitTimer != 0) {
-        g_gzInfo.mInputWaitTimer--;
-        return;
-    }
+    if (checkInputWait()) return;
+    if (handleBackButton(gzMainMenu_c::MENU_FLAGS)) return;
 
     gzCursor* l_cursor = gzInfo_getCursor();
-
     int maxLines = getCurrentLineNum();
 
     if (!gzInfo_isMenuOption()) {
@@ -375,14 +371,6 @@ void gzFlagsMenu_c::execute() {
             l_cursor->y = 0;
             gzInfo_resetTopLine();
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
-        }
-        if (gzPad::getTrigDown()) {
-            l_cursor->y = (l_cursor->y + 1) % maxLines;
-            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-        }
-        if (gzPad::getTrigUp()) {
-            l_cursor->y = (l_cursor->y == 0) ? maxLines - 1 : l_cursor->y - 1;
-            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
         }
     } else {
         if (gzPad::getTrigRight()) {
@@ -510,27 +498,18 @@ void gzFlagsMenu_c::execute() {
             }
         }
     }
-    if (gzPad::getTrigB()) {
-        if (gzInfo_isMenuOption()) {
-            gzInfo_offMenuOption();
-            gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
-        } else {
-            l_cursor->x--;
-            l_cursor->y = gzMainMenu_c::MENU_FLAGS;
-            gzInfo_seStart(Z2SE_SY_EXP_WIN_CLOSE);
-            g_gzInfo.mpMainMenu->startReverseTransition();
-            return;
-        }
-    }
+
     if (gzPad::getTrigA()) {
-        bool handled = false;
-        if (gzInfo_isMenuOption() && mCurrentTab == TAB_DUNGEON && l_cursor->y == D_FLAG_CLEAR_DUNGEON) {
-            clearDungeonFlags(sSelectedDungeon + 16);
-            gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK);
-            gzInfo_offMenuOption();
-            handled = true;
-        }
-        if (!handled) {
+        if (mCurrentTab == TAB_DUNGEON && l_cursor->y == D_FLAG_CLEAR_DUNGEON) {
+            int dungeonIdx = sSelectedDungeon + 16;
+
+            for (int i = 0; i < 7; i++) {
+                dungeonFlags[i].off(dungeonIdx);
+            }
+            
+            setDungeonSmallKeys(dungeonIdx, 0);
+            gzInfo_seStart(Z2SE_SY_CONTINUE_OK);
+        } else {
             gzInfo_setMenuOption(!gzInfo_isMenuOption());
             if (gzInfo_isMenuOption()) {
                 gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK);
@@ -539,52 +518,25 @@ void gzFlagsMenu_c::execute() {
             }
         }
     }
-    
-    updateScrolling(maxLines);
-    mpHaihai->_execute(0);
+
+    handleNavigation(maxLines);
+    finishExecute(maxLines);
 }
 
 void gzFlagsMenu_c::draw() {
-    gzCursor* l_cursor = gzInfo_getCursor();
-    static const f32 Y_ALIGNMENT = 78.0f;
-    static const f32 OPTIONS_X_OFFSET = -20.0f;
-    static const f32 HAIHAI_X_OFFSET = 305.0f;
-    static const f32 HAIHAI_Y_OFFSET = -7.0f;
-    static const f32 HAIHAI_SCALE_FACTOR = 0.04f;
-    static const f32 HAIHAI_EXTRA_SPACING = 30.0f;
-    static const f32 TP_CURSOR_X_OFFSET = 20.0f;
-    static const f32 CURSOR_Y_BASE = 90.0f;
-    static const f32 LINE_SPACING = 22.0f;
-    static const f32 DESCRIPTION_X = 0.0f;
-    static const f32 DESCRIPTION_Y = 420.0f;
-    static const int VISIBLE_LINES = 15;
     static const f32 TAB_HEADER_OFFSET = 15.0f;
 
-    // manually set tab header text distances for now
-    // need to support scrolling tabs at some point
-    f32 X_POS[TAB_MAX_e];
-    f32 tab_header_x_alignment = mXPos + TAB_HEADER_OFFSET;
-    X_POS[TAB_GENERAL] = tab_header_x_alignment;
-    X_POS[TAB_DUNGEON] = tab_header_x_alignment + 70.0f;
-    X_POS[TAB_PORTAL] = tab_header_x_alignment + 150.0f;
-    X_POS[TAB_RUPEE] = tab_header_x_alignment + 210.0f;
+    // Set up tab header x positions
+    f32 tabXPositions[TAB_MAX_e];
+    f32 tabBaseX = mXPos + TAB_HEADER_OFFSET;
+    tabXPositions[TAB_GENERAL] = tabBaseX;
+    tabXPositions[TAB_DUNGEON] = tabBaseX + 70.0f;
+    tabXPositions[TAB_PORTAL] = tabBaseX + 150.0f;
+    tabXPositions[TAB_RUPEE] = tabBaseX + 210.0f;
 
     updateDynamicLines();
 
-    J2DTextBox::TFontSize font_size;
-    gzTextBox* firstOpt = mpLinesGeneral[0]->getOptionBox();
-    if (firstOpt) {
-        firstOpt->getFontSize(font_size);
-        mpMeterHaihai->setScale(font_size.mSizeY * HAIHAI_SCALE_FACTOR);
-    }
-
-    u32 cursor_color = gzInfo_getCursorColor();
-    f32 y_header_alignment = g_gzInfo.mBackgroundYPos + 48.0f;
-    f32 x_alignment_opts = mXPos + OPTIONS_X_OFFSET;
-    f32 x_alignment_haihai = x_alignment_opts + HAIHAI_X_OFFSET;
-    f32 y_alignment_haihai = Y_ALIGNMENT + HAIHAI_Y_OFFSET;
-    f32 x_alignment_tp_cursor = mXPos + TP_CURSOR_X_OFFSET;
-
+    // Get current tab's lines
     gzLine** currentLines;
     int currentLineNum;
     switch (mCurrentTab) {
@@ -606,63 +558,11 @@ void gzFlagsMenu_c::draw() {
         break;
     }
 
-    for (int i = 0; i < TAB_MAX_e; i++) {
-        mpTabHeaders[i]->draw(X_POS[i], y_header_alignment,
-                              i == mCurrentTab ? cursor_color : COLOR_WHITE);
-    }
+    // Draw tab headers
+    f32 yHeader = g_gzInfo.mBackgroundYPos + gzMenuLayout::TAB_HEADER_Y_OFFSET;
+    drawTabHeaders(mpTabHeaders, tabXPositions, TAB_MAX_e, mCurrentTab, yHeader, gzInfo_getCursorColor());
 
+    // Draw lines with per-line haihai flags
     s32 topLine = gzInfo_getTopLine();
-    if (l_cursor->y < topLine) {
-        topLine = l_cursor->y;
-    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
-        topLine = l_cursor->y - VISIBLE_LINES + 1;
-    }
-    int maxTop = currentLineNum - VISIBLE_LINES;
-    if (maxTop < 0)
-        maxTop = 0;
-    if (topLine > maxTop)
-        topLine = maxTop;
-    if (topLine < 0)
-        topLine = 0;
-    gzInfo_setTopLine(topLine);
-
-    for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
-        int lineIdx = topLine + screenIdx;
-        if (lineIdx >= currentLineNum)
-            break;
-        f32 y_pos = Y_ALIGNMENT + (screenIdx * LINE_SPACING);
-        gzTextBox* opt = currentLines[lineIdx]->getOptionBox();
-        if (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible()) {
-            currentLines[lineIdx]->draw(mXPos, y_pos, cursor_color);
-            if (opt) {
-                f32 x_size_haihai = opt->mBounds.f.x + HAIHAI_EXTRA_SPACING;
-                if (gzInfo_isMenuOption()) {
-                    mpMeterHaihai->drawHaihai(getHaihaiFlags(lineIdx), x_alignment_haihai,
-                                              y_pos + HAIHAI_Y_OFFSET, x_size_haihai, 0.0f);
-                }
-                opt->draw(x_alignment_opts, y_pos, cursor_color, HBIND_CENTER);
-            }
-            gzInfo_getTPCursor()->setPos(x_alignment_tp_cursor, y_pos - 10.0f,
-                                 (J2DPane*)currentLines[lineIdx]->mText, false);
-        } else {
-            currentLines[lineIdx]->draw(mXPos, y_pos, COLOR_WHITE);
-            if (opt) {
-                opt->draw(x_alignment_opts, y_pos, COLOR_WHITE, HBIND_CENTER);
-            }
-        }
-    }
-
-    if (gzInfo_isSubMenuVisible()) {
-        if (currentLines[l_cursor->y] && currentLines[l_cursor->y]->m_description[0] != 0) {
-            f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
-            gzInfo_getMenuDescription()->setString(currentLines[l_cursor->y]->m_description);
-            gzInfo_getMenuDescription()->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
-        }
-    }
-
-    if (gzInfo_isCursorTypeTP()) {
-        if (gzInfo_getTPCursor() != NULL) {
-            gzInfo_getTPCursor()->draw();
-        }
-    }
+    drawLinesWithHaihai(currentLines, currentLineNum, topLine, gzMenuLayout::VISIBLE_LINES);
 }

@@ -53,10 +53,10 @@ public:
     virtual void _delete();
     virtual void execute();
     virtual void draw();
+    virtual u8 getHaihaiFlags(int idx);
 
 private:
     void updateDynamicLines();
-    u8 getHaihaiFlags(int idx);
     int getCurrentLineNum();
 
 private:
@@ -65,7 +65,6 @@ private:
     gzBoolOptionLine* mpLinesDisplays[D_MAX];
     gzBoolOptionLine* mpLinesLink[L_MAX];
 
-    dMeterHaihai_c* mpMeterHaihai;
     int mCurrentTab;
 };
 

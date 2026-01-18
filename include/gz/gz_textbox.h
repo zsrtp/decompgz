@@ -2,6 +2,7 @@
 #define GZ_TEXTBOX_H
 
 #include "JSystem/J2DGraph/J2DTextBox.h"
+#include "JSystem/JUtility/JUTFont.h"
 #include "gz/gz.h"
 
 // TextBox pool functions (implemented in gz_textbox.cpp)
@@ -45,6 +46,40 @@ public:
         va_end(list);
 
         setString(buffer);
+        updateBounds();
+    }
+
+    // Update bounds based on actual rendered text width using font metrics
+    // This is needed for TP cursor to properly size itself around the text
+    void updateBounds() {
+        if (mFont == NULL || mStringPtr == NULL) {
+            mBounds.i.x = 0.0f;
+            mBounds.i.y = 0.0f;
+            mBounds.f.x = 0.0f;
+            mBounds.f.y = mFontSizeY;
+            return;
+        }
+
+        f32 totalWidth = 0.0f;
+        f32 scale = mFontSizeX / mFont->getCellWidth();
+        const char* str = mStringPtr;
+
+        while (*str != '\0') {
+            JUTFont::TWidth charWidth;
+            mFont->getWidthEntry((u8)*str, &charWidth);
+            totalWidth += charWidth.field_0x1 * scale;
+
+            // Add character spacing for all but the last character
+            if (*(str + 1) != '\0') {
+                totalWidth += mCharSpacing;
+            }
+            str++;
+        }
+
+        mBounds.i.x = 0.0f;
+        mBounds.i.y = 0.0f;
+        mBounds.f.x = totalWidth + 6.0f;  // Add padding for TP cursor
+        mBounds.f.y = mFontSizeY;
     }
 
     void draw(f32 x, f32 y, u32 color) {
@@ -78,8 +113,6 @@ public:
     gzLine(const char* i_text, const char* i_description) {
         mText = gzTextBox_allocate();
         mText->setStringf(i_text);
-        mText->mBounds.f.x = 430.0f;
-        mText->mBounds.f.y = 10.0f;
         strcpy(m_description, i_description);
     }
 

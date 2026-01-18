@@ -23,6 +23,9 @@ u8 gzSettingsMenu_c::getHaihaiFlags(int i) {
     case gzSettingsMenu_c::SETTING_MENU_PAUSES_GAME:
         !gzInfo_isMenuPausesGame() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
+    case gzSettingsMenu_c::SETTING_BOOT_TO_MENU:
+        !gzInfo_isBootToMenu() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
+        break;
     case gzSettingsMenu_c::SETTING_MENU_SFX:
         !gzInfo_isMenuSfx() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
@@ -58,6 +61,7 @@ void gzSettingsMenu_c::updateDynamicLines() {
     mpDropShadows->getOptionBox()->setStringf("%s", getDropShadowsText());
     mpFont->getOptionBox()->setStringf("%s", "rodan");
     mpMenuPausesGame->getOptionBox()->setStringf("%s", getMenuPausesGameText());
+    mpBootToMenu->getOptionBox()->setStringf("%s", getBootToMenuText());
     mpMenuSfx->getOptionBox()->setStringf("%s", getMenuSfxText());
     mpReloadType->getOptionBox()->setStringf("%s", getReloadTypeText());
     mpTextColor->getOptionBox()->setStringf("%s", getTextColorText());
@@ -80,6 +84,7 @@ void gzSettingsMenu_c::updateDynamicLines() {
 
 int gzSettingsMenu_c::deleteCardConfirmCb(gzConfirm_c* i_confirm, void* i_data) {
     gzInfo_deleteSettingsMemcard();
+    gzInfo_seStart(Z2SE_SY_CONTINUE_OK);
     return 1;
 }
 
@@ -97,6 +102,7 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpDropShadows = new gzBoolOptionLine("drop shadows", "adds drop shadows to tpgz menu text", gzInfo_isDropShadows, gzInfo_onDropShadows, gzInfo_offDropShadows);
     mpFont = new gzListOptionLine("font", "changes tpgz menu font", gzInfo_nextFont, gzInfo_prevFont);
     mpMenuPausesGame = new gzBoolOptionLine("menu pauses game", "opening gz menu pauses game", gzInfo_isMenuPausesGame, gzInfo_onMenuPausesGame, gzInfo_offMenuPausesGame);
+    mpBootToMenu = new gzBoolOptionLine("boot to menu", "boot directly to gz menu on startup", gzInfo_isBootToMenu, gzInfo_onBootToMenu, gzInfo_offBootToMenu);
     mpMenuSfx = new gzBoolOptionLine("menu sfx", "turn on/off gz menu sound effects", gzInfo_isMenuSfx, gzInfo_onMenuSfx, gzInfo_offMenuSfx);
     mpReloadType = new gzBoolOptionLine("reload type", "changes reload type to last file or last area", gzInfo_isReloadArea, gzInfo_setReloadArea, gzInfo_setReloadFile);
     mpTextColor = new gzListOptionLine("text color", "changes tpgz menu text color", gzInfo_nextTextColor, gzInfo_prevTextColor);
@@ -113,6 +119,7 @@ gzSettingsMenu_c::gzSettingsMenu_c() {
     mpLines[SETTING_DROP_SHADOW] = mpDropShadows;
     mpLines[SETTING_FONT] = mpFont;
     mpLines[SETTING_MENU_PAUSES_GAME] = mpMenuPausesGame;
+    mpLines[SETTING_BOOT_TO_MENU] = mpBootToMenu;
     mpLines[SETTING_MENU_SFX] = mpMenuSfx;
     mpLines[SETTING_RELOAD_TYPE] = mpReloadType;
     mpLines[SETTING_TEXT_COLOR] = mpTextColor;
@@ -184,10 +191,7 @@ void gzSettingsMenu_c::_delete() {
 }
 
 void gzSettingsMenu_c::execute() {
-    if (g_gzInfo.mInputWaitTimer != 0) {
-        g_gzInfo.mInputWaitTimer--;
-        return;
-    }
+    if (checkInputWait()) return;
 
     if (mpConfirm != NULL) {
         int rt = mpConfirm->execute();
@@ -197,6 +201,8 @@ void gzSettingsMenu_c::execute() {
         }
         return;
     }
+
+    if (handleBackButton(gzMainMenu_c::MENU_SETTINGS)) return;
 
     gzCursor* l_cursor = gzInfo_getCursor();
 
@@ -208,15 +214,19 @@ void gzSettingsMenu_c::execute() {
         case SETTING_DROP_SHADOW:
         case SETTING_SWAP_EQUIPS:
         case SETTING_MENU_PAUSES_GAME:
+        case SETTING_BOOT_TO_MENU:
         case SETTING_MENU_SFX:
         case SETTING_TEXT_COLOR:
             gzInfo_setMenuOption(!gzInfo_isMenuOption());
+            gzInfo_seStart(Z2SE_SY_CURSOR_OK);
             break;
         case SETTING_SAVE_CARD:
             g_gzInfo.storeSettingsMemcard();
+            gzInfo_seStart(Z2SE_SY_CURSOR_OK);
             return;
         case SETTING_LOAD_CARD:
             gzInfo_loadSettingsMemcard();
+            gzInfo_seStart(Z2SE_SY_CURSOR_OK);
             break;
         case SETTING_DELETE_CARD:
             mpConfirm = new gzConfirm_c(deleteCardConfirmCb, deleteCardReturnCb, this, "delete settings?");
@@ -229,18 +239,6 @@ void gzSettingsMenu_c::execute() {
             break;
         case SETTING_CREDITS:
             // gzChangeMenu(mpCreditsMenu);
-            return;
-        }
-    }
-
-    if (gzPad::getTrigB()) {
-        if (gzInfo_isMenuOption()) {
-            gzInfo_offMenuOption();
-        } else {
-            l_cursor->x--;
-            l_cursor->y = gzMainMenu_c::MENU_SETTINGS;
-            gzInfo_seStart(Z2SE_SY_EXP_WIN_CLOSE);
-            g_gzInfo.mpMainMenu->startReverseTransition();
             return;
         }
     }
@@ -286,6 +284,12 @@ void gzSettingsMenu_c::execute() {
             case SETTING_SWAP_EQUIPS:
                 if (!gzInfo_isSwapEquips()) {
                     gzInfo_onSwapEquips();
+                    gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+                }
+                break;
+            case SETTING_BOOT_TO_MENU:
+                if (!gzInfo_isBootToMenu()) {
+                    gzInfo_onBootToMenu();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
@@ -340,6 +344,12 @@ void gzSettingsMenu_c::execute() {
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
+            case SETTING_BOOT_TO_MENU:
+                if (gzInfo_isBootToMenu()) {
+                    gzInfo_offBootToMenu();
+                    gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+                }
+                break;
             case SETTING_TEXT_COLOR:
                 gzInfo_setTextColor(mpTextColor->mpPrev());
                 gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
@@ -348,7 +358,8 @@ void gzSettingsMenu_c::execute() {
         }
     }
 
-    gzMenu_c::execute();
+    handleNavigation(LINE_NUM);
+    finishExecute(LINE_NUM);
 }
 
 void gzSettingsMenu_c::draw() {

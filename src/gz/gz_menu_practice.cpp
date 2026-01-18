@@ -1,7 +1,9 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
+#include "d/d_drawlist.h"
 #include "gz/gz_menu_practice.h"
 #include "gz/gz_menu_main.h"
+#include "d/d_select_cursor.h"
 #include "m_Do/m_Do_MemCard.h"
 
 gzPracticeMenu_c::gzPracticeMenu_c() {
@@ -20,17 +22,31 @@ gzPracticeMenu_c::gzPracticeMenu_c() {
     mpTabHeaders[TAB_GLITCHLESS]->setString("glitchless");
     mpTabHeaders[TAB_MEMFILES]->setString("memfiles");
 
-    mAnypSavesTab.create();
-    mNoSQSavesTab.create();
-    mAllDungeonsSavesTab.create();
-    mHundoSavesTab.create();
-    mGlitchlessSavesTab.create();
-    mMemfileTab.create();
+    // Defer tab data loading until they are first accessed to avoid blocking boot
+    // Initialize all mpLines arrays to NULL to prevent crashes if draw() is called before loading
+    mAnypSavesTab.mLoaded = false;
+    for (int i = 0; i < ANY_LINE_NUM; i++) mAnypSavesTab.mpLines[i] = NULL;
 
+    mNoSQSavesTab.mLoaded = false;
+    for (int i = 0; i < NOSQ_LINE_NUM; i++) mNoSQSavesTab.mpLines[i] = NULL;
+
+    mAllDungeonsSavesTab.mLoaded = false;
+    for (int i = 0; i < ALL_DUNGEONS_LINE_NUM; i++) mAllDungeonsSavesTab.mpLines[i] = NULL;
+
+    mHundoSavesTab.mLoaded = false;
+    for (int i = 0; i < HUNDO_LINE_NUM; i++) mHundoSavesTab.mpLines[i] = NULL;
+
+    mGlitchlessSavesTab.mLoaded = false;
+    for (int i = 0; i < GLITCHLESS_LINE_NUM; i++) mGlitchlessSavesTab.mpLines[i] = NULL;
+
+    mMemfileTab.mNamesLoaded = false;
+    for (int i = 0; i < MEMFILE_MAX_NUM; i++) mMemfileTab.mpLines[i] = NULL;
+    mMemfileTab.mpKeyboard = NULL;
+    mMemfileTab.mpConfirm = NULL;
+    mMemfileTab.mPendingDeleteSlot = -1;
+
+    mCurrentTab = TAB_ANY;
     gzInfo_resetTopLine();
-
-    mpMeterHaihai = new dMeterHaihai_c(3);
-    mpMeterHaihai->setScale(0.04f);
 }
 
 gzPracticeMenu_c::~gzPracticeMenu_c() {
@@ -47,10 +63,8 @@ void gzPracticeMenu_c::_delete() {
 }
 
 void gzPracticeMenu_c::execute() {
-    if (g_gzInfo.mInputWaitTimer != 0) {
-        g_gzInfo.mInputWaitTimer--;
-        return;
-    }
+    if (checkInputWait()) return;
+    if (handleBackButton(gzMainMenu_c::MENU_PRACTICE)) return;
 
     gzCursor* l_cursor = gzInfo_getCursor();
     int current_max_line;
@@ -83,6 +97,7 @@ void gzPracticeMenu_c::execute() {
         break;
     }
 
+    // Tab switching (uses left/right)
     if (gzPad::getTrigRight()) {
         mCurrentTab = (mCurrentTab + 1) % TAB_MAX;
         l_cursor->y = 0;
@@ -90,70 +105,23 @@ void gzPracticeMenu_c::execute() {
         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
     }
 
-    if (gzPad::getTrigLeft())  {
+    if (gzPad::getTrigLeft()) {
         mCurrentTab = (mCurrentTab - 1 + TAB_MAX) % TAB_MAX;
         l_cursor->y = 0;
         gzInfo_resetTopLine();
         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
     }
 
-    if (gzPad::getTrigB()) {
-        l_cursor->x--;
-        l_cursor->y = gzMainMenu_c::MENU_PRACTICE;
-        gzInfo_seStart(Z2SE_SY_EXP_WIN_CLOSE);
-        g_gzInfo.mpMainMenu->startReverseTransition();
-        return;
-    }
-
-    mpMeterHaihai->_execute(0);
-
     if (current_max_line == 0)
         return;
 
-    if (gzPad::getTrigDown()) {
-        l_cursor->y = (l_cursor->y + 1) % current_max_line;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-    }
-
-    if (gzPad::getTrigUp()) {
-        l_cursor->y = (l_cursor->y - 1 + current_max_line) % current_max_line;
-        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
-    }
+    handleNavigation(current_max_line);
+    finishExecute(current_max_line);
 }
 
 void gzPracticeMenu_c::draw() {
-    gzCursor* l_cursor = gzInfo_getCursor();
-
-    static const f32 LINE_SPACING = 22.0f;
-    static const f32 HAIHAI_X_OFFSET = 225.0f;
-    static const f32 HAIHAI_X_SIZE = 460.0f;
     static const f32 TAB_HEADER_OFFSET = 15.0f;
-    static const f32 DESCRIPTION_X = 0.0f;
-    static const int VISIBLE_LINES = 15;
 
-    // manually set tab header text distances for now
-    // need to support scrolling tabs at some point
-    f32 X_POS[TAB_MAX];
-    f32 tab_header_x_alignment = mXPos + TAB_HEADER_OFFSET;
-    X_POS[TAB_ANY] = tab_header_x_alignment;
-    X_POS[TAB_NOSQ] = tab_header_x_alignment + 50.0f;
-    X_POS[TAB_HUNDO] = tab_header_x_alignment + 100.0f;
-    X_POS[TAB_ALLDUNGEONS] = tab_header_x_alignment + 150.0f;
-    X_POS[TAB_GLITCHLESS] = tab_header_x_alignment + 250.0f;
-    X_POS[TAB_MEMFILES] = tab_header_x_alignment + 325.0f;
-
-    u32 cursor_color = gzInfo_getCursorColor();
-
-    f32 y_header_alignment = g_gzInfo.mBackgroundYPos + 48.0f;
-    f32 y_lines_alignment = y_header_alignment + 52.0f;
-    f32 x_alignment_haihai = mXPos + HAIHAI_X_OFFSET;
-    f32 y_alignment_haihai = y_header_alignment - 5.0f;
-
-    int current_max_line;
-    gzLine** currentLines = NULL;
-    bool isMemfileTab = false;
-
-    // TODO: extract tab drawing to separate functions
     if (mMemfileTab.mpKeyboard != NULL) {
         mMemfileTab.mpKeyboard->draw();
         return;
@@ -164,88 +132,59 @@ void gzPracticeMenu_c::draw() {
         return;
     }
 
+    // Set up tab header x positions
+    f32 tabXPositions[TAB_MAX];
+    f32 tabBaseX = mXPos + TAB_HEADER_OFFSET;
+    tabXPositions[TAB_ANY] = tabBaseX;
+    tabXPositions[TAB_NOSQ] = tabBaseX + 50.0f;
+    tabXPositions[TAB_HUNDO] = tabBaseX + 100.0f;
+    tabXPositions[TAB_ALLDUNGEONS] = tabBaseX + 150.0f;
+    tabXPositions[TAB_GLITCHLESS] = tabBaseX + 250.0f;
+    tabXPositions[TAB_MEMFILES] = tabBaseX + 325.0f;
+
     // Draw tab headers
-    for (int i = 0; i < TAB_MAX; i++) {
-        // only draw if it doesnt go past the bounds of the menu
-        // TODO: fetch this magic number from gzInfo instead
-        if (X_POS[i] <= 550.0f) mpTabHeaders[i]->draw(X_POS[i], y_header_alignment, i == mCurrentTab ? cursor_color : COLOR_WHITE);
-    }
+    f32 yHeader = g_gzInfo.mBackgroundYPos + gzMenuLayout::TAB_HEADER_Y_OFFSET;
+    drawTabHeaders(mpTabHeaders, tabXPositions, TAB_MAX, mCurrentTab, yHeader, gzInfo_getCursorColor());
+
+    // Get current tab's lines and line count
+    gzLine** currentLines = NULL;
+    int currentLineNum = 0;
+    bool isMemfileTab = false;
 
     switch (mCurrentTab) {
     case TAB_ANY:
-        current_max_line = ANY_LINE_NUM;
         currentLines = mAnypSavesTab.mpLines;
+        currentLineNum = ANY_LINE_NUM;
         break;
     case TAB_NOSQ:
-        current_max_line = NOSQ_LINE_NUM;
         currentLines = mNoSQSavesTab.mpLines;
+        currentLineNum = NOSQ_LINE_NUM;
         break;
     case TAB_ALLDUNGEONS:
-        current_max_line = ALL_DUNGEONS_LINE_NUM;
         currentLines = mAllDungeonsSavesTab.mpLines;
+        currentLineNum = ALL_DUNGEONS_LINE_NUM;
         break;
     case TAB_HUNDO:
-        current_max_line = HUNDO_LINE_NUM;
         currentLines = mHundoSavesTab.mpLines;
+        currentLineNum = HUNDO_LINE_NUM;
         break;
     case TAB_GLITCHLESS:
-        current_max_line = GLITCHLESS_LINE_NUM;
         currentLines = mGlitchlessSavesTab.mpLines;
+        currentLineNum = GLITCHLESS_LINE_NUM;
         break;
     case TAB_MEMFILES:
-        current_max_line = MEMFILE_MAX_NUM;
+        currentLineNum = MEMFILE_MAX_NUM;
         isMemfileTab = true;
         break;
     }
 
     s32 topLine = gzInfo_getTopLine();
-    if (l_cursor->y < topLine) {
-        topLine = l_cursor->y;
-    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
-        topLine = l_cursor->y - VISIBLE_LINES + 1;
-    }
 
-    // Clamp topLine to valid range
-    int maxTop = current_max_line - VISIBLE_LINES;
-    if (maxTop < 0) maxTop = 0;
-    if (topLine > maxTop) topLine = maxTop;
-    if (topLine < 0) topLine = 0;
-    gzInfo_setTopLine(topLine);
-
-    for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
-        int lineIdx = topLine + screenIdx;
-        if (lineIdx >= current_max_line) break;
-
-        f32 y_pos = y_lines_alignment + ((screenIdx - 1) * LINE_SPACING);
-
-        if (isMemfileTab) {
-            if (mMemfileTab.mpLines[lineIdx] != NULL) {
-                if (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible()) {
-                    mMemfileTab.mpLines[lineIdx]->draw(mXPos, y_pos, cursor_color);
-                } else {
-                    mMemfileTab.mpLines[lineIdx]->draw(mXPos, y_pos, COLOR_WHITE);
-                }
-            }
-        } else if (currentLines[lineIdx] != NULL) {
-            if (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible()) {
-                currentLines[lineIdx]->draw(mXPos, y_pos, cursor_color);
-            } else {
-                currentLines[lineIdx]->draw(mXPos, y_pos, COLOR_WHITE);
-            }
-        }
-    }
-
-    // Draw description if valid and on menu
-    if (gzInfo_isSubMenuVisible() && !isMemfileTab && currentLines != NULL) {
-        if (currentLines[l_cursor->y] && currentLines[l_cursor->y]->m_description[0] != 0) {
-            f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
-            gzInfo_getMenuDescription()->setString(currentLines[l_cursor->y]->m_description);
-            gzInfo_getMenuDescription()->draw(0.0f, description_y, cursor_color, HBIND_CENTER);
-        }
-    }
-
-    if (mpMeterHaihai != NULL && gzInfo_isSubMenuVisible()) {
-        mpMeterHaihai->drawHaihai(ARROW_LEFT | ARROW_RIGHT, x_alignment_haihai, y_alignment_haihai, HAIHAI_X_SIZE, 0.0f);
+    if (isMemfileTab) {
+        // Memfile tab uses gzTextBox* instead of gzLine*, draw manually
+        mMemfileTab.draw(mXPos);
+    } else {
+        drawLines(currentLines, currentLineNum, 0, topLine, gzMenuLayout::VISIBLE_LINES);
     }
 }
 
@@ -259,11 +198,12 @@ void gzPracticeMenu_c::gzMemfileTab_c::create() {
         }
     }
 
-    readMemfileNames();
-
     mpKeyboard = NULL;
     mpConfirm = NULL;
     mPendingDeleteSlot = -1;
+
+    // Now read memfile names from memcard
+    readMemfileNames();
 }
 
 int gzPracticeMenu_c::gzMemfileTab_c::readMemfileNames() {
@@ -294,9 +234,8 @@ int gzPracticeMenu_c::gzMemfileTab_c::readMemfileNames() {
             } else {
                 OSReport("readMemfileNames: read error (%d)\n", ret);
             }
+            CARDClose(&file);
         }
-
-        CARDClose(&file);
     }
 
     return 1;
@@ -342,6 +281,7 @@ int gzPracticeMenu_c::gzMemfileTab_c::memfileNameFinishCb(gzKeyboard_c* i_keyboa
                 gzInfo_sendNotification("memfile saved!");
                 menu->mpLines[l_cursor->y]->setStringf("%d. %s", slot_no, i_keyboard->mString);
                 menu->setMemfileExists(l_cursor->y, true);
+                g_gzInfo.mDisplay = false;
             }
 
             CARDClose(&file);
@@ -369,7 +309,7 @@ int gzPracticeMenu_c::gzMemfileTab_c::loadMemfile(int i_no) {
         if (ret == CARD_RESULT_READY) {
             OSReport("loadMemfile: read memfile from memcard\n");
             gzInfo_sendNotification("memfile loaded!");
-            
+
             dSv_save_c* savep = (dSv_save_c*)mDoMemCd_Ctrl_c::sTmpBuf;
             dComIfGp_setNextStage(savep->getPlayer().getPlayerReturnPlace().getName(),
                                 savep->getPlayer().getPlayerReturnPlace().getPlayerStatus(),
@@ -386,6 +326,9 @@ int gzPracticeMenu_c::gzMemfileTab_c::loadMemfile(int i_no) {
 
             g_gzInfo.mSaveLoaderMng.setMode(gzSaveLoaderMng_c::MODE_MEMFILE_e);
             g_gzInfo.mSaveLoaderMng.start();
+
+            g_gzInfo.mDisplay = false;
+            dDlst_list_c::wipeIn(1.0f);
         }
 
         CARDClose(&file);
@@ -435,6 +378,12 @@ int gzPracticeMenu_c::gzMemfileTab_c::memfileDeleteReturnCb(gzConfirm_c* i_confi
 }
 
 int gzPracticeMenu_c::gzMemfileTab_c::execute() {
+    // Lazy load on first access to avoid blocking boot
+    if (!mNamesLoaded) {
+        create();
+        mNamesLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (mpKeyboard != NULL) {
@@ -475,10 +424,45 @@ int gzPracticeMenu_c::gzMemfileTab_c::execute() {
     return 1;
 }
 
+void gzPracticeMenu_c::gzMemfileTab_c::draw(f32 xPos) {
+    gzCursor* l_cursor = gzInfo_getCursor();
+    u32 cursorColor = gzInfo_getCursorColor();
+    s32 topLine = gzInfo_getTopLine();
+
+    f32 lineX = xPos;
+    f32 lineY_start = g_gzInfo.mBackgroundYPos + gzMenuLayout::Y_ALIGNMENT;
+    f32 line_spacing = gzMenuLayout::LINE_SPACING;
+
+    s32 endLine = topLine + gzMenuLayout::VISIBLE_LINES;
+    if (endLine > MEMFILE_MAX_NUM) endLine = MEMFILE_MAX_NUM;
+
+    for (s32 i = topLine; i < endLine; i++) {
+        if (mpLines[i] == NULL) continue;
+
+        s32 screenIdx = i - topLine;
+        f32 lineY = lineY_start + (screenIdx * line_spacing);
+        bool isSelected = (l_cursor->y == i && gzInfo_isSubMenuVisible());
+        u32 color = isSelected ? cursorColor : COLOR_WHITE;
+
+        mpLines[i]->draw(lineX, lineY, color);
+
+        // Draw TP cursor for selected line
+        if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
+            mpLines[i]->updateBounds();
+            // setPos expects center position, so calculate center of text
+            f32 cursorX = lineX + (mpLines[i]->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+            f32 cursorY = lineY + (mpLines[i]->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+            gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)mpLines[i], false);
+            gzSetup2DContext();
+            gzInfo_getTPCursor()->draw();
+        }
+    }
+}
+
 void gzPracticeMenu_c::gzAnypSavesTab_c::create() {
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ANYP_e);
 
-    gzSaveLoaderMng_c::saveMetadata_s metadata;
+    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
     for (int i = 0; i < ANY_LINE_NUM; i++) {
         if (i < save_num) {
             g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_ANYP_e, i, &metadata);
@@ -490,6 +474,11 @@ void gzPracticeMenu_c::gzAnypSavesTab_c::create() {
 }
 
 int gzPracticeMenu_c::gzAnypSavesTab_c::execute() {
+    if (!mLoaded) {
+        create();
+        mLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
@@ -503,7 +492,7 @@ int gzPracticeMenu_c::gzAnypSavesTab_c::execute() {
 void gzPracticeMenu_c::gzHundoSavesTab_c::create() {
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_HUNDO_e);
 
-    gzSaveLoaderMng_c::saveMetadata_s metadata;
+    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
     for (int i = 0; i < HUNDO_LINE_NUM; i++) {
         if (i < save_num) {
             g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_HUNDO_e, i, &metadata);
@@ -515,6 +504,11 @@ void gzPracticeMenu_c::gzHundoSavesTab_c::create() {
 }
 
 int gzPracticeMenu_c::gzHundoSavesTab_c::execute() {
+    if (!mLoaded) {
+        create();
+        mLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
@@ -528,7 +522,7 @@ int gzPracticeMenu_c::gzHundoSavesTab_c::execute() {
 void gzPracticeMenu_c::gzADSavesTab_c::create() {
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e);
 
-    gzSaveLoaderMng_c::saveMetadata_s metadata;
+    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
     for (int i = 0; i < ALL_DUNGEONS_LINE_NUM; i++) {
         if (i < save_num) {
             g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_ALLDUNGEONS_e, i, &metadata);
@@ -540,6 +534,11 @@ void gzPracticeMenu_c::gzADSavesTab_c::create() {
 }
 
 int gzPracticeMenu_c::gzADSavesTab_c::execute() {
+    if (!mLoaded) {
+        create();
+        mLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
@@ -553,7 +552,7 @@ int gzPracticeMenu_c::gzADSavesTab_c::execute() {
 void gzPracticeMenu_c::gzGlitchlessSavesTab_c::create() {
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e);
 
-    gzSaveLoaderMng_c::saveMetadata_s metadata;
+    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
     for (int i = 0; i < GLITCHLESS_LINE_NUM; i++) {
         if (i < save_num) {
             g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_GLITCHLESS_e, i, &metadata);
@@ -565,6 +564,11 @@ void gzPracticeMenu_c::gzGlitchlessSavesTab_c::create() {
 }
 
 int gzPracticeMenu_c::gzGlitchlessSavesTab_c::execute() {
+    if (!mLoaded) {
+        create();
+        mLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
@@ -578,7 +582,7 @@ int gzPracticeMenu_c::gzGlitchlessSavesTab_c::execute() {
 void gzPracticeMenu_c::gzNoSQSavesTab_c::create() {
     int save_num = g_gzInfo.mSaveLoaderMng.getSaveEntryNum(gzSaveLoaderMng_c::CATEGORY_NOSQ_e);
 
-    gzSaveLoaderMng_c::saveMetadata_s metadata;
+    gzSaveLoaderMng_c::saveMetadata_s ATTRIBUTE_ALIGN(32) metadata;
     for (int i = 0; i < NOSQ_LINE_NUM; i++) {
         if (i < save_num) {
             g_gzInfo.mSaveLoaderMng.getSaveMetadata(gzSaveLoaderMng_c::CATEGORY_NOSQ_e, i, &metadata);
@@ -590,6 +594,11 @@ void gzPracticeMenu_c::gzNoSQSavesTab_c::create() {
 }
 
 int gzPracticeMenu_c::gzNoSQSavesTab_c::execute() {
+    if (!mLoaded) {
+        create();
+        mLoaded = true;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {

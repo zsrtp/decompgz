@@ -68,13 +68,13 @@ void gzCheatsMng_c::executeInvincibleLink() {
     daAlink_c* link = daAlink_getAlinkActorClass();
     if (link != NULL) {
         for (int i = 0; i < 3; i++) {
-            link->field_0x850[i].GetGObjInf()->OffTgSetBit();
-            link->field_0x850[i].GetGObjInf()->ClrTgHit();
+            link->mTgCyls[i].GetGObjInf()->OffTgSetBit();
+            link->mTgCyls[i].GetGObjInf()->ClrTgHit();
         }
 
         if (link->checkWolf()) {
-            link->field_0xFB8.GetGObjInf()->OffTgSetBit();
-            link->field_0xFB8.GetGObjInf()->ClrTgHit();
+            link->mAtSph.GetGObjInf()->OffTgSetBit();
+            link->mAtSph.GetGObjInf()->ClrTgHit();
         }
     }
 }

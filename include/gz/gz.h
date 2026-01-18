@@ -19,6 +19,7 @@ class gzMainMenu_c;
 class gzNotification_c;
 class gzToolsMng_c;
 class dSelect_cursor_c;
+class gzCapture_c;
 
 #define COLOR_WHITE 0xFFFFFFFFu
 #define COLOR_RED 0xFF0000FFu
@@ -67,6 +68,7 @@ struct gzSettings_s {
     u8 mCursorType;
     bool mDisplayMode;
     bool mMenuPausesGame;
+    bool mBootToMenu;
     bool mMoveLink;
     gzCommandCombos_s mCommandCombos;
     bool mMenuSfx;
@@ -199,6 +201,7 @@ public:
     bool isMaloMartCT() { return dComIfGs_isEventBit(0x2210);}
     bool isMapWarping() { return dComIfGs_isEventBit(0x0604);}
     bool isMenuPausesGame() const { return mSettings.mMenuPausesGame; }
+    bool isBootToMenu() const { return mSettings.mBootToMenu; }
     bool isMenuSfx() const { return mSettings.mMenuSfx; }
     bool isMidnaCharge() { return dComIfGs_isEventBit(0x0501);}
     bool isMidnaHealthy() { return dComIfGs_isEventBit(0x1E08);}
@@ -256,6 +259,7 @@ public:
     void setMaloMartCT(bool i_opt) { i_opt ? dComIfGs_onEventBit(0x2210) : dComIfGs_offEventBit(0x2210); }
     void setMapWarping(bool i_opt) { i_opt ? dComIfGs_onEventBit(0x0604) : dComIfGs_offEventBit(0x0604); }
     void setMenuPausesGame(bool i_opt) { mSettings.mMenuPausesGame = i_opt; }
+    void setBootToMenu(bool i_opt) { mSettings.mBootToMenu = i_opt; }
     void setMenuSfx(bool sfx) { mSettings.mMenuSfx = sfx; }
     void setMidnaCharge(bool i_opt) { i_opt ? dComIfGs_onEventBit(0x0501) : dComIfGs_offEventBit(0x0501); }
     void setMidnaHealthy(bool i_opt) { i_opt ? dComIfGs_onEventBit(0x1E08) : dComIfGs_offEventBit(0x1E08); }
@@ -381,6 +385,7 @@ public:
     gzMainMenu_c* mpMainMenu;
     gzNotification_c* mpNotification;
     dSelect_cursor_c* mpTPCursor;
+    gzCapture_c* mpCapture;
     gzTextBox* mpMenuDescription;
     bool mMenuOption;
     s32 mTopLine;
@@ -563,6 +568,7 @@ inline bool gzInfo_isMaloMartCT() { return g_gzInfo.isMaloMartCT(); }
 inline bool gzInfo_isMainMenuVisible() { return g_gzInfo.mCursor.x == 0;}
 inline bool gzInfo_isMapWarping() { return g_gzInfo.isMapWarping(); }
 inline bool gzInfo_isMenuPausesGame() { return g_gzInfo.isMenuPausesGame(); }
+inline bool gzInfo_isBootToMenu() { return g_gzInfo.isBootToMenu(); }
 inline bool gzInfo_isMenuSfx() { return g_gzInfo.isMenuSfx(); }
 inline bool gzInfo_isMidnaCharge() { return g_gzInfo.isMidnaCharge(); }
 inline bool gzInfo_isMidnaHealthy() { return g_gzInfo.isMidnaHealthy(); }
@@ -602,6 +608,7 @@ inline void gzInfo_setDisplayModeInterlaced() { mDoMch_render_c::setInterlacedMo
 inline void gzInfo_setDisplayModeProgressive() { mDoMch_render_c::setProgressiveMode(); gzInfo_setDisplayMode(true); }
 inline void gzInfo_setDropShadows(bool dropShadows) { g_gzInfo.setDropShadows(dropShadows); }
 inline void gzInfo_setMenuPausesGame(bool opt) { g_gzInfo.setMenuPausesGame(opt); }
+inline void gzInfo_setBootToMenu(bool opt) { g_gzInfo.setBootToMenu(opt); }
 inline void gzInfo_setMenuSfx(bool sfx) { g_gzInfo.setMenuSfx(sfx); }
 inline void gzInfo_setMoveLink(bool i_opt) { g_gzInfo.setMoveLink(i_opt); }
 inline void gzInfo_setReloadType(bool i_type) { g_gzInfo.setReloadType(i_type); }
@@ -616,8 +623,8 @@ inline void gzInfo_offBossDefeated(int i_stageNo) {
     gzInfo_isInDungeon(i_stageNo) ? dComIfGs_offStageBossEnemy() : dComIfGs_offSaveStageBossEnemy(i_stageNo); 
 }
 
-inline void gzInfo_offMiniBossDefeated(int i_stageNo) { 
-    gzInfo_isInDungeon(i_stageNo) ? dComIfGs_offStageMiddleBoss() : dComIfGs_offStageMiddleBoss(); 
+inline void gzInfo_offMiniBossDefeated(int i_stageNo) {
+    gzInfo_isInDungeon(i_stageNo) ? dComIfGs_offStageMiddleBoss() : dComIfGs_offSaveStageMiddleBoss(i_stageNo);
 }
 
 inline void gzInfo_offBossFlag() { g_gzInfo.setBossFlag(0); }
@@ -670,6 +677,7 @@ inline void gzInfo_offLoadTimer() { g_gzInfo.setLoadTimer(false); }
 inline void gzInfo_offMaloMartCT() { g_gzInfo.setMaloMartCT(false); }
 inline void gzInfo_offMapWarping() { g_gzInfo.setMapWarping(false); }
 inline void gzInfo_offMenuPausesGame() { g_gzInfo.setMenuPausesGame(false); }
+inline void gzInfo_offBootToMenu() { g_gzInfo.setBootToMenu(false); }
 inline void gzInfo_offMenuSfx() { g_gzInfo.setMenuSfx(false); }
 inline void gzInfo_offMidnaCharge() { g_gzInfo.setMidnaCharge(false); }
 inline void gzInfo_offMidnaHealthy() { g_gzInfo.setMidnaHealthy(false); }
@@ -755,6 +763,7 @@ inline void gzInfo_onLoadTimer() { g_gzInfo.setLoadTimer(true); }
 inline void gzInfo_onMaloMartCT() { g_gzInfo.setMaloMartCT(true); }
 inline void gzInfo_onMapWarping() { g_gzInfo.setMapWarping(true); }
 inline void gzInfo_onMenuPausesGame() { g_gzInfo.setMenuPausesGame(true); }
+inline void gzInfo_onBootToMenu() { g_gzInfo.setBootToMenu(true); }
 inline void gzInfo_onMenuSfx() { g_gzInfo.setMenuSfx(true); }
 inline void gzInfo_onMidnaCharge() { g_gzInfo.setMidnaCharge(true); }
 inline void gzInfo_onMidnaHealthy() { g_gzInfo.setMidnaHealthy(true); }
@@ -824,5 +833,9 @@ namespace gzPad {
 
 int gzPrint(int x, int y, u32 color, char const* string, ...);
 void gzDVDLoadFile(const char* filePath, void* buffer, int length, int offset);
+
+// Sets up 2D orthographic context for GZ overlay drawing.
+// Call this before drawing J2DScreen-based elements (like haihai arrows).
+void gzSetup2DContext();
 
 #endif // GZ_H

@@ -160,7 +160,7 @@ void gzMainMenu_c::draw() {
         for (int i = 0; i < LINE_NUM; i++) {
             if (mpLines[i] != NULL && mXPos >= g_gzInfo.mBackgroundXPos) {
                 f32 y_pos = Y_ALIGNMENT + ((i - 1) * LINE_SPACING);
-                u32 color = (l_cursor->y == i && gzInfo_isMainMenuVisible()) ? gzInfo_getTextColor() : COLOR_WHITE;
+                u32 color = (l_cursor->y == i && gzInfo_isMainMenuVisible() && gzInfo_isCursorTypeClassic()) ? gzInfo_getTextColor() : COLOR_WHITE;
                 mpLines[i]->draw(mXPos, y_pos, color);
             }
         }
@@ -169,7 +169,7 @@ void gzMainMenu_c::draw() {
             if (mpLines[i] != NULL) {
                 f32 y_pos = Y_ALIGNMENT + ((i - 1) * LINE_SPACING);
 
-                if (l_cursor->y == i && gzInfo_isMainMenuVisible()) {
+                if (l_cursor->y == i && gzInfo_isMainMenuVisible() && gzInfo_isCursorTypeClassic()) {
                     mpLines[i]->draw(mXPos, y_pos, gzInfo_getTextColor());
                 } else {
                     mpLines[i]->draw(mXPos, y_pos, COLOR_WHITE);
@@ -188,9 +188,18 @@ void gzMainMenu_c::draw() {
         }
     }
 
-    if (gzInfo_isCursorTypeTP()) {
-        if (gzInfo_getTPCursor() != NULL) {
-            gzInfo_getTPCursor()->draw();
+    if (gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL && !mTransitioning && gzInfo_isMainMenuVisible()) {
+        // Update bounds for selected line and set cursor position
+        if (mpLines[l_cursor->y] != NULL) {
+            mpLines[l_cursor->y]->mText->updateBounds();
+            f32 y_pos = Y_ALIGNMENT + ((l_cursor->y - 1) * LINE_SPACING);
+            
+            // setPos expects center position, so calculate center of text
+            f32 cursorX = mXPos + (mpLines[l_cursor->y]->mText->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+            f32 cursorY = y_pos + (mpLines[l_cursor->y]->mText->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+            gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)mpLines[l_cursor->y]->mText, false);
         }
+        gzSetup2DContext();
+        gzInfo_getTPCursor()->draw();
     }
 }

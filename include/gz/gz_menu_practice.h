@@ -42,6 +42,7 @@ public:
         int execute();
 
         gzLine* mpLines[ANY_LINE_NUM];
+        bool mLoaded;
     };
 
     class gzHundoSavesTab_c {
@@ -50,6 +51,7 @@ public:
         int execute();
 
         gzLine* mpLines[HUNDO_LINE_NUM];
+        bool mLoaded;
     };
 
     class gzADSavesTab_c {
@@ -58,6 +60,7 @@ public:
         int execute();
 
         gzLine* mpLines[ALL_DUNGEONS_LINE_NUM];
+        bool mLoaded;
     };
 
     class gzGlitchlessSavesTab_c {
@@ -66,6 +69,7 @@ public:
         int execute();
 
         gzLine* mpLines[GLITCHLESS_LINE_NUM];
+        bool mLoaded;
     };
 
     class gzNoSQSavesTab_c {
@@ -74,13 +78,14 @@ public:
         int execute();
 
         gzLine* mpLines[NOSQ_LINE_NUM];
+        bool mLoaded;
     };
 
     class gzMemfileTab_c {
     public:
         void create();
         int execute();
-        void draw();
+        void draw(f32 xPos);
 
         int readMemfileNames();
         int loadMemfile(int i_no);
@@ -100,6 +105,7 @@ public:
         gzConfirm_c* mpConfirm;
         int mPendingDeleteSlot;
         bool mMemfileStates[MEMFILE_MAX_NUM];  // TODO: optimize this
+        bool mNamesLoaded;  // Defer memcard read until tab is first accessed
     };
 
     gzTextBox* mpTabHeaders[TAB_MAX];
@@ -109,7 +115,6 @@ public:
     gzHundoSavesTab_c mHundoSavesTab;
     gzGlitchlessSavesTab_c mGlitchlessSavesTab;
     gzMemfileTab_c mMemfileTab;
-    dMeterHaihai_c* mpMeterHaihai;
     int mCurrentTab;
 };
 

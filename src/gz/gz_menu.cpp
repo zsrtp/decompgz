@@ -1,6 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
 #include "gz/gz_menu.h"
+#include "gz/gz_menu_main.h"
 #include "d/d_select_cursor.h"
 
 void gzMenu_c::execute() {
@@ -50,13 +51,11 @@ void gzMenu_c::drawLines(gzTextBox** lines, gzTextBox** lineOptions, u8 haihaiFl
         f32 haihaiY = lineY - 7.0f;
         bool isSelected = (l_cursor->y == i && gzInfo_isSubMenuVisible());
         
-        f32 haihaiWidth = lineOptions[i]->mBounds.f.x + 30.0f; // extra spacing so text fits inside the haihai bounds
+        f32 haihaiWidth = lineOptions[i]->mBounds.f.x + 30.0f;
         bool showHaihai = gzInfo_isMenuOption() && l_cursor->y == i;
 
         drawLineWithOption(lines[i], lineOptions[i], lineX, optionX, lineY, isSelected, cursorColor, showHaihai, haihaiFlags, haihaiX, haihaiY, haihaiWidth);
     }
-
-    // Note: gzTextBox no longer has m_description - use gzLine-based drawLines overload for descriptions
 }
 
 void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topLine, s32 visibleLines) {
@@ -100,12 +99,36 @@ void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topL
         }
 
         if (showHaihai && mpHaihai != NULL) {
+            gzSetup2DContext();
             mpHaihai->drawHaihai(haihai_flags, haihaiX, haihaiY, haihaiWidth, 0.0f);
         }
 
         if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
-            f32 cursorY = lineY - 10.0f;
-            gzInfo_getTPCursor()->setPos(lineX - 20.0f, cursorY, (J2DPane*)line->mText, false);
+            line->mText->updateBounds();
+            f32 totalWidth;
+            f32 leftEdge = lineX;
+
+            // If there's an option box, calculate combined bounds
+            f32 optionXAdjust = 0.0f;
+            if (opt != NULL && opt->mStringLength != 0) {
+                opt->updateBounds();
+                // Option is drawn near the haihai area, use haihaiX as reference
+                // Account for haihai arrows extending beyond the option text
+                f32 rightEdge = haihaiX + (opt->getWidth() / 2.0f) + 40.0f;  // Extra for right arrow
+                totalWidth = rightEdge - leftEdge + 30.0f;
+                optionXAdjust = -15.0f;  // Shift left to center with arrows
+            } else {
+                totalWidth = line->mText->getWidth();
+            }
+
+            // setPos expects center position
+            f32 cursorX = leftEdge + (totalWidth / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET + optionXAdjust;
+            f32 cursorY = lineY + (line->mText->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+
+            // Temporarily set bounds for the combined width
+            line->mText->mBounds.f.x = totalWidth;
+            gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)line->mText, false);
+            gzSetup2DContext();
             gzInfo_getTPCursor()->draw();
         }
     }
@@ -122,13 +145,18 @@ void gzMenu_c::drawLineWithOption(gzTextBox* line, gzTextBox* option, f32 lineX,
     if (option) option->draw(optionX, lineY, color, HBIND_CENTER);
 
     if (showHaihai && option && option->mStringLength != 0 && haihaiFlags != 0) {
+        gzSetup2DContext();
         mpHaihai->drawHaihai(haihaiFlags, haihaiX, haihaiY, haihaiWidth, 0.0f);
     }
 
     if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor()) {
-        static const f32 TP_CURSOR_Y_OFFSET = -10.0f;
-        f32 cursorY = lineY + TP_CURSOR_Y_OFFSET;
-        gzInfo_getTPCursor()->setPos(lineX - 20.0f, cursorY, (J2DPane*)line, false);
+        line->updateBounds();
+
+        // setPos expects center position, so calculate center of text
+        f32 cursorX = lineX + (line->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+        f32 cursorY = lineY + (line->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+        gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)line, false);
+        gzSetup2DContext();
         gzInfo_getTPCursor()->draw();
     }
 }
@@ -160,6 +188,175 @@ void gzMenu_c::drawDescription(const char* desc) {
         gzInfo_getMenuDescription()->setString(desc);
         gzInfo_getMenuDescription()->draw(x, y, gzInfo_getCursorColor(), HBIND_CENTER);
     }
+}
+
+void gzMenu_c::drawTPCursor() {
+    if (gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
+        gzSetup2DContext();
+        gzInfo_getTPCursor()->draw();
+    }
+}
+
+void gzMenu_c::drawTabHeaders(gzTextBox** headers, const f32* xPositions, int numTabs,
+                               int currentTab, f32 yPosition, u32 activeColor) {
+    for (int i = 0; i < numTabs; i++) {
+        if (headers[i] != NULL) {
+            u32 color = (i == currentTab) ? activeColor : COLOR_WHITE;
+            headers[i]->draw(xPositions[i], yPosition, color);
+        }
+    }
+}
+
+void gzMenu_c::drawLinesWithHaihai(gzLine** lines, s32 numLines, s32 topLine, s32 visibleLines) {
+    gzCursor* l_cursor = gzInfo_getCursor();
+    J2DTextBox::TFontSize font_size;
+
+    if (numLines > 0 && lines[0] != NULL) {
+        lines[0]->mText->getFontSize(font_size);
+        mpHaihai->setScale(font_size.mSizeY * gzMenuLayout::HAIHAI_SCALE_FACTOR);
+    }
+
+    f32 lineX = mXPos;
+    f32 lineY_start = g_gzInfo.mBackgroundYPos + gzMenuLayout::Y_ALIGNMENT;
+    f32 line_spacing = gzMenuLayout::LINE_SPACING;
+    f32 optionX = mXPos + gzMenuLayout::OPTIONS_X_OFFSET;
+    f32 haihaiX = optionX + gzMenuLayout::HAIHAI_X_OFFSET;
+    u32 cursorColor = gzInfo_getCursorColor();
+    s32 endLine = topLine + visibleLines;
+
+    if (endLine > numLines) endLine = numLines;
+
+    for (s32 i = topLine; i < endLine; i++) {
+        gzLine* line = lines[i];
+        if (line == NULL) continue;
+
+        s32 screenIdx = i - topLine;
+        f32 lineY = lineY_start + (screenIdx * line_spacing);
+        f32 haihaiY = lineY + gzMenuLayout::HAIHAI_Y_OFFSET;
+        bool isSelected = (l_cursor->y == i && gzInfo_isSubMenuVisible());
+        u32 color = isSelected ? cursorColor : COLOR_WHITE;
+
+        line->mText->draw(lineX, lineY, color);
+
+        gzTextBox* opt = line->getOptionBox();
+        if (opt != NULL) {
+            opt->draw(optionX, lineY, color, HBIND_CENTER);
+
+            // Get per-line haihai flags via virtual method
+            if (isSelected && gzInfo_isMenuOption()) {
+                u8 flags = getHaihaiFlags(i);
+                if (flags != 0) {
+                    f32 haihaiWidth = opt->mBounds.f.x + gzMenuLayout::HAIHAI_EXTRA_SPACING;
+                    gzSetup2DContext();
+                    mpHaihai->drawHaihai(flags, haihaiX, haihaiY, haihaiWidth, 0.0f);
+                }
+            }
+        }
+
+        if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
+            line->mText->updateBounds();
+            f32 totalWidth;
+            f32 leftEdge = lineX;
+
+            // If there's an option box, calculate combined bounds
+            f32 optionXAdjust = 0.0f;
+            if (opt != NULL && opt->mStringLength != 0) {
+                opt->updateBounds();
+                // Option is drawn near the haihai area, use haihaiX as reference
+                // Account for haihai arrows extending beyond the option text
+                f32 rightEdge = haihaiX + (opt->getWidth() / 2.0f) + 40.0f;  // Extra for right arrow
+                totalWidth = rightEdge - leftEdge + 30.0f;
+                optionXAdjust = -15.0f;  // Shift left to center with arrows
+            } else {
+                totalWidth = line->mText->getWidth();
+            }
+
+            // setPos expects center position
+            f32 cursorX = leftEdge + (totalWidth / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET + optionXAdjust;
+            f32 cursorY = lineY + (line->mText->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+
+            // Temporarily set bounds for the combined width
+            line->mText->mBounds.f.x = totalWidth;
+            gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)line->mText, false);
+            gzSetup2DContext();
+            gzInfo_getTPCursor()->draw();
+        }
+    }
+
+    // Draw description for selected line
+    if (l_cursor->y < numLines && lines[l_cursor->y] != NULL) {
+        drawDescription(lines[l_cursor->y]->m_description);
+    }
+}
+
+bool gzMenu_c::checkInputWait() {
+    if (g_gzInfo.mInputWaitTimer != 0) {
+        g_gzInfo.mInputWaitTimer--;
+        return true;
+    }
+    return false;
+}
+
+bool gzMenu_c::handleBackButton(int mainMenuIndex) {
+    if (gzPad::getTrigB()) {
+        if (gzInfo_isMenuOption()) {
+            gzInfo_offMenuOption();
+            gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
+        } else {
+            gzCursor* l_cursor = gzInfo_getCursor();
+            l_cursor->x--;
+            l_cursor->y = mainMenuIndex;
+            gzInfo_seStart(Z2SE_SY_EXP_WIN_CLOSE);
+            g_gzInfo.mpMainMenu->startReverseTransition();
+            return true;
+        }
+    }
+    return false;
+}
+
+void gzMenu_c::handleNavigation(int maxLines) {
+    if (gzInfo_isMenuOption()) {
+        return;
+    }
+
+    gzCursor* l_cursor = gzInfo_getCursor();
+
+    if (gzPad::getTrigDown()) {
+        l_cursor->y = (l_cursor->y + 1) % maxLines;
+        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
+    }
+
+    if (gzPad::getTrigUp()) {
+        l_cursor->y = (l_cursor->y == 0) ? maxLines - 1 : l_cursor->y - 1;
+        gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
+    }
+}
+
+void gzMenu_c::handleTabSwitch(int& currentTab, int maxTabs) {
+    if (gzInfo_isMenuOption()) {
+        return;
+    }
+
+    gzCursor* l_cursor = gzInfo_getCursor();
+
+    if (gzPad::getTrigLeft()) {
+        currentTab = (currentTab == 0) ? maxTabs - 1 : currentTab - 1;
+        l_cursor->y = 0;
+        gzInfo_setTopLine(0);
+        gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+    }
+
+    if (gzPad::getTrigRight()) {
+        currentTab = (currentTab + 1) % maxTabs;
+        l_cursor->y = 0;
+        gzInfo_setTopLine(0);
+        gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+    }
+}
+
+void gzMenu_c::finishExecute(int maxLines) {
+    updateScrolling(maxLines);
+    mpHaihai->_execute(0);
 }
 
 gzMenu_c::gzMenu_c() : mXPos(0.0f), mpHaihai(NULL) {

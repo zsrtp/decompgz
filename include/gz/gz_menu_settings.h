@@ -12,6 +12,7 @@ public:
         SETTING_DROP_SHADOW,
         SETTING_FONT,
         SETTING_MENU_PAUSES_GAME,
+        SETTING_BOOT_TO_MENU,
         SETTING_MENU_SFX,
         SETTING_RELOAD_TYPE,
         SETTING_TEXT_COLOR,
@@ -90,6 +91,7 @@ public:
     const char* getSwapEquipsText() { return gzInfo_isSwapEquips() ? "yes" : "no"; }
     const char* getDisplayModeText() { return gzInfo_getDisplayMode() ? "progressive" : "interlaced"; }
     const char* getMenuPausesGameText() { return gzInfo_isMenuPausesGame() ? "yes" : "no"; }
+    const char* getBootToMenuText() { return gzInfo_isBootToMenu() ? "yes" : "no"; }
     const char* getMenuSfxText() { return gzInfo_isMenuSfx() ? "enabled" : "disabled"; }
 
     static const int LINE_NUM = SETTING_MAX;
@@ -107,6 +109,7 @@ private:
     gzBoolOptionLine* mpDropShadows;
     gzListOptionLine* mpFont;
     gzBoolOptionLine* mpMenuPausesGame;
+    gzBoolOptionLine* mpBootToMenu;
     gzBoolOptionLine* mpMenuSfx;
     gzBoolOptionLine* mpReloadType;
     gzListOptionLine* mpTextColor;

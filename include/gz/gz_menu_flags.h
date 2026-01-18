@@ -89,6 +89,7 @@ public:
     virtual void _delete();
     virtual void execute();
     virtual void draw();
+    virtual u8 getHaihaiFlags(int idx);
 
     static u32 nextDungeon();
     static u32 prevDungeon();
@@ -100,7 +101,6 @@ public:
 
 private:
     void updateDynamicLines();
-    u8 getHaihaiFlags(int);
     int getCurrentLineNum();
     void setRegionFlag(int);
     bool getRegionFlag(int);
@@ -112,7 +112,6 @@ private:
     gzLine* mpLinesPortal[P_FLAG_MAX];
     gzLine* mpLinesRupee[R_FLAG_MAX];
 
-    dMeterHaihai_c* mpMeterHaihai;
     int mCurrentTab;
 
     static int sSelectedDungeon;

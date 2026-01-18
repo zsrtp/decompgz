@@ -443,11 +443,13 @@ void gzHeapsMenu_c::execute() {
     if (gzPad::getTrigX()) {
         if (!mShowOverview) {
             mViewMode = (mViewMode + 1) % 3;
+            gzInfo_seStart(Z2SE_SY_OPTION_SWITCH);
         }
     }
 
     if (gzPad::getTrigY()) {
         mShowOverview = !mShowOverview;
+        gzInfo_seStart(Z2SE_SY_OPTION_SWITCH);
     }
 
     if (gzPad::getTrigB()) {

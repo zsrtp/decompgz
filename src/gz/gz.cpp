@@ -3,12 +3,92 @@
 #include "gz/gz.h"
 #include "gz/gz_menu_main.h"
 #include "gz/gz_utility_notification.h"
+#include "d/d_com_inf_game.h"
+#include "d/d_drawlist.h"
 #include "d/d_select_cursor.h"
 #include "m_Do/m_Do_controller_pad.h"
+#include "m_Do/m_Do_graphic.h"
+#include "JSystem/J2DGraph/J2DOrthoGraph.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "m_Do/m_Do_MemCard.h"
 #include "dolphin/card.h"
+#include "dolphin/gx/GXTexture.h"
+#include "f_op/f_op_view.h"
+
+class gzCapture_c : public dDlst_base_c {
+public:
+    virtual void draw() {
+        if (mFlag == 0) {
+            return;
+        } else if (mFlag == 1) {
+            mFlag = 3;
+            GXSetTexCopySrc(0, 0, FB_WIDTH, FB_HEIGHT);
+            GXSetTexCopyDst(FB_WIDTH / 2, FB_HEIGHT / 2, (GXTexFmt)mDoGph_gInf_c::getFrameBufferTimg()->format, GX_ENABLE);
+            GXCopyTex(mDoGph_gInf_c::getFrameBufferTex(), GX_FALSE);
+            GXPixModeSync();
+            dComIfGp_onPauseFlag();
+        } else {
+            GXTexObj tex;
+            GXInitTexObj(&tex, mDoGph_gInf_c::getFrameBufferTex(), FB_WIDTH / 2, FB_HEIGHT / 2,
+                        (GXTexFmt)mDoGph_gInf_c::getFrameBufferTimg()->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+            GXLoadTexObj(&tex, GX_TEXMAP0);
+            GXSetNumChans(0);
+            GXSetNumTexGens(1);
+            GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 60, GX_FALSE, 125);
+            GXSetNumTevStages(1);
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            const GXColor color = {0, 0, 0, mAlpha};
+            GXSetTevColor(GX_TEVREG0, color);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetZCompLoc(GX_TRUE);
+            GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+            GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
+            GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, g_clearColor);
+            GXSetFogRangeAdj(GX_FALSE, 0, NULL);
+            GXSetCullMode(GX_CULL_NONE);
+            GXSetDither(GX_TRUE);
+            GXLoadPosMtxImm(g_mDoMtx_identity, GX_PNMTX0);
+            GXSetCurrentMtx(0);
+            GXClearVtxDesc();
+            GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+            GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_CLR_RGBA, GX_RGBA4, 0);
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_CLR_RGBA, GX_RGB8, 0);
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3s16(mDoGph_gInf_c::getMinX(), mDoGph_gInf_c::getMinY(), 0);
+            GXTexCoord2s8(0, 0);
+            GXPosition3s16(mDoGph_gInf_c::getMaxX(), mDoGph_gInf_c::getMinY(), 0);
+            GXTexCoord2s8(1, 0);
+            GXPosition3s16(mDoGph_gInf_c::getMaxX(), mDoGph_gInf_c::getMaxY(), 0);
+            GXTexCoord2s8(1, 1);
+            GXPosition3s16(mDoGph_gInf_c::getMinX(), mDoGph_gInf_c::getMaxY(), 0);
+            GXTexCoord2s8(0, 1);
+            GXEnd();
+        }
+    }
+
+    virtual ~gzCapture_c() {}
+
+    gzCapture_c() {
+        mFlag = 0;
+        mAlpha = 128;  // Dim the background
+    }
+
+    void setCaptureFlag() { mFlag = 1; }
+    void disable() { mFlag = 0; }
+    bool isCapturing() { return mFlag != 0; }
+
+private:
+    u8 mFlag;
+    u8 mAlpha;
+};
 
 gzInfo_c g_gzInfo;
 
@@ -64,10 +144,12 @@ void gzInfo_c::loadDefaultSettings() {
     mCursor.y = 0;
     mSettings.mMenuSfx = true;
 
-    // Initialize input state for menu navigation
     mStickTriggers = 0;
     mRepeatDirection = 0;
     mRepeatCounter = 0;
+
+    mDisplay = false;
+    mpCapture = NULL;
 
     mBackgroundXPos = 5.0f;
     mBackgroundYPos = 5.0f;
@@ -132,6 +214,11 @@ int gzInfo_c::_create() {
 
     loadSettingsMemcard();
 
+    // If boot to menu is enabled, show the menu immediately
+    if (mSettings.mBootToMenu) {
+        mDisplay = true;
+    }
+
     // initialize oxygen now instead of waiting to go to the file select screen
     dComIfGp_setOxygen(600);
     dComIfGp_setNowOxygen(600);
@@ -176,8 +263,8 @@ int gzInfo_c::_delete() {
 
 void gzInfo_c::updateStickTriggers() {
     static const f32 STICK_THRESHOLD = 0.5f;
-    static const s16 REPEAT_DELAY = 14;  // Frames before repeat starts
-    static const s16 REPEAT_RATE = 4;    // Frames between repeats
+    static const s16 REPEAT_DELAY = 12;  // Frames before repeat starts
+    static const s16 REPEAT_RATE = 2;    // Frames between repeats
 
     // Get current direction from d-pad
     u32 currentDir = 0;
@@ -221,12 +308,13 @@ void gzInfo_c::updateStickTriggers() {
 int gzInfo_c::execute() {
     if (!mGZInitialized) return 0;
 
+    bool wasDisplayed = mDisplay;
+
     updateStickTriggers();
 
     if (gzPad::getHoldL() && gzPad::getHoldR() && gzPad::getTrigDown()) {
         mDisplay = !mDisplay;
 
-        // Null out game inputs to prevent ring menu from opening
         interface_of_controller_pad& cpad = mDoCPd_c::getCpadInfo(PAD_1);
         cpad.mPressedButtonFlags = 0;
         cpad.mButtonFlags = 0;
@@ -247,20 +335,45 @@ int gzInfo_c::execute() {
             mInputWaitTimer = 2;
     }
 
+    // Handle menu OPEN transition
+    if (!wasDisplayed && mDisplay) {
+        if (isMenuPausesGame() && !dComIfGp_isPauseFlag() && mpCapture == NULL) {
+            mpCapture = new gzCapture_c();
+            mpCapture->setCaptureFlag();
+        }
+    }
+
     if (mDisplay) {
         if (mInputWaitTimer != 0) {
             mInputWaitTimer--;
             return 1;
         }
-        
+
         if (mpMainMenu != NULL && mCursor.x == 0) mpMainMenu->execute();
         if (mpCurrentMenu != NULL && mCursor.x > 0) mpCurrentMenu->execute();
+
+        // Handle setting toggle while menu is displayed
+        if (!isMenuPausesGame() && mpCapture != NULL) {
+            delete mpCapture;
+            mpCapture = NULL;
+            dComIfGp_offPauseFlag();
+        } else if (isMenuPausesGame() && mpCapture == NULL && !dComIfGp_isPauseFlag()) {
+            mpCapture = new gzCapture_c();
+            mpCapture->setCaptureFlag();
+        }
     } else {
-        // may need to be more selective here on what does/doesn't apply 
-        // when the menu is/isn't up
         mCheatsMng.execute();
         mToolsMng.execute();
         mSaveLoaderMng.execute();
+    }
+
+    // Handle menu CLOSE transition
+    if (wasDisplayed && !mDisplay) {
+        if (mpCapture != NULL) {
+            delete mpCapture;
+            mpCapture = NULL;
+        }
+        dComIfGp_offPauseFlag();
     }
 
     return 1;
@@ -269,18 +382,34 @@ int gzInfo_c::execute() {
 int gzInfo_c::draw() {
     if (!mGZInitialized) return 0;
 
+    // Draw capture directly (dims the background game)
+    if (mpCapture != NULL && mpCapture->isCapturing()) {
+        mpCapture->draw();
+    }
+
     if (mDisplay) {
         if (mpBackground != NULL) mpBackground->draw(mBackgroundXPos, mBackgroundYPos, mBackgroundWidth, mBackgroundHeight, false, false, false);
         if (mpIcon != NULL) mpIcon->draw(mIconXPos, mIconYPos, mIconWidth, mIconHeight, false, false, false);
         if (mpHeader != NULL) mpHeader->draw(mHeaderXPos, mHeaderYPos, mSettings.mTextColor);
-        if (mpMainMenu != NULL) dComIfGd_set2DOpaTop(mpMainMenu);
-        if (mpCurrentMenu != NULL) dComIfGd_set2DOpaTop(mpCurrentMenu);
+        // Draw menus directly to avoid issues with deferred rendering
+        if (mpMainMenu != NULL) mpMainMenu->draw();
+        if (mpCurrentMenu != NULL) mpCurrentMenu->draw();
     }
 
     // Draw any notifications
     if (mpNotification != NULL) mpNotification->draw();
 
     return 1;
+}
+
+void gzSetup2DContext() {
+    // Set up 2D orthographic projection for drawing J2DScreen-based elements.
+    // This is necessary because GZ draws after the game's normal 2D render pass,
+    // when the original graphics context (a stack-local ortho) is no longer valid.
+    // We must also set the current graf port because J2DScreen::draw uses it.
+    static J2DOrthoGraph sGzOrtho(0.0f, 0.0f, 608.0f, 448.0f, -1.0f, 1.0f);
+    sGzOrtho.setPort();
+    dComIfGp_setCurrentGrafPort(&sGzOrtho);
 }
 
 int gzInfo_c::storeSettingsMemcard() {

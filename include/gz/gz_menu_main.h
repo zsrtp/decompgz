@@ -3,6 +3,7 @@
 
 #include "gz/gz_menu.h"
 #include "gz/gz_textbox.h"
+#include "JSystem/J2DGraph/J2DAnimation.h"
 
 class gzMainMenu_c : public gzMenu_c {
 public:
@@ -26,6 +27,7 @@ public:
     gzMainMenu_c();
     ~gzMainMenu_c();
     gzMenu_c* getMenu(int idx) { return mpMenus[idx]; }
+    bool isTransitioning() const { return mTransitioning; }
     void startForwardTransition();
     void startReverseTransition();
     void setDefaultMenuXPos();
@@ -60,7 +62,6 @@ private:
 
 inline void gzChangeMenu(gzMenu_c* i_menu) {
     g_gzInfo.mpCurrentMenu = i_menu;
-    g_gzInfo.mInputWaitTimer = 2;
 }
 
 inline f32 calcSlidePosition(u32 currentFrame, u32 startFrame, f32 startPos, f32 endPos, f32 duration) {
@@ -77,7 +78,7 @@ inline f32 calcSlidePosition(u32 currentFrame, u32 startFrame, f32 startPos, f32
     f32 value1 = endPos;
     f32 tan_in1 = 0.0f;
 
-    return J2DHermiteInterpolation<f32>(age, &time0, &value0, &tan_out0, &time1, &value1, &tan_in1);
+    return J2DHermiteInterpolation(age, &time0, &value0, &tan_out0, &time1, &value1, &tan_in1);
 }
 
 #endif // GZ_MENU_MAIN_H

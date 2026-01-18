@@ -94,6 +94,7 @@ void gzCreditsMenu_c::draw() {
     }
 
     if (arrows != 0) {
+        gzSetup2DContext();
         mpMeterHaihai->drawHaihai(arrows, x_alignment_haihai, y_alignment_haihai, 0.0f, HAIHAI_Y_SIZE);
     }
 }

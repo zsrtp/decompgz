@@ -1,8 +1,10 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
+#include "d/d_drawlist.h"
 #include "gz/gz.h"
 #include "m_Do/m_Do_MemCard.h"
 #include "SSystem/SComponent/c_lib.h"
+#include "Z2AudioLib/Z2SeqMgr.h"
 
 void gzSaveLoaderMng_c::execute() {
     switch (mLoadPhase) {
@@ -82,6 +84,13 @@ void gzSaveLoaderMng_c::loadSave(SaveCategory_e i_category, int i_entryNo) {
                           -1);
 
     start();
+
+    Z2GetSeqMgr()->bgmStop(0, 0);
+    Z2GetSeqMgr()->subBgmStop();
+    Z2GetSeqMgr()->bgmStreamStop(0);
+
+    g_gzInfo.mDisplay = false;
+    dDlst_list_c::wipeIn(1.0f);
 }
 
 void gzSaveLoaderMng_c::getSaveMetadata(SaveCategory_e i_category, int i_entryNo, saveMetadata_s* o_data) {

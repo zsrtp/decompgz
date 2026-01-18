@@ -2,6 +2,7 @@
 
 #include "gz/gz_menu_memory.h"
 #include "gz/gz_menu_main.h"
+#include "d/d_select_cursor.h"
 
 gzMemoryMenu_c::gzMemoryMenu_c() {
     OSReport("creating gzMemoryMenu_c\n");
@@ -82,11 +83,24 @@ void gzMemoryMenu_c::draw() {
 
         if (currentLines[lineIdx] != NULL) {
             f32 y_pos = Y_ALIGNMENT + ((screenIdx - 1) * LINE_SPACING);
+            bool isSelected = (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible());
 
-            if (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible()) {
+            if (isSelected) {
                 currentLines[lineIdx]->draw(mXPos, y_pos, cursor_color);
             } else {
                 currentLines[lineIdx]->draw(mXPos, y_pos, COLOR_WHITE);
+            }
+
+            // Draw TP cursor for selected line
+            if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
+                currentLines[lineIdx]->updateBounds();
+                
+                // setPos expects center position, so calculate center of text
+                f32 cursorX = mXPos + (currentLines[lineIdx]->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+                f32 cursorY = y_pos + (currentLines[lineIdx]->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+                gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)currentLines[lineIdx], false);
+                gzSetup2DContext();
+                gzInfo_getTPCursor()->draw();
             }
         }
     }

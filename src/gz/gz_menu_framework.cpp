@@ -277,10 +277,17 @@ void gzFrameworkMenu_c::draw() {
     }
 
     // Draw cursor if applicable
-    if (gzInfo_isCursorTypeTP() && mNumProcesses > 0 && gzInfo_getTPCursor() != NULL) {
+    if (gzInfo_isCursorTypeTP() && mNumProcesses > 0 && gzInfo_getTPCursor() != NULL && gzInfo_isSubMenuVisible()) {
         int sel_row = mSelectedProcess - mScrollOffset;
-        f32 cursor_y = Y_START + (sel_row * LINE_SPACING) + CURSOR_Y_OFFSET;
-        gzInfo_getTPCursor()->setPos(CURSOR_X, cursor_y, (J2DPane*)mpRowTexts[sel_row * NUM_COLUMNS], true);
+        gzTextBox* selText = mpRowTexts[sel_row * NUM_COLUMNS];
+        selText->updateBounds();
+        
+        // setPos expects center position, so calculate center of text
+        f32 lineY = Y_START + (sel_row * LINE_SPACING);
+        f32 cursorX = mXPos + (selText->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+        f32 cursorY = lineY + (selText->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+        gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)selText, true);
+        gzSetup2DContext();
         gzInfo_getTPCursor()->draw();
     }
 
@@ -296,6 +303,7 @@ void gzFrameworkMenu_c::draw() {
     }
 
     if (arrows != 0 && gzInfo_isSubMenuVisible()) {
+        gzSetup2DContext();
         mpMeterHaihai->drawHaihai(arrows, HAIHAI_X, HAIHAI_Y, 0.0f, HAIHAI_Y_SIZE);
     }
 

@@ -120,10 +120,8 @@ void gzCheatsMenu_c::_delete() {
 }
 
 void gzCheatsMenu_c::execute() {
-    if (g_gzInfo.mInputWaitTimer != 0) {
-        g_gzInfo.mInputWaitTimer--;
-        return;
-    }
+    if (checkInputWait()) return;
+    if (handleBackButton(gzMainMenu_c::MENU_CHEATS)) return;
 
     gzCursor* l_cursor = gzInfo_getCursor();
 
@@ -147,19 +145,6 @@ void gzCheatsMenu_c::execute() {
             gzInfo_setMenuOption(!gzInfo_isMenuOption());
             gzInfo_isMenuOption() ? gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK) : gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
             break;
-        }
-    }
-
-    if (gzPad::getTrigB()) {
-        if (gzInfo_isMenuOption()) {
-            gzInfo_offMenuOption();
-            gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
-        } else {
-            l_cursor->x--;
-            l_cursor->y = gzMainMenu_c::MENU_CHEATS;
-            gzInfo_seStart(Z2SE_SY_EXP_WIN_CLOSE);
-            g_gzInfo.mpMainMenu->startReverseTransition();
-            return;
         }
     }
 
@@ -350,8 +335,9 @@ void gzCheatsMenu_c::execute() {
             }
         }
     }
-    
-    gzMenu_c::execute();
+
+    handleNavigation(LINE_NUM);
+    finishExecute(LINE_NUM);
 }
 
 void gzCheatsMenu_c::draw() {
