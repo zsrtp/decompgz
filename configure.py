@@ -2908,6 +2908,7 @@ version = VERSIONS[version_num]
 out_dir = config.build_dir / version
 
 
+
 # This generates the build steps needed for preprocessing
 def emit_build_rule(asset: Dict[str, Any]) -> None:
     assert config.custom_build_steps is not None
@@ -3004,6 +3005,47 @@ config.progress_report_args = [
 if args.mode == "configure":
     # Write build.ninja and objdiff.json
     generate_build(config)
+
+    # For non-matching builds, add ISO rebuild step directly to build.ninja
+    if config.non_matching:
+        with open("build.ninja", "r") as f:
+            content = f.read()
+
+        output_iso = f"tpgz-{version}.iso"
+        orig_iso = f"orig/{version}/{version}.iso"
+        dol_output = f"build/{version}/framework.dol"
+
+        # Add the rebuild_iso rule after the custom build rules section
+        iso_rule = f"""
+rule rebuild_iso
+  command = $python tools/rebuild-decomp-tp.py {orig_iso} $out ./ --version {version}
+  description = REBUILD ISO {version}
+
+"""
+        # Insert rule before "# Source files" comment
+        content = content.replace(
+            "# Source files",
+            iso_rule + "# Source files"
+        )
+
+        # Add the build step before the default rule
+        iso_build = f"""# Rebuild ISO
+build {output_iso}: rebuild_iso | {dol_output} tools/rebuild-decomp-tp.py
+
+"""
+        content = content.replace(
+            "# Default rule\n",
+            iso_build + "# Default rule\n"
+        )
+
+        # Add ISO to the default target
+        content = content.replace(
+            "# Default rule\ndefault ",
+            f"# Default rule\ndefault {output_iso} $\n    "
+        )
+
+        with open("build.ninja", "w") as f:
+            f.write(content)
 elif args.mode == "progress":
     # Print progress information
     calculate_progress(config)
