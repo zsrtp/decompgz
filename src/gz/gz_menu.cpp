@@ -197,6 +197,34 @@ void gzMenu_c::drawTPCursor() {
     }
 }
 
+void gzMenu_c::drawTPCursorForBox(gzTextBox* box, f32 x, f32 y) {
+    if (!gzInfo_isCursorTypeTP() || gzInfo_getTPCursor() == NULL || box == NULL) {
+        return;
+    }
+    box->updateBounds();
+    f32 cursorX = x + (box->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
+    f32 cursorY = y + (box->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
+    gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)box, false);
+    gzSetup2DContext();
+    gzInfo_getTPCursor()->draw();
+}
+
+void gzMenu_c::updateLineBounds(gzLine** lines, int numLines) {
+    J2DTextBox::TFontSize font_size;
+    for (int i = 0; i < numLines; i++) {
+        if (lines[i] == NULL) continue;
+        lines[i]->mText->getFontSize(font_size);
+        font_size.mSizeX *= 0.5f;
+        lines[i]->mText->mBounds.f.x = lines[i]->mText->mStringLength * font_size.mSizeX;
+        gzTextBox* opt = lines[i]->getOptionBox();
+        if (opt != NULL) {
+            opt->getFontSize(font_size);
+            font_size.mSizeX *= 0.5f;
+            opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
+        }
+    }
+}
+
 void gzMenu_c::drawTabHeaders(gzTextBox** headers, const f32* xPositions, int numTabs,
                                int currentTab, f32 yPosition, u32 activeColor) {
     for (int i = 0; i < numTabs; i++) {

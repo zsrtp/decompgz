@@ -67,9 +67,7 @@ void gzToolsMng_c::executeTeleport() {
             mLinkAngle = link->shape_angle;
         }
 
-        // Null the inputs before returning
-        mDoCPd_c::getCpadInfo(PAD_1).mPressedButtonFlags = 0;
-        mDoCPd_c::getCpadInfo(PAD_1).mButtonFlags = 0;
+        gzClearButtonInput();
     }
 
     if (loadCombo && ((gzPad::getHold() & loadCombo) == loadCombo)) {
@@ -79,9 +77,7 @@ void gzToolsMng_c::executeTeleport() {
             link->shape_angle = mLinkAngle;
         }
 
-        // Null the inputs before returning
-        mDoCPd_c::getCpadInfo(PAD_1).mPressedButtonFlags = 0;
-        mDoCPd_c::getCpadInfo(PAD_1).mButtonFlags = 0;
+        gzClearButtonInput();
     }
 }
 

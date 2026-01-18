@@ -1,6 +1,10 @@
 #include "gz/gz_utility_notification.h"
 #include "SSystem/SComponent/c_counter.h"
 
+static const u32 NOTIFICATION_TTL_SECONDS = 5;
+static const u32 FRAMES_PER_SECOND = 30;
+static const u32 NOTIFICATION_TTL_FRAMES = NOTIFICATION_TTL_SECONDS * FRAMES_PER_SECOND;
+
 gzNotification_c::gzNotification_c() {
     mNumNotifications = 0;
     for (int i = 0; i < NOTIFICATION_MAX; i++) {
@@ -53,9 +57,8 @@ void gzNotification_c::draw() {
     removeExpired();
 
     u32 current = cCt_getFrameCount();
-    const u32 ttl_frames = 5 * 30;
-    const u32 fade_frames = ttl_frames / 10;
-    const u32 wait_frames = ttl_frames - fade_frames;
+    const u32 fade_frames = NOTIFICATION_TTL_FRAMES / 10;
+    const u32 wait_frames = NOTIFICATION_TTL_FRAMES - fade_frames;
 
     f32 x_alignment = 0.0f;
     f32 y_alignment = 30.0f;
@@ -108,9 +111,8 @@ void gzNotification_c::draw() {
 
 void gzNotification_c::removeExpired() {
     u32 current = cCt_getFrameCount();
-    u32 ttl_frames = 5 * 30;
 
-    while (mNumNotifications > 0 && (current - mStartFrames[0]) > ttl_frames) {
+    while (mNumNotifications > 0 && (current - mStartFrames[0]) > NOTIFICATION_TTL_FRAMES) {
         gzTextBox_free(mpNotifications[0]);
         for (int i = 0; i < mNumNotifications - 1; i++) {
             mpNotifications[i] = mpNotifications[i + 1];

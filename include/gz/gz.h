@@ -816,4 +816,35 @@ void gzDVDLoadFile(const char* filePath, void* buffer, int length, int offset);
 // Call this before drawing J2DScreen-based elements (like haihai arrows).
 void gzSetup2DContext();
 
+// Clears all controller input (buttons, sticks, triggers)
+inline void gzClearControllerInput() {
+    interface_of_controller_pad& cpad = mDoCPd_c::getCpadInfo(PAD_1);
+    cpad.mPressedButtonFlags = 0;
+    cpad.mButtonFlags = 0;
+    cpad.mMainStickPosX = 0.0f;
+    cpad.mMainStickPosY = 0.0f;
+    cpad.mMainStickValue = 0.0f;
+    cpad.mMainStickAngle = 0;
+    cpad.mCStickPosX = 0.0f;
+    cpad.mCStickPosY = 0.0f;
+    cpad.mCStickValue = 0.0f;
+    cpad.mCStickAngle = 0;
+    cpad.mAnalogA = 0.0f;
+    cpad.mAnalogB = 0.0f;
+    cpad.mTriggerLeft = 0.0f;
+    cpad.mTriggerRight = 0.0f;
+}
+
+// Clears just button input (pressed and held)
+inline void gzClearButtonInput() {
+    mDoCPd_c::getCpadInfo(PAD_1).mPressedButtonFlags = 0;
+    mDoCPd_c::getCpadInfo(PAD_1).mButtonFlags = 0;
+}
+
+// Toggles menu option state and plays appropriate sound effect
+inline void gzInfo_toggleMenuOption() {
+    gzInfo_setMenuOption(!gzInfo_isMenuOption());
+    gzInfo_seStart(gzInfo_isMenuOption() ? Z2SE_SY_TALK_CURSOR_OK : Z2SE_SY_CURSOR_CANCEL);
+}
+
 #endif // GZ_H

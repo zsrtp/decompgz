@@ -206,27 +206,33 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
 
     switch (mCurrentTab) {
     case TAB_GENERAL:
-        if (generalFlags[idx].is()) {
-            haihai_flags &= ~ARROW_RIGHT;
-        } else {
-            haihai_flags &= ~ARROW_LEFT;
-        }
-        break;
-    case TAB_DUNGEON:
-        if (idx == D_FLAG_SELECT_DUNGEON || idx == D_FLAG_SMALL_KEY) {
-        } else if (idx == D_FLAG_CLEAR_DUNGEON) {
-            haihai_flags = 0;
-        } else if (idx >= D_FLAG_BOSS_KEY && idx <= D_FLAG_DEFEAT_MINIBOSS) {
-            int bIdx = idx - D_FLAG_BOSS_KEY;
-            if (dungeonFlags[bIdx].is(sSelectedDungeon + 16)) {
+        if (idx >= 0 && idx < G_FLAG_MAX) {
+            if (generalFlags[idx].is()) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
             }
         }
         break;
+    case TAB_DUNGEON:
+        if (idx == D_FLAG_SELECT_DUNGEON || idx == D_FLAG_SMALL_KEY) {
+            // List options - show both arrows
+        } else if (idx == D_FLAG_CLEAR_DUNGEON) {
+            haihai_flags = 0;
+        } else if (idx >= D_FLAG_BOSS_KEY && idx <= D_FLAG_DEFEAT_MINIBOSS) {
+            int bIdx = idx - D_FLAG_BOSS_KEY;
+            if (bIdx >= 0 && bIdx < 7) {
+                if (dungeonFlags[bIdx].is(sSelectedDungeon + 16)) {
+                    haihai_flags &= ~ARROW_RIGHT;
+                } else {
+                    haihai_flags &= ~ARROW_LEFT;
+                }
+            }
+        }
+        break;
     case TAB_PORTAL:
         if (idx == P_FLAG_SELECT_REGION) {
+            // List option - show both arrows
         } else if (idx == P_FLAG_REGION) {
             if (getRegionFlag(sSelectedRegion + 1)) {
                 haihai_flags &= ~ARROW_RIGHT;
@@ -235,21 +241,26 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
             }
         } else if (idx >= P_FLAG_SPRING_WARP && idx < P_FLAG_MAX) {
             int wIdx = idx - P_FLAG_SPRING_WARP;
-            if (warpFlags[wIdx].is()) {
-                haihai_flags &= ~ARROW_RIGHT;
-            } else {
-                haihai_flags &= ~ARROW_LEFT;
+            if (wIdx >= 0 && wIdx < 15) {
+                if (warpFlags[wIdx].is()) {
+                    haihai_flags &= ~ARROW_RIGHT;
+                } else {
+                    haihai_flags &= ~ARROW_LEFT;
+                }
             }
         }
         break;
     case TAB_RUPEE:
         if (idx == R_FLAG_DONATION_AMT || idx == R_FLAG_FUNDRAISING_AMT) {
+            // List options - show both arrows
         } else if (idx >= R_FLAG_FUNDRAISING_1 && idx < R_FLAG_MAX) {
             int rIdx = idx - R_FLAG_FUNDRAISING_1;
-            if (rupeeFlags[rIdx].is()) {
-                haihai_flags &= ~ARROW_RIGHT;
-            } else {
-                haihai_flags &= ~ARROW_LEFT;
+            if (rIdx >= 0 && rIdx < 3) {
+                if (rupeeFlags[rIdx].is()) {
+                    haihai_flags &= ~ARROW_RIGHT;
+                } else {
+                    haihai_flags &= ~ARROW_LEFT;
+                }
             }
         }
         break;
@@ -329,16 +340,7 @@ void gzFlagsMenu_c::updateDynamicLines() {
     default:
         return;
     }
-    J2DTextBox::TFontSize font_size;
-    for (int i = 0; i < currentLineNum; i++) {
-        gzTextBox* opt = currentLines[i]->getOptionBox();
-        if (opt) {
-            opt->getFontSize(font_size);
-            font_size.mSizeX *= 0.5f;
-            currentLines[i]->mText->mBounds.f.x = currentLines[i]->mText->mStringLength * font_size.mSizeX;
-            opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
-        }
-    }
+    updateLineBounds((gzLine**)currentLines, currentLineNum);
 }
 
 void gzFlagsMenu_c::setRegionFlag(int regionBit) {

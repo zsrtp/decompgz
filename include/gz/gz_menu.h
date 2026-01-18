@@ -67,6 +67,8 @@ protected:
     void updateScrolling(s32 maxLines);
     void drawDescription(const char* desc);
     void drawTPCursor();
+    void drawTPCursorForBox(gzTextBox* box, f32 x, f32 y);
+    void updateLineBounds(gzLine** lines, int numLines);
 
     void drawTabHeaders(gzTextBox** headers, const f32* xPositions, int numTabs,
                         int currentTab, f32 yPosition, u32 activeColor);

@@ -18,18 +18,13 @@ u8 gzCheatsMenu_c::getHaihaiFlags(int idx) {
 }
 
 void gzCheatsMenu_c::updateDynamicLines() {
-    J2DTextBox::TFontSize font_size;
-
     for (int i = 0; i < LINE_NUM; i++) {
         gzTextBox* opt = mpLines[i]->getOptionBox();
         if (mpLines[i]->mIs != NULL) {
             opt->setString(mpLines[i]->mIs() ? "on" : "off");
         }
-        opt->getFontSize(font_size);
-        font_size.mSizeX *= 0.5f;
-        mpLines[i]->mText->mBounds.f.x = mpLines[i]->mText->mStringLength * font_size.mSizeX;
-        opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
     }
+    updateLineBounds((gzLine**)mpLines, LINE_NUM);
 }
 
 gzCheatsMenu_c::gzCheatsMenu_c() {
@@ -74,8 +69,7 @@ void gzCheatsMenu_c::execute() {
     gzBoolOptionLine* line = mpLines[l_cursor->y];
 
     if (gzPad::getTrigA()) {
-        gzInfo_setMenuOption(!gzInfo_isMenuOption());
-        gzInfo_isMenuOption() ? gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK) : gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
+        gzInfo_toggleMenuOption();
     }
 
     if (gzPad::getTrigLeft() && gzInfo_isMenuOption()) {

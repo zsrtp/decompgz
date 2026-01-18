@@ -63,19 +63,8 @@ void gzMemoryMenu_c::draw() {
     int current_max_line = LINE_NUM;
     gzTextBox** currentLines = mpLines;
 
+    updateScrolling(current_max_line);
     s32 topLine = gzInfo_getTopLine();
-    if (l_cursor->y < topLine) {
-        topLine = l_cursor->y;
-    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
-        topLine = l_cursor->y - VISIBLE_LINES + 1;
-    }
-
-    // Clamp topLine to valid range
-    int maxTop = current_max_line - VISIBLE_LINES;
-    if (maxTop < 0) maxTop = 0;
-    if (topLine > maxTop) topLine = maxTop;
-    if (topLine < 0) topLine = 0;
-    gzInfo_setTopLine(topLine);
 
     for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
         int lineIdx = topLine + screenIdx;
@@ -92,15 +81,8 @@ void gzMemoryMenu_c::draw() {
             }
 
             // Draw TP cursor for selected line
-            if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
-                currentLines[lineIdx]->updateBounds();
-                
-                // setPos expects center position, so calculate center of text
-                f32 cursorX = mXPos + (currentLines[lineIdx]->getWidth() / 2.0f) + gzMenuLayout::TP_CURSOR_X_OFFSET;
-                f32 cursorY = y_pos + (currentLines[lineIdx]->getHeight() / 2.0f) + gzMenuLayout::TP_CURSOR_Y_OFFSET;
-                gzInfo_getTPCursor()->setPos(cursorX, cursorY, (J2DPane*)currentLines[lineIdx], false);
-                gzSetup2DContext();
-                gzInfo_getTPCursor()->draw();
+            if (isSelected) {
+                drawTPCursorForBox(currentLines[lineIdx], mXPos, y_pos);
             }
         }
     }

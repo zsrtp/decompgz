@@ -54,19 +54,10 @@ void gzCreditsMenu_c::draw() {
     f32 x_alignment_haihai = mXPos + HAIHAI_X_OFFSET;
     f32 y_alignment_haihai = Y_ALIGNMENT + HAIHAI_Y_OFFSET;
 
+    updateScrolling(LINE_NUM);
     s32 topLine = gzInfo_getTopLine();
-    if (l_cursor->y < topLine) {
-        topLine = l_cursor->y;
-    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
-        topLine = l_cursor->y - VISIBLE_LINES + 1;
-    }
-
-    // Clamp topLine to valid range
     int maxTop = LINE_NUM - VISIBLE_LINES;
     if (maxTop < 0) maxTop = 0;
-    if (topLine > maxTop) topLine = maxTop;
-    if (topLine < 0) topLine = 0;
-    gzInfo_setTopLine(topLine);
 
     for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
         int lineIdx = topLine + screenIdx;

@@ -161,17 +161,7 @@ void gzToolsMenu_c::updateDynamicLines() {
         gzTextBox* opt = currentLines[i]->getOptionBox();
         if (opt) opt->setStringf("%s", flags[i].is() ? "on" : "off");
     }
-
-    J2DTextBox::TFontSize font_size;
-    for (int i = 0; i < currentLineNum; i++) {
-        gzTextBox* opt = currentLines[i]->getOptionBox();
-        if (opt) {
-            opt->getFontSize(font_size);
-            font_size.mSizeX *= 0.5f;
-            currentLines[i]->mText->mBounds.f.x = currentLines[i]->mText->mStringLength * font_size.mSizeX;
-            opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
-        }
-    }
+    updateLineBounds((gzLine**)currentLines, currentLineNum);
 }
 
 void gzToolsMenu_c::execute() {
@@ -226,12 +216,7 @@ void gzToolsMenu_c::execute() {
     }
 
     if (gzPad::getTrigA()) {
-        gzInfo_setMenuOption(!gzInfo_isMenuOption());
-        if (gzInfo_isMenuOption()) {
-            gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK);
-        } else {
-            gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
-        }
+        gzInfo_toggleMenuOption();
     }
 
     handleNavigation(maxIdx);

@@ -66,20 +66,7 @@ void gzSettingsMenu_c::updateDynamicLines() {
     mpReloadType->getOptionBox()->setStringf("%s", getReloadTypeText());
     mpTextColor->getOptionBox()->setStringf("%s", getTextColorText());
     mpSwapEquips->getOptionBox()->setStringf("%s", getSwapEquipsText());
-
-    J2DTextBox::TFontSize font_size;
-    for (s32 i = 0; i < LINE_NUM; i++) {
-        gzLine* line = mpLines[i];
-        line->mText->getFontSize(font_size);
-        font_size.mSizeX *= 0.5f;
-        line->mText->mBounds.f.x = line->mText->mStringLength * font_size.mSizeX;
-        gzTextBox* opt = line->getOptionBox();
-        if (opt) {
-            opt->getFontSize(font_size);
-            font_size.mSizeX *= 0.5f;
-            opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
-        }
-    }
+    updateLineBounds(mpLines, LINE_NUM);
 }
 
 int gzSettingsMenu_c::deleteCardConfirmCb(gzConfirm_c* i_confirm, void* i_data) {

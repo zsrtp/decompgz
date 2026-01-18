@@ -76,9 +76,11 @@ public:
 
     virtual ~gzCapture_c() {}
 
+    static const u8 CAPTURE_DIM_ALPHA = 128;
+
     gzCapture_c() {
         mFlag = 0;
-        mAlpha = 128;  // Dim the background
+        mAlpha = CAPTURE_DIM_ALPHA;
     }
 
     void setCaptureFlag() { mFlag = 1; }
@@ -314,22 +316,7 @@ int gzInfo_c::execute() {
 
     if (gzPad::getHoldL() && gzPad::getHoldR() && gzPad::getTrigDown()) {
         mDisplay = !mDisplay;
-
-        interface_of_controller_pad& cpad = mDoCPd_c::getCpadInfo(PAD_1);
-        cpad.mPressedButtonFlags = 0;
-        cpad.mButtonFlags = 0;
-        cpad.mMainStickPosX = 0.0f;
-        cpad.mMainStickPosY = 0.0f;
-        cpad.mMainStickValue = 0.0f;
-        cpad.mMainStickAngle = 0;
-        cpad.mCStickPosX = 0.0f;
-        cpad.mCStickPosY = 0.0f;
-        cpad.mCStickValue = 0.0f;
-        cpad.mCStickAngle = 0;
-        cpad.mAnalogA = 0.0f;
-        cpad.mAnalogB = 0.0f;
-        cpad.mTriggerLeft = 0.0f;
-        cpad.mTriggerRight = 0.0f;
+        gzClearControllerInput();
 
         if (mDisplay)
             mInputWaitTimer = 2;
