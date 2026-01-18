@@ -2774,7 +2774,7 @@ static int daE_MK_IsDelete(e_mk_class* i_this) {
 
 static int daE_MK_Delete(e_mk_class* i_this) {
     fopEn_enemy_c* actor = (fopEn_enemy_c*)&i_this->actor;
-    fpc_ProcID id = fopAcM_GetID(i_this);
+    fopAcM_RegisterDeleteID(i_this, "E_MK");
 
     dComIfG_resDelete(&i_this->phase, "E_mk");
     if (i_this->hioInit != 0) {
@@ -2886,7 +2886,7 @@ static int daE_MK_Create(fopAc_ac_c* i_actor) {
         mk->sound.init(&i_actor->current.pos, &i_actor->eyePos, 3, 1);
         mk->atInfo.mpSound = &mk->sound;
 
-        i_actor->attention_info.distances[2] = 4;
+        i_actor->attention_info.distances[fopAc_attn_BATTLE_e] = 4;
 
         mk->stts.Init(0xFF, 0, i_actor);
         mk->tgSph.Set(cc_sph_src);

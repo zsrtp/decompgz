@@ -3884,7 +3884,7 @@ static void demo_camera(e_wb_class* i_this) {
         i_this->field_0x1714 = 55.0f + KREG_F(7);
         i_this->field_0x16a0 = 0;
         s16 sp16 = local_194->actor.shape_angle.y +
-                   (local_194->field_0xa0e - local_194->actor.shape_angle.y) / 2;
+                   (local_194->field_0xa0c.y - local_194->actor.shape_angle.y) / 2;
         mDoMtx_stack_c::YrotS(sp16);
         local_3c.x = NREG_F(0);
         local_3c.y = NREG_F(1) + 500.0f;
@@ -5470,7 +5470,7 @@ static int daE_WB_IsDelete(e_wb_class* i_this) {
 
 static int daE_WB_Delete(e_wb_class* i_this) {
     fopAc_ac_c* a_this = (fopAc_ac_c*)i_this;
-    fpc_ProcID unused = fopAcM_GetID(i_this);
+    fopAcM_RegisterDeleteID(i_this, "E_WB");
     dComIfG_resDelete(&i_this->mPhase, i_this->mResName);
     if (i_this->field_0x17e0 != 0) {
         hio_set = false;

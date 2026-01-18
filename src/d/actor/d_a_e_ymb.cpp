@@ -11,7 +11,7 @@
 #include "d/actor/d_a_player.h"
 #include "d/d_com_inf_game.h"
 #include "f_op/f_op_camera_mng.h"
-#include <math>
+#include <cmath>
 #include "Z2AudioLib/Z2Instances.h"
 
 struct daE_YMB_HIO_c {
@@ -2752,9 +2752,9 @@ void daE_YMB_c::action() {
     }
 
     if (mAction != 5) {
-        attention_info.distances[2] = 24;
+        attention_info.distances[fopAc_attn_BATTLE_e] = 24;
     } else {
-        attention_info.distances[2] = 25;
+        attention_info.distances[fopAc_attn_BATTLE_e] = 25;
     }
 
     field_0x712 = 0;

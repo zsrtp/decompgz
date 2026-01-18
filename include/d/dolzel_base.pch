@@ -10,7 +10,7 @@
 #include "Z2AudioLib/Z2Calc.h" // IWYU pragma: export
 
 // Fixes weak function/RTTI ordering
-#include <math> // IWYU pragma: export
+#include <cmath> // IWYU pragma: export
 #include <cstring> // IWYU pragma: export
 #include "Z2AudioLib/Z2AudioArcLoader.h" // IWYU pragma: export
 #include "JSystem/JAudio2/JAUStreamAramMgr.h" // IWYU pragma: export
@@ -41,6 +41,7 @@
 #include "d/d_bg_s_chk.h" // IWYU pragma: export
 #include "d/d_bg_w.h" // IWYU pragma: export
 #include "d/d_drawlist.h" // IWYU pragma: export
+#include "d/d_bg_s_sph_chk.h" // IWYU pragma: export
 #include "d/d_com_inf_game.h" // IWYU pragma: export
 #include "m_Do/m_Do_graphic.h" // IWYU pragma: export
 #include "JSystem/J2DGraph/J2DOrthoGraph.h" // IWYU pragma: export

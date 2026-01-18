@@ -1634,7 +1634,7 @@ void daE_HZ_c::action() {
         setActionMode(ACTION_WATER_DEATH);
     }
 
-    attention_info.flags = 4;
+    attention_info.flags = fopAc_AttnFlag_BATTLE_e;
     field_0x566 = 1;
 
     switch (mAction) {
@@ -1870,7 +1870,7 @@ int daE_HZ_c::_delete() {
 }
 
 static int daE_HZ_Delete(daE_HZ_c* i_this) {
-    fpc_ProcID id = fopAcM_GetID(i_this);
+    fopAcM_RegisterDeleteID(i_this, "E_HZ");
     return i_this->_delete();
 }
 

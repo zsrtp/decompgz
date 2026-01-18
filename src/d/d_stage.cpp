@@ -17,7 +17,7 @@
 #include "f_op/f_op_scene_mng.h"
 #include "global.h"
 #include "m_Do/m_Do_Reset.h"
-#include <stdio>
+#include <cstdio>
 
 #include "gz/gz.h"
 

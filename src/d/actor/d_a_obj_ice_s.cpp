@@ -12,7 +12,7 @@
 #include "d/d_s_play.h"
 #include "SSystem/SComponent/c_lib.h"
 #include "SSystem/SComponent/c_math.h"
-#include <math>
+#include <cmath>
 
 class daOBJ_ICE_S_HIO_c : public JORReflexible {
 public:
@@ -176,7 +176,8 @@ static int daObjIce_s_Delete(daObjIce_s_c* i_this) {
 }
 
 static int daObjIce_s_Create(fopAc_ac_c* i_this) {
-    fopAcM_RegisterCreateID(daObjIce_s_c, i_this, "Obj_Ice_s");
+    daObjIce_s_c* a_this = (daObjIce_s_c*)i_this;
+    fopAcM_RegisterCreateID(i_this, "Obj_Ice_s");
     return a_this->create();
 }
 

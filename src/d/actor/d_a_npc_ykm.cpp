@@ -750,13 +750,9 @@ int daNpc_ykM_c::CreateHeap() {
 
 int daNpc_ykM_c::Delete() {
     OS_REPORT("|%06d:%x|daNpc_ykM_c -> Delete\n", g_Counter.mCounter0, this);
-    fpc_ProcID unusedId = fopAcM_GetID(this);
+    fopAcM_RegisterDeleteID(this, "NPC_YKM");
     this->~daNpc_ykM_c();
     return 1;
-}
-
-static void dummy_string() {
-    OS_REPORT("Delete -> NPC_YKM(id=%d)\n", 0);
 }
 
 int daNpc_ykM_c::Execute() {
@@ -1577,8 +1573,8 @@ void daNpc_ykM_c::setCollision() {
 int daNpc_ykM_c::drawDbgInfo() {
 #if DEBUG
     if (mpHIO->m.common.debug_info_ON != 0) {
-        f32 fVar1 = dComIfGp_getAttention()->getDistTable(attention_info.distances[6]).mDistMax;
-        f32 fVar2 = dComIfGp_getAttention()->getDistTable(attention_info.distances[1]).mDistMax;
+        f32 fVar1 = dComIfGp_getAttention()->getDistTable(attention_info.distances[fopAc_attn_SPEAK_e]).mDistMax;
+        f32 fVar2 = dComIfGp_getAttention()->getDistTable(attention_info.distances[fopAc_attn_TALK_e]).mDistMax;
         dDbVw_drawCircleOpa(attention_info.position, fVar1, (GXColor){0x0, 0xc8, 0x0, 0xff}, 1, 12);
         dDbVw_drawCircleOpa(attention_info.position, fVar2, (GXColor){0xc8, 0x0, 0x0, 0xff}, 1, 12);
         dDbVw_drawSphereXlu(eyePos, 18.0f, (GXColor){0x80, 0x80, 0x80, 0xa0}, 1);

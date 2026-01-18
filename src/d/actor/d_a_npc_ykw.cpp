@@ -176,11 +176,7 @@ daNpc_ykW_c::cutFunc daNpc_ykW_c::mCutList[8] = {
     &daNpc_ykW_c::cutHug,
 };
 
-#if DEBUG
-static daNpc_ykW_HIO_c l_HIO;
-#else
-static daNpc_ykW_Param_c l_HIO;
-#endif
+static NPC_YKW_HIO_CLASS l_HIO;
 
 #if DEBUG
 void daNpc_ykW_HIO_c::listenPropertyEvent(const JORPropertyEvent* event) {
@@ -435,7 +431,7 @@ int daNpc_ykW_c::CreateHeap() {
 
 int daNpc_ykW_c::Delete() {
     OS_REPORT("|%06d:%x|daNpc_ykW_c -> Delete\n", g_Counter.mCounter0, this);
-    fpc_ProcID id = fopAcM_GetID(this);
+    fopAcM_RegisterDeleteID(this, "NPC_YKW");
     this->~daNpc_ykW_c();
     return 1;
 }

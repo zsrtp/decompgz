@@ -19,7 +19,7 @@
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "JSystem/JUtility/JUTReport.h"
 
-#include <stdlib>
+#include <cstdlib>
  
 #ifndef DEBUG
 extern "C" int atoi(const char* str) {
