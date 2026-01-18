@@ -3,6 +3,7 @@
 
 #include "gz/gz_menu.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
+#include "JSystem/JKernel/JKRAram.h"
 
 class gzHeapsMenu_c : public gzMenu_c {
 public:
@@ -19,9 +20,7 @@ public:
         HEAP_GAME_e,
         HEAP_J2D_e,
         HEAP_ZELDA_e,
-        // HEAP_COMMAND_e,
-        // HEAP_HOSTIO_e,
-        // HEAP_DBPRINT_e,
+        HEAP_ARAM_e,
 
         HEAP_TRACKER_MAX_e
     };
@@ -44,6 +43,8 @@ public:
 
     public:
         JKRExpHeap* mpHeap;
+        JKRAramHeap* mpAramHeap;
+        bool mIsAram;
         gzTextBox* mpTitle;
         gzTextBox* mpTotalBlocks;
         gzTextBox* mpUsedBlocks;
@@ -53,6 +54,7 @@ public:
         int mFreeBlocks;
         int mMaxBlocks;
         JKRExpHeap::CMemBlock** mBlocks;
+        JKRAramBlock** mAramBlocks;
         u32* mStarts;
         f32 mFragmentation;
         int mUsedSizeKB;
@@ -76,13 +78,25 @@ private:
     void drawSwatch(f32 x, f32 y, f32 size, u32 color);
 
 private:
+    void drawOverview();
+
+private:
     bool mShowKB;
     int mViewMode;
+    bool mShowOverview;
     HeapTracker_c* mTrackers[HEAP_TRACKER_MAX_e];
-    gzTextBox* mpDescription;
     gzTextBox* mpLegendUsed;
     gzTextBox* mpLegendMenuUsed;
     gzTextBox* mpLegendFree;
+
+    // Overview mode text boxes
+    gzTextBox* mpOverviewTitle;
+    gzTextBox* mpRootHeapInfo;
+    gzTextBox* mpSystemHeapInfo;
+    gzTextBox* mpArenaInfo;
+    gzTextBox* mpAramInfo;
+    gzTextBox* mpRootChildren;
+    gzTextBox* mpSystemChildren;
 };
 
 #endif // GZ_MENU_HEAPS_H

@@ -83,7 +83,21 @@ void fpcM_Management(fpcM_ManagementFunc i_preExecuteFn, fpcM_ManagementFunc i_p
 
             g_gzInfo.execute();
 
-            if (!fapGm_HIO_c::isCaptureScreen()) {
+            // Handle menu pauses game setting
+            static bool l_menuPaused = false;
+            bool shouldPause = g_gzInfo.isDisplay() && gzInfo_isMenuPausesGame();
+
+            if (shouldPause && !l_menuPaused) {
+                dLib_time_c::stopTime();
+                Z2GetSoundMgr()->pauseAllGameSound(true);
+                l_menuPaused = true;
+            } else if (!shouldPause && l_menuPaused) {
+                dLib_time_c::startTime();
+                Z2GetSoundMgr()->pauseAllGameSound(false);
+                l_menuPaused = false;
+            }
+
+            if (!fapGm_HIO_c::isCaptureScreen() && !shouldPause) {
                 fpcEx_Handler((fpcLnIt_QueueFunc)fpcM_Execute);
             }
             if (!fapGm_HIO_c::isCaptureScreen() || fapGm_HIO_c::getCaptureScreenDivH() != 1) {

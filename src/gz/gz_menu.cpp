@@ -1,23 +1,19 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
 #include "gz/gz_menu.h"
-// #include "JSystem/JKernel/JKRExpHeap.h"
-
-// NOTE(Pheenoh): Unused right now
-// gzTextBox* gzMenu_c::sTextBoxPool = NULL;
-// u8* gzMenu_c::sTextBoxUsed = NULL;
-// bool gzMenu_c::sPoolInitialized = false;
+#include "d/d_select_cursor.h"
 
 void gzMenu_c::execute() {
     gzCursor* l_cursor = gzInfo_getCursor();
+    s32 visibleLines = gzInfo_getVisibleLines();
 
-    if (gzPad::getTrigDown() && !mOption) {
-        l_cursor->y = (l_cursor->y + 1) % mVisibleLines;
+    if (gzPad::getTrigDown() && !gzInfo_isMenuOption()) {
+        l_cursor->y = (l_cursor->y + 1) % visibleLines;
         gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
     }
 
-    if (gzPad::getTrigUp() && !mOption) {
-        l_cursor->y = (l_cursor->y == 0) ? mVisibleLines - 1 : l_cursor->y - 1;
+    if (gzPad::getTrigUp() && !gzInfo_isMenuOption()) {
+        l_cursor->y = (l_cursor->y == 0) ? visibleLines - 1 : l_cursor->y - 1;
         gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
     }
 
@@ -26,10 +22,10 @@ void gzMenu_c::execute() {
     }
 
     if (gzPad::getTrigA()) {
-        mOption ? gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK) : gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
+        gzInfo_isMenuOption() ? gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK) : gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
     }
 
-    updateScrolling(mVisibleLines);
+    updateScrolling(visibleLines);
     mpHaihai->_execute(0);
 }
 
@@ -41,7 +37,7 @@ void gzMenu_c::drawLines(gzTextBox** lines, gzTextBox** lineOptions, u8 haihaiFl
     mpHaihai->setScale(font_size.mSizeY * 0.04f);
 
     f32 lineX = mXPos;
-    f32 lineY_start = g_gzInfo.mBackgroundYPos + 95.0f;
+    f32 lineY_start = g_gzInfo.mBackgroundYPos + 78.0f;
     f32 line_spacing = g_gzInfo.mBackgroundHeight / 20;
 
     f32 optionX = mXPos - 20.0f;
@@ -55,12 +51,12 @@ void gzMenu_c::drawLines(gzTextBox** lines, gzTextBox** lineOptions, u8 haihaiFl
         bool isSelected = (l_cursor->y == i && gzInfo_isSubMenuVisible());
         
         f32 haihaiWidth = lineOptions[i]->mBounds.f.x + 30.0f; // extra spacing so text fits inside the haihai bounds
-        bool showHaihai = mOption && l_cursor->y == i;
+        bool showHaihai = gzInfo_isMenuOption() && l_cursor->y == i;
 
         drawLineWithOption(lines[i], lineOptions[i], lineX, optionX, lineY, isSelected, cursorColor, showHaihai, haihaiFlags, haihaiX, haihaiY, haihaiWidth);
     }
 
-    drawDescription(lines[l_cursor->y]->m_description);
+    // Note: gzTextBox no longer has m_description - use gzLine-based drawLines overload for descriptions
 }
 
 void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topLine, s32 visibleLines) {
@@ -73,7 +69,7 @@ void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topL
     }
 
     f32 lineX = mXPos;
-    f32 lineY_start = g_gzInfo.mBackgroundYPos + 95.0f;
+    f32 lineY_start = g_gzInfo.mBackgroundYPos + 78.0f;
     f32 line_spacing = g_gzInfo.mBackgroundHeight / 20;
     f32 optionX = mXPos - 20.0f;
     f32 haihaiX = optionX + 305.0f;
@@ -96,7 +92,7 @@ void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topL
             haihaiWidth = opt->mBounds.f.x + 30.0f;
         }
 
-        bool showHaihai = mOption && l_cursor->y == i && haihai_flags != 0;
+        bool showHaihai = gzInfo_isMenuOption() && l_cursor->y == i && haihai_flags != 0;
         line->mText->draw(lineX, lineY, color);
 
         if (opt != NULL) {
@@ -107,10 +103,10 @@ void gzMenu_c::drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topL
             mpHaihai->drawHaihai(haihai_flags, haihaiX, haihaiY, haihaiWidth, 0.0f);
         }
 
-        if (isSelected && gzInfo_isCursorTypeTP() && mpCursor != NULL) {
+        if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor() != NULL) {
             f32 cursorY = lineY - 10.0f;
-            mpCursor->setPos(lineX - 20.0f, cursorY, (J2DPane*)line->mText, false);
-            mpCursor->draw();
+            gzInfo_getTPCursor()->setPos(lineX - 20.0f, cursorY, (J2DPane*)line->mText, false);
+            gzInfo_getTPCursor()->draw();
         }
     }
 
@@ -129,145 +125,51 @@ void gzMenu_c::drawLineWithOption(gzTextBox* line, gzTextBox* option, f32 lineX,
         mpHaihai->drawHaihai(haihaiFlags, haihaiX, haihaiY, haihaiWidth, 0.0f);
     }
 
-    if (isSelected && gzInfo_isCursorTypeTP() && mpCursor) {
+    if (isSelected && gzInfo_isCursorTypeTP() && gzInfo_getTPCursor()) {
         static const f32 TP_CURSOR_Y_OFFSET = -10.0f;
         f32 cursorY = lineY + TP_CURSOR_Y_OFFSET;
-        mpCursor->setPos(lineX - 20.0f, cursorY, (J2DPane*)line, false);
-        mpCursor->draw();
+        gzInfo_getTPCursor()->setPos(lineX - 20.0f, cursorY, (J2DPane*)line, false);
+        gzInfo_getTPCursor()->draw();
     }
 }
 
 void gzMenu_c::updateScrolling(s32 maxLines) {
     gzCursor* cursor = gzInfo_getCursor();
+    s32 topLine = gzInfo_getTopLine();
+    s32 visibleLines = gzInfo_getVisibleLines();
 
-    if (cursor->y < mTopLine) {
-        mTopLine = cursor->y;
-    } else if (cursor->y >= mTopLine + mVisibleLines) {
-        mTopLine = cursor->y - mVisibleLines + 1;
+    if (cursor->y < topLine) {
+        topLine = cursor->y;
+    } else if (cursor->y >= topLine + visibleLines) {
+        topLine = cursor->y - visibleLines + 1;
     }
-    
-    s32 maxTop = maxLines - mVisibleLines;
+
+    s32 maxTop = maxLines - visibleLines;
     if (maxTop < 0) maxTop = 0;
-    if (mTopLine > maxTop) mTopLine = maxTop;
-    if (mTopLine < 0) mTopLine = 0;
+    if (topLine > maxTop) topLine = maxTop;
+    if (topLine < 0) topLine = 0;
+
+    gzInfo_setTopLine(topLine);
 }
 
 void gzMenu_c::drawDescription(const char* desc) {
     f32 x = 0.0f;
     f32 y = g_gzInfo.mBackgroundHeight + 25.0f;
 
-    if (gzInfo_isSubMenuVisible() && desc != NULL && *desc != NULL) {
-        mpDescription->setString(desc);
-        mpDescription->draw(x, y, gzInfo_getCursorColor(), HBIND_CENTER);
+    if (gzInfo_isSubMenuVisible() && desc != NULL && *desc != '\0' && gzInfo_getMenuDescription() != NULL) {
+        gzInfo_getMenuDescription()->setString(desc);
+        gzInfo_getMenuDescription()->draw(x, y, gzInfo_getCursorColor(), HBIND_CENTER);
     }
 }
 
-// NOTE(Pheenoh): This is unused right now
-// void gzMenu_c::initPool() {
-//     if (sPoolInitialized) return;
-
-//     // *Should* always be the heap set in gz/gz.cpp
-//     JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
-
-//     u32 poolBytes = TEXTBOX_POOL_SIZE * sizeof(gzTextBox);
-//     u32 freeSize = heap->getFreeSize();
-//     if (poolBytes + 64 > freeSize) {  // Buffer for overhead/fragmentation
-//         gzInfo_sendNotification("Low mem: TextBox pool skipped!", gzNotification_c::NOTIFY_WARNING);
-//         return;
-//     }
-
-//     void* poolMem = heap->alloc(poolBytes, 32);
-//     if (!poolMem) {
-//         gzInfo_sendNotification("TextBox pool alloc failed!", gzNotification_c::NOTIFY_ERROR);
-//         return;
-//     }
-
-//     sTextBoxPool = (gzTextBox*)(poolMem);
-//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-//         new (&sTextBoxPool[i]) gzTextBox();
-//     }
-
-//     // Alloc bitmap (~25 bytes for 200 slots)
-//     u32 bitmapBytes = (TEXTBOX_POOL_SIZE / 8) + 1;
-//     sTextBoxUsed = (u8*)(heap->alloc(bitmapBytes, 4));
-//     if (!sTextBoxUsed) {
-//         for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-//             sTextBoxPool[i].~gzTextBox();
-//         }
-//         heap->free(poolMem);
-//         gzInfo_sendNotification("TextBox bitmap alloc failed!", gzNotification_c::NOTIFY_ERROR);
-//         return;
-//     }
-
-//     memset(sTextBoxUsed, 0, bitmapBytes);
-//     sPoolInitialized = true;
-// }
-
-// void gzMenu_c::shutdownPool() {
-//     if (!sPoolInitialized) return;
-
-//     JKRExpHeap* heap = (JKRExpHeap*)mDoExt_getCurrentHeap();
-
-//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; ++i) {
-//         sTextBoxPool[i].~gzTextBox();
-//     }
-
-//     heap->free(sTextBoxPool);
-//     heap->free(sTextBoxUsed);
-//     sTextBoxPool = NULL;
-//     sTextBoxUsed = NULL;
-//     sPoolInitialized = false;
-// }
-
-// gzTextBox* gzMenu_c::allocateTextBox() {
-//     initPool();
-//     if (!sPoolInitialized) return NULL;
-
-//     for (u32 i = 0; i < TEXTBOX_POOL_SIZE; i++) {
-//         u8 byte = (u8)(i / 8);
-//         u8 bit = (u8)(i % 8);
-//         if ((sTextBoxUsed[byte] & (1 << bit)) == 0) {
-//             sTextBoxUsed[byte] |= (1 << bit);
-//             return &sTextBoxPool[i];
-//         }
-//     }
-//     OSReport("TextBox pool exhausted!\n");
-//     return NULL;
-// }
-
-// void gzMenu_c::freeTextBox(gzTextBox* box) {
-//     if (!sPoolInitialized || box < sTextBoxPool || box >= sTextBoxPool + TEXTBOX_POOL_SIZE) return;
-
-//     u32 idx = (u32)(box - sTextBoxPool);
-//     u8 byte = (u8)(idx / 8);
-//     u8 bit = (u8)(idx % 8);
-//     sTextBoxUsed[byte] &= ~(1 << bit);
-// }
-
-gzMenu_c::gzMenu_c() : mXPos(0.0f), mTopLine(0), mVisibleLines(15), mpHaihai(NULL), mpCursor(NULL), mpDescription(NULL) {
+gzMenu_c::gzMenu_c() : mXPos(0.0f), mpHaihai(NULL) {
     mpHaihai = new dMeterHaihai_c(3);
     mpHaihai->setScale(0.04f);
-
-    mpCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpCursor->setAlphaRate(1.0f);
-
-    mpDescription = new gzTextBox();
 }
 
 gzMenu_c::~gzMenu_c() {
     if (mpHaihai != NULL) {
         delete mpHaihai;
         mpHaihai = NULL;
-    }
-
-    if (mpCursor != NULL) {
-        delete mpCursor;
-        mpCursor = NULL;
-    }
-
-    if (mpDescription != NULL) {
-        delete mpDescription;
-        mpDescription = NULL;
     }
 }

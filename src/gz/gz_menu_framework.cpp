@@ -2,6 +2,20 @@
 
 #include "gz/gz_menu_framework.h"
 #include "gz/gz_menu_main.h"
+#include "d/d_select_cursor.h"
+#include "f_pc/f_pc_leaf.h"
+#include "f_pc/f_pc_node.h"
+
+static const char* getProcessTypeName(base_process_class* process) {
+    if (fpcBs_Is_JustOfType(g_fpcLf_type, process->subtype)) {
+        return "leaf";
+    } else if (fpcBs_Is_JustOfType(g_fpcNd_type, process->subtype)) {
+        return "node";
+    } else if (fpcBs_Is_JustOfType(g_fpcBs_type, process->type)) {
+        return "base";
+    }
+    return "unk";
+}
 
 char* gzFrameworkMenu_c::getProcessName(base_process_class* process) {
     switch (process->name) {
@@ -22,40 +36,44 @@ char* gzFrameworkMenu_c::getProcessName(base_process_class* process) {
     }
 }
 
-static void deleteProcess(void* proc) {
-    base_process_class* i_proc = (base_process_class*)proc;
-    if (fpcBs_IsDelete(i_proc)) fpcBs_Delete(i_proc);
+int gzFrameworkMenu_c::deleteProcessConfirmCb(gzConfirm_c* i_confirm, void* i_data) {
+    gzFrameworkMenu_c* menu = (gzFrameworkMenu_c*)i_data;
+    base_process_class* proc = menu->mProcessInfos[menu->mSelectedProcess].process;
+    if (fpcBs_IsDelete(proc)) {
+        fpcBs_Delete(proc);
+    }
+    return 1;
 }
 
-static void returnToFramework() {
-    // gzChangeMenu<gzFrameworkMenu_c>();
+int gzFrameworkMenu_c::deleteProcessReturnCb(gzConfirm_c* i_confirm, void* i_data) {
+    return 1;
 }
 
 gzFrameworkMenu_c::gzFrameworkMenu_c() {
     OSReport("creating gzFrameworkMenu_c\n");
+    mXPos = g_gzInfo.mBackgroundXPos + 195.0f;
 
     mNumProcesses = 0;
     mSelectedProcess = 0;
     mScrollOffset = 0;
+    mpConfirm = NULL;
 
     for (int i = 0; i < MAX_VISIBLE_ROWS * NUM_COLUMNS; i++) {
-        mpRowTexts[i] = new gzTextBox();
+        mpRowTexts[i] = gzTextBox_allocate();
     }
 
     for (int i = 0; i < NUM_COLUMNS; i++) {
-        mpHeaders[i] = new gzTextBox();
+        mpHeaders[i] = gzTextBox_allocate();
     }
 
     mpHeaders[0]->setString("Name");
     mpHeaders[1]->setString("PID");
-    mpHeaders[2]->setString("Status");
-
-    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpDrawCursor->setAlphaRate(1.0f);
+    mpHeaders[2]->setString("Type");
+    mpHeaders[3]->setString("Layer");
+    mpHeaders[4]->setString("Status");
 
     mpMeterHaihai = new dMeterHaihai_c(3);
-    mpTitle = new gzTextBox();
+    mpTitle = gzTextBox_allocate();
 }
 
 gzFrameworkMenu_c::~gzFrameworkMenu_c() {
@@ -66,22 +84,19 @@ void gzFrameworkMenu_c::_delete() {
     OSReport("deleting gzFrameworkMenu_c\n");
 
     for (int i = 0; i < MAX_VISIBLE_ROWS * NUM_COLUMNS; i++) {
-        delete mpRowTexts[i];
+        gzTextBox_free(mpRowTexts[i]);
         mpRowTexts[i] = NULL;
     }
 
     for (int i = 0; i < NUM_COLUMNS; i++) {
-        delete mpHeaders[i];
+        gzTextBox_free(mpHeaders[i]);
         mpHeaders[i] = NULL;
     }
-
-    delete mpDrawCursor;
-    mpDrawCursor = NULL;
 
     delete mpMeterHaihai;
     mpMeterHaihai = NULL;
 
-    delete mpTitle;
+    gzTextBox_free(mpTitle);
     mpTitle = NULL;
 }
 
@@ -133,7 +148,16 @@ void gzFrameworkMenu_c::execute() {
         g_gzInfo.mInputWaitTimer--;
         return;
     }
-    
+
+    if (mpConfirm != NULL) {
+        int rt = mpConfirm->execute();
+        if (rt == 1 || rt == 2) {
+            delete mpConfirm;
+            mpConfirm = NULL;
+        }
+        return;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigDown()) {
@@ -182,17 +206,21 @@ void gzFrameworkMenu_c::execute() {
     }
 
     if (gzPad::getTrigZ()) {
-        // char* buf;
-        // sprintf(buf, "delete %s?", getProcessName(mProcessInfos[mSelectedProcess].process));
-        gzInfo_seStart(Z2SE_SY_FILE_DELETE_OK);
-        // gzChangeMenu<gzConfirmMenu_c>(deleteProcess, mProcessInfos[mSelectedProcess].process, returnToFramework, buf);
-        // return;
+        if (mNumProcesses > 0) {
+            mpConfirm = new gzConfirm_c(deleteProcessConfirmCb, deleteProcessReturnCb, this, "delete process?");
+            gzInfo_seStart(Z2SE_SY_CURSOR_OK);
+        }
     }
 
     mpMeterHaihai->_execute(0);
 }
 
 void gzFrameworkMenu_c::draw() {
+    if (mpConfirm != NULL) {
+        mpConfirm->draw();
+        return;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     static const f32 LINE_SPACING = 22.0f;
@@ -201,7 +229,7 @@ void gzFrameworkMenu_c::draw() {
     static const f32 HAIHAI_Y_SIZE = MAX_VISIBLE_ROWS * 26.0f;
     static const f32 HAIHAI_SCALE_FACTOR = 0.04f;
 
-    f32 X_POS[NUM_COLUMNS] = {mXPos, mXPos+140.0f, mXPos+210.0f};
+    f32 X_POS[NUM_COLUMNS] = {mXPos, mXPos+140.0f, mXPos+200.0f, mXPos+270.0f, mXPos+350.0f};
     f32 X_TITLE = mXPos+50.0f;
     f32 HAIHAI_X = mXPos;
     f32 Y_HEADER = g_gzInfo.mBackgroundYPos + 78.0f;
@@ -237,7 +265,9 @@ void gzFrameworkMenu_c::draw() {
         ProcessInfo& info = mProcessInfos[proc_idx];
         mpRowTexts[i * NUM_COLUMNS + 0]->setString(getProcessName(info.process));
         mpRowTexts[i * NUM_COLUMNS + 1]->setStringf("%d", info.process->name);
-        mpRowTexts[i * NUM_COLUMNS + 2]->setString(info.process->pause_flag ? "paused" : "active");
+        mpRowTexts[i * NUM_COLUMNS + 2]->setString(getProcessTypeName(info.process));
+        mpRowTexts[i * NUM_COLUMNS + 3]->setStringf("%d", info.process->priority.current_info.layer_id);
+        mpRowTexts[i * NUM_COLUMNS + 4]->setString(info.process->pause_flag ? "paused" : "active");
         
         u32 color = (proc_idx == mSelectedProcess && gzInfo_isSubMenuVisible()) ? cursor_color : COLOR_WHITE;
 
@@ -247,11 +277,11 @@ void gzFrameworkMenu_c::draw() {
     }
 
     // Draw cursor if applicable
-    if (gzInfo_isCursorTypeTP() && mNumProcesses > 0) {
+    if (gzInfo_isCursorTypeTP() && mNumProcesses > 0 && gzInfo_getTPCursor() != NULL) {
         int sel_row = mSelectedProcess - mScrollOffset;
         f32 cursor_y = Y_START + (sel_row * LINE_SPACING) + CURSOR_Y_OFFSET;
-        mpDrawCursor->setPos(CURSOR_X, cursor_y, (J2DPane*)mpRowTexts[sel_row * NUM_COLUMNS], true);
-        mpDrawCursor->draw();
+        gzInfo_getTPCursor()->setPos(CURSOR_X, cursor_y, (J2DPane*)mpRowTexts[sel_row * NUM_COLUMNS], true);
+        gzInfo_getTPCursor()->draw();
     }
 
     // Draw haihai arrows
@@ -267,5 +297,11 @@ void gzFrameworkMenu_c::draw() {
 
     if (arrows != 0 && gzInfo_isSubMenuVisible()) {
         mpMeterHaihai->drawHaihai(arrows, HAIHAI_X, HAIHAI_Y, 0.0f, HAIHAI_Y_SIZE);
+    }
+
+    if (gzInfo_isSubMenuVisible() && gzInfo_getMenuDescription() != NULL) {
+        gzInfo_getMenuDescription()->setString("Press A to pause, Z to delete");
+        f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
+        gzInfo_getMenuDescription()->draw(0.0f, description_y, COLOR_WHITE, HBIND_CENTER);
     }
 }

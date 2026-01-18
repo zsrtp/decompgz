@@ -5,12 +5,13 @@
 
 gzMemoryMenu_c::gzMemoryMenu_c() {
     OSReport("creating gzMemoryMenu_c\n");
+    mXPos = g_gzInfo.mBackgroundXPos + 195.0f;
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox;
+        mpLines[i] = gzTextBox_allocate();
     }
 
-    mTopLine = 0;
+    gzInfo_resetTopLine();
 }
 
 gzMemoryMenu_c::~gzMemoryMenu_c() {
@@ -21,7 +22,7 @@ void gzMemoryMenu_c::_delete() {
     OSReport("deleting gzMemoryMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
-        delete mpLines[i];
+        gzTextBox_free(mpLines[i]);
         mpLines[i] = NULL;
     }
 }
@@ -61,20 +62,22 @@ void gzMemoryMenu_c::draw() {
     int current_max_line = LINE_NUM;
     gzTextBox** currentLines = mpLines;
 
-    if (l_cursor->y < mTopLine) {
-        mTopLine = l_cursor->y;
-    } else if (l_cursor->y >= mTopLine + VISIBLE_LINES) {
-        mTopLine = l_cursor->y - VISIBLE_LINES + 1;
+    s32 topLine = gzInfo_getTopLine();
+    if (l_cursor->y < topLine) {
+        topLine = l_cursor->y;
+    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
+        topLine = l_cursor->y - VISIBLE_LINES + 1;
     }
 
-    // Clamp mTopLine to valid range
+    // Clamp topLine to valid range
     int maxTop = current_max_line - VISIBLE_LINES;
     if (maxTop < 0) maxTop = 0;
-    if (mTopLine > maxTop) mTopLine = maxTop;
-    if (mTopLine < 0) mTopLine = 0;
+    if (topLine > maxTop) topLine = maxTop;
+    if (topLine < 0) topLine = 0;
+    gzInfo_setTopLine(topLine);
 
     for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
-        int lineIdx = mTopLine + screenIdx;
+        int lineIdx = topLine + screenIdx;
         if (lineIdx >= current_max_line) break;
 
         if (currentLines[lineIdx] != NULL) {

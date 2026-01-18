@@ -2,6 +2,7 @@
 #define GZ_MENU_CHEATS_H
 
 #include "gz/gz_menu.h"
+#include "gz/gz_textbox.h"
 
 class gzCheatsMenu_c : public gzMenu_c {
 public:
@@ -54,8 +55,7 @@ private:
     void updateDynamicLines();
 
 private:
-    gzTextBox* mpLines[LINE_NUM];
-    gzTextBox* mpLineOptions[LINE_NUM];
+    gzBoolOptionLine* mpLines[LINE_NUM];
 };
 
 #endif // GZ_MENU_CHEATS_H

@@ -17,7 +17,6 @@ public:
 private:
     gzTextBox* mpLines[LINE_NUM];
     dMeterHaihai_c* mpMeterHaihai;
-    int mTopLine;
 };
 
 #endif // GZ_MENU_CREDITS_H

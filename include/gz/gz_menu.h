@@ -3,7 +3,6 @@
 
 #include "d/d_drawlist.h"
 #include "d/d_meter_haihai.h"
-#include "d/d_select_cursor.h"
 #include "gz/gz_textbox.h"
 
 struct gzBoolOption_s {
@@ -43,9 +42,6 @@ public:
     virtual f32 getXPos() { return mXPos; }
     virtual void setXPos(f32 x) { mXPos = x; }
 
-    static gzTextBox* allocateTextBox();
-    static void freeTextBox(gzTextBox* box);
-
 protected:
     void updateScrolling(s32 maxLines);
     void drawHaihaiArrows(u8 flags, f32 x, f32 y, f32 width, f32 height);
@@ -55,21 +51,7 @@ protected:
     void drawLines(gzLine** lines, s32 numLines, u8 haihai_flags, s32 topLine, s32 visibleLines);
 
     f32 mXPos; // move to private later?
-    s32 mTopLine; // For scroll offset
-    s32 mVisibleLines;          
     dMeterHaihai_c* mpHaihai;
-    dSelect_cursor_c* mpCursor;
-    gzTextBox* mpDescription;
-    bool mOption;
-
-private:
-    // NOTE(Pheenoh): Unused for right now
-    // static const u32 TEXTBOX_POOL_SIZE = 578;
-    // static gzTextBox* sTextBoxPool;            // Dynamic array head
-    // static u8* sTextBoxUsed;                   // Dynamic bitmap (u8 array)
-    // static bool sPoolInitialized;
-    // static void initPool();
-    // static void shutdownPool();                // Shouldn't ever need this
 };
 
 #endif // GZ_MENU_H

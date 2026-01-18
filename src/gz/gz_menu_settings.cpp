@@ -2,6 +2,7 @@
 
 #include "gz/gz_menu_settings.h"
 #include "gz/gz_menu_main.h"
+#include "gz/gz_utility_confirm.h"
 
 u8 gzSettingsMenu_c::getHaihaiFlags(int i) {
     u8 haihai_flags = gzMenu_c::ARROW_LEFT | gzMenu_c::ARROW_RIGHT;
@@ -20,7 +21,7 @@ u8 gzSettingsMenu_c::getHaihaiFlags(int i) {
         !gzInfo_isDropShadows() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
     case gzSettingsMenu_c::SETTING_MENU_PAUSES_GAME:
-        haihai_flags = 0;
+        !gzInfo_isMenuPausesGame() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
         break;
     case gzSettingsMenu_c::SETTING_MENU_SFX:
         !gzInfo_isMenuSfx() ? haihai_flags &= ~gzMenu_c::ARROW_LEFT : haihai_flags &= ~gzMenu_c::ARROW_RIGHT;
@@ -56,7 +57,7 @@ void gzSettingsMenu_c::updateDynamicLines() {
     mpDisplayMode->getOptionBox()->setStringf("%s", getDisplayModeText());
     mpDropShadows->getOptionBox()->setStringf("%s", getDropShadowsText());
     mpFont->getOptionBox()->setStringf("%s", "rodan");
-    mpMenuPausesGame->getOptionBox()->setStringf("%s", "no");
+    mpMenuPausesGame->getOptionBox()->setStringf("%s", getMenuPausesGameText());
     mpMenuSfx->getOptionBox()->setStringf("%s", getMenuSfxText());
     mpReloadType->getOptionBox()->setStringf("%s", getReloadTypeText());
     mpTextColor->getOptionBox()->setStringf("%s", getTextColorText());
@@ -77,8 +78,19 @@ void gzSettingsMenu_c::updateDynamicLines() {
     }
 }
 
+int gzSettingsMenu_c::deleteCardConfirmCb(gzConfirm_c* i_confirm, void* i_data) {
+    gzInfo_deleteSettingsMemcard();
+    return 1;
+}
+
+int gzSettingsMenu_c::deleteCardReturnCb(gzConfirm_c* i_confirm, void* i_data) {
+    return 1;
+}
+
 gzSettingsMenu_c::gzSettingsMenu_c() {
     OSReport("creating gzSettingsMenu_c\n");
+    mXPos = g_gzInfo.mBackgroundXPos + 195.0f;
+    mpConfirm = NULL;
 
     mpCursorType = new gzListOptionLine("cursor type", "sets the cursor type to classic, tp or both", gzInfo_nextCursorType, gzInfo_prevCursorType);
     mpDisplayMode = new gzBoolOptionLine("display mode", "change between progressive and interlaced display modes", gzInfo_getDisplayMode, gzInfo_setDisplayModeProgressive, gzInfo_setDisplayModeInterlaced);
@@ -176,7 +188,16 @@ void gzSettingsMenu_c::execute() {
         g_gzInfo.mInputWaitTimer--;
         return;
     }
-    
+
+    if (mpConfirm != NULL) {
+        int rt = mpConfirm->execute();
+        if (rt == 1 || rt == 2) {
+            delete mpConfirm;
+            mpConfirm = NULL;
+        }
+        return;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
 
     if (gzPad::getTrigA()) {
@@ -186,19 +207,20 @@ void gzSettingsMenu_c::execute() {
         case SETTING_DISPLAY_MODE:
         case SETTING_DROP_SHADOW:
         case SETTING_SWAP_EQUIPS:
+        case SETTING_MENU_PAUSES_GAME:
         case SETTING_MENU_SFX:
         case SETTING_TEXT_COLOR:
-            mOption = !mOption;
+            gzInfo_setMenuOption(!gzInfo_isMenuOption());
             break;
         case SETTING_SAVE_CARD:
-            //gzChangeMenu<gzConfirmMenu_c>(storeSettingsCallbackWrapper, NULL, returnToSettings, "save settings?");
-            g_gzInfo.storeSettingsMemcard(); // temp
+            g_gzInfo.storeSettingsMemcard();
             return;
         case SETTING_LOAD_CARD:
             gzInfo_loadSettingsMemcard();
             break;
         case SETTING_DELETE_CARD:
-            //gzChangeMenu<gzConfirmMenu_c>(deleteSettingsCallbackWrapper, NULL, returnToSettings, "delete settings?");
+            mpConfirm = new gzConfirm_c(deleteCardConfirmCb, deleteCardReturnCb, this, "delete settings?");
+            gzInfo_seStart(Z2SE_SY_CURSOR_OK);
             return;
         case SETTING_MENU_POSITIONS:
             gzInfo_sendNotification("test!", 1);
@@ -212,8 +234,8 @@ void gzSettingsMenu_c::execute() {
     }
 
     if (gzPad::getTrigB()) {
-        if (mOption) {
-            mOption = false;
+        if (gzInfo_isMenuOption()) {
+            gzInfo_offMenuOption();
         } else {
             l_cursor->x--;
             l_cursor->y = gzMainMenu_c::MENU_SETTINGS;
@@ -224,7 +246,7 @@ void gzSettingsMenu_c::execute() {
     }
 
     if (gzPad::getTrigRight()) {
-        if (mOption) {
+        if (gzInfo_isMenuOption()) {
             switch (l_cursor->y) {
             case SETTING_RELOAD_TYPE:
                 if (gzInfo_isReloadFile()) {
@@ -250,16 +272,20 @@ void gzSettingsMenu_c::execute() {
                 }
                 break;
             case SETTING_MENU_PAUSES_GAME:
+                if (!gzInfo_isMenuPausesGame()) {
+                    gzInfo_onMenuPausesGame();
+                    gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+                }
                 break;
             case SETTING_MENU_SFX:
                 if (!gzInfo_isMenuSfx()) {
-                    gzInfo_onMenuSfx(); 
+                    gzInfo_onMenuSfx();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
             case SETTING_SWAP_EQUIPS:
                 if (!gzInfo_isSwapEquips()) {
-                    gzInfo_onSwapEquips(); 
+                    gzInfo_onSwapEquips();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 }
                 break;
@@ -272,7 +298,7 @@ void gzSettingsMenu_c::execute() {
     }
 
     if (gzPad::getTrigLeft()) {
-        if (mOption) {
+        if (gzInfo_isMenuOption()) {
             switch (l_cursor->y) {
             case SETTING_RELOAD_TYPE:
                 if (gzInfo_isReloadArea()) {
@@ -297,6 +323,10 @@ void gzSettingsMenu_c::execute() {
                 }
                 break;
             case SETTING_MENU_PAUSES_GAME:
+                if (gzInfo_isMenuPausesGame()) {
+                    gzInfo_offMenuPausesGame();
+                    gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+                }
                 break;
             case SETTING_MENU_SFX:
                 if (gzInfo_isMenuSfx()) {
@@ -322,6 +352,11 @@ void gzSettingsMenu_c::execute() {
 }
 
 void gzSettingsMenu_c::draw() {
+    if (mpConfirm != NULL) {
+        mpConfirm->draw();
+        return;
+    }
+
     gzCursor* l_cursor = gzInfo_getCursor();
     updateDynamicLines();
     u8 haihai_flags = 0;

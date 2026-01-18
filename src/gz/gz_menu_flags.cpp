@@ -2,6 +2,7 @@
 
 #include "gz/gz_menu_flags.h"
 #include "gz/gz_menu_main.h"
+#include "d/d_select_cursor.h"
 
 // General flags
 static gzBoolOption_s generalFlags[] = {
@@ -82,15 +83,57 @@ static gzBoolOption_s rupeeFlags[] = {
 static const char* dungeonNames[] = {"Forest Temple",     "Goron Mines",        "Lakebed Temple",
                                      "Arbiter's Grounds", "Snowpeak Ruins",     "Temple of Time",
                                      "City in the Sky",   "Palace of Twilight", "Hyrule Castle"};
-#define NUM_DUNGEONS ARRAY_SIZE(dungeonNames)
 
 static const char* regionNames[] = {"ordon", "faron", "eldin", "lanayru", "desert", "snowpeak"};
-#define NUM_REGIONS ARRAY_SIZE(regionNames)
+
+// Static member definitions
+int gzFlagsMenu_c::sSelectedDungeon = 0;
+int gzFlagsMenu_c::sSelectedRegion = 0;
+
+u32 gzFlagsMenu_c::nextDungeon() {
+    sSelectedDungeon = (sSelectedDungeon + 1) % NUM_DUNGEONS;
+    return sSelectedDungeon;
+}
+
+u32 gzFlagsMenu_c::prevDungeon() {
+    sSelectedDungeon = (sSelectedDungeon - 1 + NUM_DUNGEONS) % NUM_DUNGEONS;
+    return sSelectedDungeon;
+}
+
+u32 gzFlagsMenu_c::nextRegion() {
+    sSelectedRegion = (sSelectedRegion + 1) % NUM_REGIONS;
+    return sSelectedRegion;
+}
+
+u32 gzFlagsMenu_c::prevRegion() {
+    sSelectedRegion = (sSelectedRegion - 1 + NUM_REGIONS) % NUM_REGIONS;
+    return sSelectedRegion;
+}
+
+u32 gzFlagsMenu_c::addSmallKey() {
+    int stageNo = getSelectedDungeonStageNo();
+    u8 keys = getDungeonSmallKeys(stageNo);
+    if (keys < 255) {
+        setDungeonSmallKeys(stageNo, keys + 1);
+    }
+    return getDungeonSmallKeys(stageNo);
+}
+
+u32 gzFlagsMenu_c::removeSmallKey() {
+    int stageNo = getSelectedDungeonStageNo();
+    u8 keys = getDungeonSmallKeys(stageNo);
+    if (keys > 0) {
+        setDungeonSmallKeys(stageNo, keys - 1);
+    }
+    return getDungeonSmallKeys(stageNo);
+}
 
 gzFlagsMenu_c::gzFlagsMenu_c() {
     OSReport("creating gzFlagsMenu_c\n");
+    mXPos = g_gzInfo.mBackgroundXPos + 195.0f;
+
     for (int i = 0; i < TAB_MAX_e; i++) {
-        mpTabHeaders[i] = new gzTextBox();
+        mpTabHeaders[i] = gzTextBox_allocate();
         mpTabHeaders[i]->setFontSize(15.0f, 15.0f);
     }
     mpTabHeaders[TAB_GENERAL]->setString("general");
@@ -98,80 +141,37 @@ gzFlagsMenu_c::gzFlagsMenu_c() {
     mpTabHeaders[TAB_PORTAL]->setString("portal");
     mpTabHeaders[TAB_RUPEE]->setString("rupee");
 
+    // General tab - all gzBoolOptionLine
     for (int i = 0; i < G_FLAG_MAX; i++) {
-        mpLinesGeneral[i] = new gzTextBox();
-        mpLinesGeneral[i]->mBounds.f.x = 430.0f;
-        mpLinesGeneral[i]->mBounds.f.y = 10.0f;
-        mpLinesGeneral[i]->setStringDesc(generalFlags[i].name, generalFlags[i].desc);
-        mpLineOptionsGeneral[i] = new gzTextBox();
-        mpLineOptionsGeneral[i]->mBounds.f.y = 10.0f;
+        mpLinesGeneral[i] = new gzBoolOptionLine(generalFlags[i].name, generalFlags[i].desc,
+                                                  generalFlags[i].is, generalFlags[i].on, generalFlags[i].off);
     }
 
-    for (int i = 0; i < D_FLAG_MAX; i++) {
-        mpLinesDungeon[i] = new gzTextBox();
-        mpLinesDungeon[i]->mBounds.f.x = 430.0f;
-        mpLinesDungeon[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsDungeon[i] = new gzTextBox();
-        mpLineOptionsDungeon[i]->mBounds.f.y = 10.0f;
-    }
-
-    // Set strings for dungeon tab
-    mpLinesDungeon[D_FLAG_SELECT_DUNGEON]->setStringDesc("dungeon:", "Selected dungeon flags");
-    mpLinesDungeon[D_FLAG_SMALL_KEY]->setStringDesc("small keys", "Selected dungeon small keys");
-
+    // Dungeon tab
+    mpLinesDungeon[D_FLAG_SELECT_DUNGEON] = new gzListOptionLine("dungeon:", "Select dungeon to modify flags", nextDungeon, prevDungeon);
+    mpLinesDungeon[D_FLAG_SMALL_KEY] = new gzListOptionLine("small keys:", "Selected dungeon small keys", addSmallKey, removeSmallKey);
     for (int i = 0; i < 7; i++) {
-        mpLinesDungeon[D_FLAG_BOSS_KEY + i]->setStringDesc(dungeonFlags[i].name,
-                                                           dungeonFlags[i].desc);
+        mpLinesDungeon[D_FLAG_BOSS_KEY + i] = new gzBoolOptionLine(dungeonFlags[i].name, dungeonFlags[i].desc);
+    }
+    mpLinesDungeon[D_FLAG_CLEAR_DUNGEON] = new gzLine("clear flags", "Clear all selected dungeon flags");
+
+    // Portal tab
+    mpLinesPortal[P_FLAG_SELECT_REGION] = new gzListOptionLine("region:", "Select region to view flags", nextRegion, prevRegion);
+    for (int i = 0; i < 16; i++) {
+        mpLinesPortal[P_FLAG_REGION + i] = new gzBoolOptionLine(warpFlags[i].name, warpFlags[i].desc,
+                                                                 warpFlags[i].is, warpFlags[i].on, warpFlags[i].off);
     }
 
-    mpLinesDungeon[D_FLAG_CLEAR_DUNGEON]->setStringDesc("clear flags",
-                                                        "Clear all selected dungeon flags");
-
-    for (int i = 0; i < P_FLAG_MAX; i++) {
-        mpLinesPortal[i] = new gzTextBox();
-        mpLinesPortal[i]->mBounds.f.x = 430.0f;
-        mpLinesPortal[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsPortal[i] = new gzTextBox();
-        mpLineOptionsPortal[i]->mBounds.f.y = 10.0f;
-    }
-
-    // Set strings for portal tab
-    mpLinesPortal[P_FLAG_SELECT_REGION]->setStringDesc("region:", "Select region flag");
-    mpLinesPortal[P_FLAG_REGION]->setStringDesc("region unlocked", "Unlock selected map region");
-
-    for (int i = 0; i < 15; i++) {
-        mpLinesPortal[P_FLAG_SPRING_WARP + i]->setStringDesc(warpFlags[i].name,
-                                                             warpFlags[i].desc);
-    }
-
-    for (int i = 0; i < R_FLAG_MAX; i++) {
-        mpLinesRupee[i] = new gzTextBox();
-        mpLinesRupee[i]->mBounds.f.x = 430.0f;
-        mpLinesRupee[i]->mBounds.f.y = 10.0f;
-        mpLineOptionsRupee[i] = new gzTextBox();
-        mpLineOptionsRupee[i]->mBounds.f.y = 10.0f;
-    }
-    // Set strings for rupee tab
-    mpLinesRupee[R_FLAG_DONATION_AMT]->setStringDesc("donation amount:",
-                                                     "Sets the amount of rupees donated to Charlo");
-    mpLinesRupee[R_FLAG_FUNDRAISING_AMT]->setStringDesc("fundraising amount:",
-                                                        "Sets the current fundraising amount");
-
+    // Rupee tab
+    mpLinesRupee[R_FLAG_DONATION_AMT] = new gzListOptionLine("donation amount:", "Sets the amount of rupees donated to Charlo");
+    mpLinesRupee[R_FLAG_FUNDRAISING_AMT] = new gzListOptionLine("fundraising amount:", "Sets the current fundraising amount");
     for (int i = 0; i < 3; i++) {
-        mpLinesRupee[R_FLAG_FUNDRAISING_1 + i]->setStringDesc(rupeeFlags[i].name,
-                                                              rupeeFlags[i].desc);
+        mpLinesRupee[R_FLAG_FUNDRAISING_1 + i] = new gzBoolOptionLine(rupeeFlags[i].name, rupeeFlags[i].desc,
+                                                                       rupeeFlags[i].is, rupeeFlags[i].on, rupeeFlags[i].off);
     }
 
-    mpDescription = new gzTextBox();
-    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpDrawCursor->setAlphaRate(1.0f);
     mpMeterHaihai = new dMeterHaihai_c(3);
     mCurrentTab = TAB_GENERAL;
-    mTopLine = 0;
-    mSelectedDungeon = 0;
-    mSelectedRegion = 0;
-    mOption = false;
 }
 
 gzFlagsMenu_c::~gzFlagsMenu_c() {
@@ -181,37 +181,25 @@ gzFlagsMenu_c::~gzFlagsMenu_c() {
 void gzFlagsMenu_c::_delete() {
     OSReport("deleting gzFlagsMenu_c\n");
     for (int i = 0; i < TAB_MAX_e; i++) {
-        delete mpTabHeaders[i];
+        gzTextBox_free(mpTabHeaders[i]);
         mpTabHeaders[i] = NULL;
     }
     for (int i = 0; i < G_FLAG_MAX; i++) {
         delete mpLinesGeneral[i];
         mpLinesGeneral[i] = NULL;
-        delete mpLineOptionsGeneral[i];
-        mpLineOptionsGeneral[i] = NULL;
     }
     for (int i = 0; i < D_FLAG_MAX; i++) {
         delete mpLinesDungeon[i];
         mpLinesDungeon[i] = NULL;
-        delete mpLineOptionsDungeon[i];
-        mpLineOptionsDungeon[i] = NULL;
     }
     for (int i = 0; i < P_FLAG_MAX; i++) {
         delete mpLinesPortal[i];
         mpLinesPortal[i] = NULL;
-        delete mpLineOptionsPortal[i];
-        mpLineOptionsPortal[i] = NULL;
     }
     for (int i = 0; i < R_FLAG_MAX; i++) {
         delete mpLinesRupee[i];
         mpLinesRupee[i] = NULL;
-        delete mpLineOptionsRupee[i];
-        mpLineOptionsRupee[i] = NULL;
     }
-    delete mpDescription;
-    mpDescription = NULL;
-    delete mpDrawCursor;
-    mpDrawCursor = NULL;
     delete mpMeterHaihai;
     mpMeterHaihai = NULL;
 }
@@ -233,7 +221,7 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
             haihai_flags = 0;
         } else if (idx >= D_FLAG_BOSS_KEY && idx <= D_FLAG_DEFEAT_MINIBOSS) {
             int bIdx = idx - D_FLAG_BOSS_KEY;
-            if (dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
+            if (dungeonFlags[bIdx].is(sSelectedDungeon + 16)) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
@@ -243,7 +231,7 @@ u8 gzFlagsMenu_c::getHaihaiFlags(int idx) {
     case TAB_PORTAL:
         if (idx == P_FLAG_SELECT_REGION) {
         } else if (idx == P_FLAG_REGION) {
-            if (getRegionFlag(mSelectedRegion + 1)) {
+            if (getRegionFlag(sSelectedRegion + 1)) {
                 haihai_flags &= ~ARROW_RIGHT;
             } else {
                 haihai_flags &= ~ARROW_LEFT;
@@ -287,51 +275,56 @@ int gzFlagsMenu_c::getCurrentLineNum() {
 }
 
 void gzFlagsMenu_c::updateDynamicLines() {
-    gzTextBox** currentLines;
-    gzTextBox** currentLineOptions;
+    gzLine** currentLines;
     int currentLineNum;
     switch (mCurrentTab) {
     case TAB_GENERAL:
         currentLines = mpLinesGeneral;
-        currentLineOptions = mpLineOptionsGeneral;
         currentLineNum = G_FLAG_MAX;
         for (int i = 0; i < G_FLAG_MAX; i++) {
-            currentLineOptions[i]->setStringf("%s", generalFlags[i].is() ? "on" : "off");
+            gzTextBox* opt = currentLines[i]->getOptionBox();
+            if (opt) opt->setStringf("%s", generalFlags[i].is() ? "on" : "off");
         }
         break;
     case TAB_DUNGEON:
         currentLines = mpLinesDungeon;
-        currentLineOptions = mpLineOptionsDungeon;
         currentLineNum = D_FLAG_MAX;
-        currentLineOptions[D_FLAG_SELECT_DUNGEON]->setStringf("%s", dungeonNames[mSelectedDungeon]);
-        currentLineOptions[D_FLAG_SMALL_KEY]->setStringf("%d", getDungeonSmallKeys(mSelectedDungeon + 16));
-        for (int i = 0; i < 7; i++) {
-            currentLineOptions[D_FLAG_BOSS_KEY + i]->setStringf(
-                "%s", dungeonFlags[i].is(mSelectedDungeon + 16) ? "yes" : "no");
+        {
+            gzTextBox* dungeonOpt = currentLines[D_FLAG_SELECT_DUNGEON]->getOptionBox();
+            if (dungeonOpt) dungeonOpt->setString(dungeonNames[sSelectedDungeon]);
+            gzTextBox* smallKeyOpt = currentLines[D_FLAG_SMALL_KEY]->getOptionBox();
+            if (smallKeyOpt) smallKeyOpt->setStringf("%d", getDungeonSmallKeys(getSelectedDungeonStageNo()));
         }
-        currentLineOptions[D_FLAG_CLEAR_DUNGEON]->setString("");
+        // TODO: these need proper option boxes when converted to gzBoolOptionLine
+        for (int i = 0; i < 7; i++) {
+            gzTextBox* opt = currentLines[D_FLAG_BOSS_KEY + i]->getOptionBox();
+            if (opt) opt->setStringf("%s", dungeonFlags[i].is(sSelectedDungeon + 16) ? "yes" : "no");
+        }
         break;
     case TAB_PORTAL:
         currentLines = mpLinesPortal;
-        currentLineOptions = mpLineOptionsPortal;
         currentLineNum = P_FLAG_MAX;
-        currentLineOptions[P_FLAG_SELECT_REGION]->setStringf("%s", regionNames[mSelectedRegion]);
-        currentLineOptions[P_FLAG_REGION]->setStringf("%s", getRegionFlag(mSelectedRegion + 1) ? "on" : "off");
-        OSReport("mSelectedRegion: %d\n", mSelectedRegion);
-        for (int i = 0; i < 15; i++) {
-            currentLineOptions[P_FLAG_SPRING_WARP + i]->setStringf(
-                "%s", warpFlags[i].is() ? "on" : "off");
+        {
+            gzTextBox* regionOpt = currentLines[P_FLAG_SELECT_REGION]->getOptionBox();
+            if (regionOpt) regionOpt->setString(regionNames[sSelectedRegion]);
+        }
+        for (int i = 0; i < 16; i++) {
+            gzTextBox* opt = currentLines[P_FLAG_REGION + i]->getOptionBox();
+            if (opt) opt->setStringf("%s", warpFlags[i].is() ? "on" : "off");
         }
         break;
     case TAB_RUPEE:
         currentLines = mpLinesRupee;
-        currentLineOptions = mpLineOptionsRupee;
         currentLineNum = R_FLAG_MAX;
-        currentLineOptions[R_FLAG_DONATION_AMT]->setStringf("%d", getDonationAmt());
-        currentLineOptions[R_FLAG_FUNDRAISING_AMT]->setStringf("%d", getFundraisingAmt());
+        {
+            gzTextBox* donationOpt = currentLines[R_FLAG_DONATION_AMT]->getOptionBox();
+            if (donationOpt) donationOpt->setStringf("%d", getDonationAmt());
+            gzTextBox* fundraisingOpt = currentLines[R_FLAG_FUNDRAISING_AMT]->getOptionBox();
+            if (fundraisingOpt) fundraisingOpt->setStringf("%d", getFundraisingAmt());
+        }
         for (int i = 0; i < 3; i++) {
-            currentLineOptions[R_FLAG_FUNDRAISING_1 + i]->setStringf(
-                "%s", rupeeFlags[i].is() ? "on" : "off");
+            gzTextBox* opt = currentLines[R_FLAG_FUNDRAISING_1 + i]->getOptionBox();
+            if (opt) opt->setStringf("%s", rupeeFlags[i].is() ? "on" : "off");
         }
         break;
     default:
@@ -339,11 +332,13 @@ void gzFlagsMenu_c::updateDynamicLines() {
     }
     J2DTextBox::TFontSize font_size;
     for (int i = 0; i < currentLineNum; i++) {
-        currentLineOptions[i]->getFontSize(font_size);
-        font_size.mSizeX *= 0.5f;
-        currentLines[i]->mBounds.f.x = currentLines[i]->mStringLength * font_size.mSizeX;
-        currentLineOptions[i]->mBounds.f.x =
-            currentLineOptions[i]->mStringLength * font_size.mSizeX;
+        gzTextBox* opt = currentLines[i]->getOptionBox();
+        if (opt) {
+            opt->getFontSize(font_size);
+            font_size.mSizeX *= 0.5f;
+            currentLines[i]->mText->mBounds.f.x = currentLines[i]->mText->mStringLength * font_size.mSizeX;
+            opt->mBounds.f.x = opt->mStringLength * font_size.mSizeX;
+        }
     }
 }
 
@@ -366,14 +361,28 @@ void gzFlagsMenu_c::execute() {
 
     gzCursor* l_cursor = gzInfo_getCursor();
 
-    if (!mOption) {
+    int maxLines = getCurrentLineNum();
+
+    if (!gzInfo_isMenuOption()) {
         if (gzPad::getTrigRight()) {
             mCurrentTab = (mCurrentTab + 1) % TAB_MAX_e;
+            l_cursor->y = 0;
+            gzInfo_resetTopLine();
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
         }
         if (gzPad::getTrigLeft()) {
             mCurrentTab = (mCurrentTab - 1 + TAB_MAX_e) % TAB_MAX_e;
+            l_cursor->y = 0;
+            gzInfo_resetTopLine();
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
+        }
+        if (gzPad::getTrigDown()) {
+            l_cursor->y = (l_cursor->y + 1) % maxLines;
+            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
+        }
+        if (gzPad::getTrigUp()) {
+            l_cursor->y = (l_cursor->y == 0) ? maxLines - 1 : l_cursor->y - 1;
+            gzInfo_seStart(Z2SE_SY_NAME_CURSOR);
         }
     } else {
         if (gzPad::getTrigRight()) {
@@ -386,28 +395,27 @@ void gzFlagsMenu_c::execute() {
                 break;
             case TAB_DUNGEON:
                 if (l_cursor->y == D_FLAG_SELECT_DUNGEON) {
-                    mSelectedDungeon = (mSelectedDungeon + 1) % NUM_DUNGEONS;
+                    nextDungeon();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == D_FLAG_SMALL_KEY) {
-                    int val = getDungeonSmallKeys(mSelectedDungeon + 16) + 1;
-                    setDungeonSmallKeys(mSelectedDungeon + 16, val);
+                    addSmallKey();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= D_FLAG_BOSS_KEY && l_cursor->y <= D_FLAG_DEFEAT_MINIBOSS)
                 {
                     int bIdx = l_cursor->y - D_FLAG_BOSS_KEY;
-                    if (!dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
-                        dungeonFlags[bIdx].on(mSelectedDungeon + 16);
+                    if (!dungeonFlags[bIdx].is(sSelectedDungeon + 16)) {
+                        dungeonFlags[bIdx].on(sSelectedDungeon + 16);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
                 break;
             case TAB_PORTAL:
                 if (l_cursor->y == P_FLAG_SELECT_REGION) {
-                    mSelectedRegion = (mSelectedRegion + 1) % NUM_REGIONS;
+                    nextRegion();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == P_FLAG_REGION) {
-                    if (!getRegionFlag(mSelectedRegion + 1)) {
-                        setRegionFlag(mSelectedRegion + 1);
+                    if (!getRegionFlag(sSelectedRegion + 1)) {
+                        setRegionFlag(sSelectedRegion + 1);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 } else if (l_cursor->y >= P_FLAG_SPRING_WARP && l_cursor->y < P_FLAG_MAX) {
@@ -447,30 +455,27 @@ void gzFlagsMenu_c::execute() {
                 break;
             case TAB_DUNGEON:
                 if (l_cursor->y == D_FLAG_SELECT_DUNGEON) {
-                    mSelectedDungeon = (mSelectedDungeon - 1 + NUM_DUNGEONS) % NUM_DUNGEONS;
+                    prevDungeon();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == D_FLAG_SMALL_KEY) {
-                    int val = getDungeonSmallKeys(mSelectedDungeon + 16) - 1;
-                    if (val >= 0) {
-                        setDungeonSmallKeys(mSelectedDungeon + 16, val);
-                    }
+                    removeSmallKey();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y >= D_FLAG_BOSS_KEY && l_cursor->y <= D_FLAG_DEFEAT_MINIBOSS)
                 {
                     int bIdx = l_cursor->y - D_FLAG_BOSS_KEY;
-                    if (dungeonFlags[bIdx].is(mSelectedDungeon + 16)) {
-                        dungeonFlags[bIdx].off(mSelectedDungeon + 16);
+                    if (dungeonFlags[bIdx].is(sSelectedDungeon + 16)) {
+                        dungeonFlags[bIdx].off(sSelectedDungeon + 16);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 }
                 break;
             case TAB_PORTAL:
                 if (l_cursor->y == P_FLAG_SELECT_REGION) {
-                    mSelectedRegion = (mSelectedRegion - 1 + NUM_REGIONS) % NUM_REGIONS;
+                    prevRegion();
                     gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                 } else if (l_cursor->y == P_FLAG_REGION) {
-                    if (getRegionFlag(mSelectedRegion + 1)) {
-                        setRegionFlag(mSelectedRegion + 1);
+                    if (getRegionFlag(sSelectedRegion + 1)) {
+                        setRegionFlag(sSelectedRegion + 1);
                         gzInfo_seStart(Z2SE_SY_TALK_CURSOR);
                     }
                 } else if (l_cursor->y >= P_FLAG_SPRING_WARP && l_cursor->y < P_FLAG_MAX) {
@@ -506,8 +511,8 @@ void gzFlagsMenu_c::execute() {
         }
     }
     if (gzPad::getTrigB()) {
-        if (mOption) {
-            mOption = false;
+        if (gzInfo_isMenuOption()) {
+            gzInfo_offMenuOption();
             gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
         } else {
             l_cursor->x--;
@@ -519,15 +524,15 @@ void gzFlagsMenu_c::execute() {
     }
     if (gzPad::getTrigA()) {
         bool handled = false;
-        if (mOption && mCurrentTab == TAB_DUNGEON && l_cursor->y == D_FLAG_CLEAR_DUNGEON) {
-            clearDungeonFlags(mSelectedDungeon + 16);
+        if (gzInfo_isMenuOption() && mCurrentTab == TAB_DUNGEON && l_cursor->y == D_FLAG_CLEAR_DUNGEON) {
+            clearDungeonFlags(sSelectedDungeon + 16);
             gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK);
-            mOption = false;
+            gzInfo_offMenuOption();
             handled = true;
         }
         if (!handled) {
-            mOption = !mOption;
-            if (mOption) {
+            gzInfo_setMenuOption(!gzInfo_isMenuOption());
+            if (gzInfo_isMenuOption()) {
                 gzInfo_seStart(Z2SE_SY_TALK_CURSOR_OK);
             } else {
                 gzInfo_seStart(Z2SE_SY_CURSOR_CANCEL);
@@ -535,12 +540,13 @@ void gzFlagsMenu_c::execute() {
         }
     }
     
-    gzMenu_c::execute();
+    updateScrolling(maxLines);
+    mpHaihai->_execute(0);
 }
 
 void gzFlagsMenu_c::draw() {
     gzCursor* l_cursor = gzInfo_getCursor();
-    static const f32 Y_ALIGNMENT = 100.0f;
+    static const f32 Y_ALIGNMENT = 78.0f;
     static const f32 OPTIONS_X_OFFSET = -20.0f;
     static const f32 HAIHAI_X_OFFSET = 305.0f;
     static const f32 HAIHAI_Y_OFFSET = -7.0f;
@@ -566,8 +572,11 @@ void gzFlagsMenu_c::draw() {
     updateDynamicLines();
 
     J2DTextBox::TFontSize font_size;
-    mpLineOptionsGeneral[0]->getFontSize(font_size);
-    mpMeterHaihai->setScale(font_size.mSizeY * HAIHAI_SCALE_FACTOR);
+    gzTextBox* firstOpt = mpLinesGeneral[0]->getOptionBox();
+    if (firstOpt) {
+        firstOpt->getFontSize(font_size);
+        mpMeterHaihai->setScale(font_size.mSizeY * HAIHAI_SCALE_FACTOR);
+    }
 
     u32 cursor_color = gzInfo_getCursorColor();
     f32 y_header_alignment = g_gzInfo.mBackgroundYPos + 48.0f;
@@ -576,28 +585,23 @@ void gzFlagsMenu_c::draw() {
     f32 y_alignment_haihai = Y_ALIGNMENT + HAIHAI_Y_OFFSET;
     f32 x_alignment_tp_cursor = mXPos + TP_CURSOR_X_OFFSET;
 
-    gzTextBox** currentLines;
-    gzTextBox** currentLineOptions;
+    gzLine** currentLines;
     int currentLineNum;
     switch (mCurrentTab) {
     case TAB_GENERAL:
         currentLines = mpLinesGeneral;
-        currentLineOptions = mpLineOptionsGeneral;
         currentLineNum = G_FLAG_MAX;
         break;
     case TAB_DUNGEON:
         currentLines = mpLinesDungeon;
-        currentLineOptions = mpLineOptionsDungeon;
         currentLineNum = D_FLAG_MAX;
         break;
     case TAB_PORTAL:
         currentLines = mpLinesPortal;
-        currentLineOptions = mpLineOptionsPortal;
         currentLineNum = P_FLAG_MAX;
         break;
     case TAB_RUPEE:
         currentLines = mpLinesRupee;
-        currentLineOptions = mpLineOptionsRupee;
         currentLineNum = R_FLAG_MAX;
         break;
     }
@@ -607,51 +611,58 @@ void gzFlagsMenu_c::draw() {
                               i == mCurrentTab ? cursor_color : COLOR_WHITE);
     }
 
-    if (l_cursor->y < mTopLine) {
-        mTopLine = l_cursor->y;
-    } else if (l_cursor->y >= mTopLine + VISIBLE_LINES) {
-        mTopLine = l_cursor->y - VISIBLE_LINES + 1;
+    s32 topLine = gzInfo_getTopLine();
+    if (l_cursor->y < topLine) {
+        topLine = l_cursor->y;
+    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
+        topLine = l_cursor->y - VISIBLE_LINES + 1;
     }
     int maxTop = currentLineNum - VISIBLE_LINES;
     if (maxTop < 0)
         maxTop = 0;
-    if (mTopLine > maxTop)
-        mTopLine = maxTop;
-    if (mTopLine < 0)
-        mTopLine = 0;
+    if (topLine > maxTop)
+        topLine = maxTop;
+    if (topLine < 0)
+        topLine = 0;
+    gzInfo_setTopLine(topLine);
 
     for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
-        int lineIdx = mTopLine + screenIdx;
+        int lineIdx = topLine + screenIdx;
         if (lineIdx >= currentLineNum)
             break;
         f32 y_pos = Y_ALIGNMENT + (screenIdx * LINE_SPACING);
+        gzTextBox* opt = currentLines[lineIdx]->getOptionBox();
         if (l_cursor->y == lineIdx && gzInfo_isSubMenuVisible()) {
             currentLines[lineIdx]->draw(mXPos, y_pos, cursor_color);
-            f32 x_size_haihai = currentLineOptions[lineIdx]->mBounds.f.x + HAIHAI_EXTRA_SPACING;
-            if (mOption) {
-                mpMeterHaihai->drawHaihai(getHaihaiFlags(lineIdx), x_alignment_haihai,
-                                          y_pos + HAIHAI_Y_OFFSET, x_size_haihai, 0.0f);
+            if (opt) {
+                f32 x_size_haihai = opt->mBounds.f.x + HAIHAI_EXTRA_SPACING;
+                if (gzInfo_isMenuOption()) {
+                    mpMeterHaihai->drawHaihai(getHaihaiFlags(lineIdx), x_alignment_haihai,
+                                              y_pos + HAIHAI_Y_OFFSET, x_size_haihai, 0.0f);
+                }
+                opt->draw(x_alignment_opts, y_pos, cursor_color, HBIND_CENTER);
             }
-            mpDrawCursor->setPos(x_alignment_tp_cursor, y_pos - 10.0f,
-                                 (J2DPane*)currentLines[lineIdx], false);
-            currentLineOptions[lineIdx]->draw(x_alignment_opts, y_pos, cursor_color, HBIND_CENTER);
+            gzInfo_getTPCursor()->setPos(x_alignment_tp_cursor, y_pos - 10.0f,
+                                 (J2DPane*)currentLines[lineIdx]->mText, false);
         } else {
             currentLines[lineIdx]->draw(mXPos, y_pos, COLOR_WHITE);
-            currentLineOptions[lineIdx]->draw(x_alignment_opts, y_pos, COLOR_WHITE, HBIND_CENTER);
+            if (opt) {
+                opt->draw(x_alignment_opts, y_pos, COLOR_WHITE, HBIND_CENTER);
+            }
         }
     }
 
     if (gzInfo_isSubMenuVisible()) {
-        if (currentLines[l_cursor->y] && *currentLines[l_cursor->y]->m_description != 0) {
+        if (currentLines[l_cursor->y] && currentLines[l_cursor->y]->m_description[0] != 0) {
             f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
-            mpDescription->setString(currentLines[l_cursor->y]->m_description);
-            mpDescription->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
+            gzInfo_getMenuDescription()->setString(currentLines[l_cursor->y]->m_description);
+            gzInfo_getMenuDescription()->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
         }
     }
 
     if (gzInfo_isCursorTypeTP()) {
-        if (mpDrawCursor != NULL) {
-            mpDrawCursor->draw();
+        if (gzInfo_getTPCursor() != NULL) {
+            gzInfo_getTPCursor()->draw();
         }
     }
 }

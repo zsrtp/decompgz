@@ -21,7 +21,7 @@ gzNotification_c::gzNotification_c(NotificationType i_type) {
 
 gzNotification_c::~gzNotification_c() {
     for (int i = 0; i < NOTIFICATION_MAX; i++) {
-        delete mpNotifications[i];
+        gzTextBox_free(mpNotifications[i]);
         mpNotifications[i] = NULL;
     }
 }
@@ -34,7 +34,7 @@ void gzNotification_c::send(const char* message, NotificationType i_notification
 void gzNotification_c::send(const char* message) {
     if (mNumNotifications == NOTIFICATION_MAX) {
         // FIFO
-        delete mpNotifications[0];
+        gzTextBox_free(mpNotifications[0]);
         for (int i = 0; i < NOTIFICATION_MAX - 1; i++) {
             mpNotifications[i] = mpNotifications[i + 1];
             mStartFrames[i] = mStartFrames[i + 1];
@@ -42,8 +42,8 @@ void gzNotification_c::send(const char* message) {
         mNumNotifications--;
     }
 
-    
-    mpNotifications[mNumNotifications] = new gzTextBox();
+
+    mpNotifications[mNumNotifications] = gzTextBox_allocate();
     mpNotifications[mNumNotifications]->setString(message);
     mStartFrames[mNumNotifications] = cCt_getFrameCount();
     mNumNotifications++;
@@ -112,7 +112,7 @@ void gzNotification_c::removeExpired() {
     u32 ttl_frames = 5 * 30;
 
     while (mNumNotifications > 0 && (current - mStartFrames[0]) > ttl_frames) {
-        delete mpNotifications[0];
+        gzTextBox_free(mpNotifications[0]);
         for (int i = 0; i < mNumNotifications - 1; i++) {
             mpNotifications[i] = mpNotifications[i + 1];
             mStartFrames[i] = mStartFrames[i + 1];

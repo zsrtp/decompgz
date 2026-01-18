@@ -22,8 +22,10 @@ public:
     }
 
     static const int MAX_STRING_LEN = 20;
+    static const int CHARACTER_COUNT = 91;
 
-    gzTextBox* mpCharacters[65];
+    gzTextBox* mpCharacters[CHARACTER_COUNT];
+    gzTextBox* mpSpacebarBox;
     gzTextBox* mpStringBox;
     kbCallback mFinishCb;
     kbCallback mReturnCb;

@@ -107,10 +107,26 @@ void mDoCPd_c::read() {
 #endif
     }
 
-    // if gz menu is up, zero out normal cpad button flags
+    // if gz menu is up, zero out button inputs (always block buttons to prevent accidental actions)
     if (g_gzInfo.isDisplay()) {
         m_cpadInfo[PAD_1].mPressedButtonFlags = 0;
         m_cpadInfo[PAD_1].mButtonFlags = 0;
+
+        // Only zero analog values if menu pauses game is enabled
+        if (gzInfo_isMenuPausesGame()) {
+            m_cpadInfo[PAD_1].mMainStickPosX = 0.0f;
+            m_cpadInfo[PAD_1].mMainStickPosY = 0.0f;
+            m_cpadInfo[PAD_1].mMainStickValue = 0.0f;
+            m_cpadInfo[PAD_1].mMainStickAngle = 0;
+            m_cpadInfo[PAD_1].mCStickPosX = 0.0f;
+            m_cpadInfo[PAD_1].mCStickPosY = 0.0f;
+            m_cpadInfo[PAD_1].mCStickValue = 0.0f;
+            m_cpadInfo[PAD_1].mCStickAngle = 0;
+            m_cpadInfo[PAD_1].mAnalogA = 0.0f;
+            m_cpadInfo[PAD_1].mAnalogB = 0.0f;
+            m_cpadInfo[PAD_1].mTriggerLeft = 0.0f;
+            m_cpadInfo[PAD_1].mTriggerRight = 0.0f;
+        }
     }
 }
 

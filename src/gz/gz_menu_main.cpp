@@ -1,6 +1,7 @@
 #include "d/dolzel.h" // IWYU pragma: keep
 
 #include "gz/gz_menu_main.h"
+#include "d/d_select_cursor.h"
 #include "gz/gz_menu_cheats.h"
 #include "gz/gz_menu_flags.h"
 #include "gz/gz_menu_framework.h"
@@ -49,28 +50,18 @@ gzMainMenu_c::gzMainMenu_c() {
     mpMenus[MENU_TOOLS] = new gzToolsMenu_c();
     mpMenus[MENU_WARPING] = NULL;
 
-    for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox();
-    }
-
-    mpDescription = new gzTextBox();
-
-    mpLines[MENU_ACTORS]->setStringDesc("actors", "create, read, update or delete actors in the current scene");
-    mpLines[MENU_CHEATS]->setStringDesc("cheats", "toggle cheats");
-    mpLines[MENU_FLAGS]->setStringDesc("flags", "toggle in-game flags");
-    mpLines[MENU_FRAMEWORK]->setStringDesc("framework", "view and edit running processes");
-    mpLines[MENU_HEAPS]->setStringDesc("heaps", "see how cooked we are");
-    mpLines[MENU_INVENTORY]->setStringDesc("inventory", "set items and equipment");
-    mpLines[MENU_MEMORY]->setStringDesc("memory", "view and edit memory");
-    mpLines[MENU_PRACTICE]->setStringDesc("practice", "load practice files");
-    mpLines[MENU_SCENE]->setStringDesc("scene", "adjust current scene settings");
-    mpLines[MENU_SETTINGS]->setStringDesc("settings", "configure tpgz settings");
-    mpLines[MENU_TOOLS]->setStringDesc("tools", "use various tools for practice and testing");
-    mpLines[MENU_WARPING]->setStringDesc("warping", "warp to any area");
-
-    mpDrawCursor = new dSelect_cursor_c(2, 1.0f, NULL);
-    mpDrawCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
-    mpDrawCursor->setAlphaRate(1.0f);
+    mpLines[MENU_ACTORS] = new gzLine("actors", "create, read, update or delete actors in the current scene");
+    mpLines[MENU_CHEATS] = new gzLine("cheats", "toggle cheats");
+    mpLines[MENU_FLAGS] = new gzLine("flags", "toggle in-game flags");
+    mpLines[MENU_FRAMEWORK] = new gzLine("framework", "view and edit running processes");
+    mpLines[MENU_HEAPS] = new gzLine("heaps", "see how cooked we are");
+    mpLines[MENU_INVENTORY] = new gzLine("inventory", "set items and equipment");
+    mpLines[MENU_MEMORY] = new gzLine("memory", "view and edit memory");
+    mpLines[MENU_PRACTICE] = new gzLine("practice", "load practice files");
+    mpLines[MENU_SCENE] = new gzLine("scene", "adjust current scene settings");
+    mpLines[MENU_SETTINGS] = new gzLine("settings", "configure tpgz settings");
+    mpLines[MENU_TOOLS] = new gzLine("tools", "use various tools for practice and testing");
+    mpLines[MENU_WARPING] = new gzLine("warping", "warp to any area");
 
     mpMeterHaihai = new dMeterHaihai_c(3);
 
@@ -189,18 +180,17 @@ void gzMainMenu_c::draw() {
 
     // Draw description if valid and on menu
     if (gzInfo_isMainMenuVisible()) {
-        if (mpLines[l_cursor->y] && *mpLines[l_cursor->y]->m_description != 0) {
-            f32 description_x = DESCRIPTION_X;
+        if (mpLines[l_cursor->y] && mpLines[l_cursor->y]->m_description[0] != 0) {
             f32 description_y = g_gzInfo.mBackgroundHeight + 25.0f;
 
-            mpDescription->setString(mpLines[l_cursor->y]->m_description);
-            mpDescription->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
+            gzInfo_getMenuDescription()->setString(mpLines[l_cursor->y]->m_description);
+            gzInfo_getMenuDescription()->draw(DESCRIPTION_X, description_y, cursor_color, HBIND_CENTER);
         }
     }
 
     if (gzInfo_isCursorTypeTP()) {
-        if (mpDrawCursor != NULL) {
-            mpDrawCursor->draw();
+        if (gzInfo_getTPCursor() != NULL) {
+            gzInfo_getTPCursor()->draw();
         }
     }
 }

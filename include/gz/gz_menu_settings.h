@@ -2,6 +2,7 @@
 #define GZ_MENU_SETTINGS_H
 
 #include "gz/gz_menu_credits.h"
+#include "gz/gz_utility_confirm.h"
 
 class gzSettingsMenu_c : public gzMenu_c {
 public:
@@ -88,13 +89,17 @@ public:
     const char* getDropShadowsText() { return gzInfo_isDropShadows() ? "enabled" : "disabled"; }
     const char* getSwapEquipsText() { return gzInfo_isSwapEquips() ? "yes" : "no"; }
     const char* getDisplayModeText() { return gzInfo_getDisplayMode() ? "progressive" : "interlaced"; }
-    // TODO(Pheenoh): Finish writing this functionality
-    const char* getMenuPausesGameText() { return "no"; }
+    const char* getMenuPausesGameText() { return gzInfo_isMenuPausesGame() ? "yes" : "no"; }
     const char* getMenuSfxText() { return gzInfo_isMenuSfx() ? "enabled" : "disabled"; }
 
     static const int LINE_NUM = SETTING_MAX;
 
     u8 getHaihaiFlags(int i);
+
+    static int deleteCardConfirmCb(gzConfirm_c* i_confirm, void* i_data);
+    static int deleteCardReturnCb(gzConfirm_c* i_confirm, void* i_data);
+
+    gzConfirm_c* mpConfirm;
 
 private:
     gzListOptionLine* mpCursorType;

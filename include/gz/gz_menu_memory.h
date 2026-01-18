@@ -16,7 +16,6 @@ public:
 
 private:
     gzTextBox* mpLines[LINE_NUM];
-    int mTopLine;
 };
 
 #endif // GZ_MENU_MEMORY_H

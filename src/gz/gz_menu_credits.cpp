@@ -6,7 +6,7 @@ gzCreditsMenu_c::gzCreditsMenu_c() {
     OSReport("creating gzCreditsMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
-        mpLines[i] = new gzTextBox();
+        mpLines[i] = gzTextBox_allocate();
         if (i % 2 == 0) mpLines[i]->setString("a");
         if (i % 2 == 1) mpLines[i]->setString("b");
         if (i > 20 && i % 2 == 1) mpLines[i]->setString("c");
@@ -14,7 +14,7 @@ gzCreditsMenu_c::gzCreditsMenu_c() {
 
     mpMeterHaihai = new dMeterHaihai_c(3);
     mpMeterHaihai->setScale(0.5f);
-    mTopLine = 0;
+    gzInfo_resetTopLine();
 }
 
 gzCreditsMenu_c::~gzCreditsMenu_c() {
@@ -25,7 +25,7 @@ void gzCreditsMenu_c::_delete() {
     OSReport("deleting gzCreditsMenu_c\n");
 
     for (int i = 0; i < LINE_NUM; i++) {
-        delete mpLines[i];
+        gzTextBox_free(mpLines[i]);
         mpLines[i] = NULL;
     }
 
@@ -54,20 +54,22 @@ void gzCreditsMenu_c::draw() {
     f32 x_alignment_haihai = mXPos + HAIHAI_X_OFFSET;
     f32 y_alignment_haihai = Y_ALIGNMENT + HAIHAI_Y_OFFSET;
 
-    if (l_cursor->y < mTopLine) {
-        mTopLine = l_cursor->y;
-    } else if (l_cursor->y >= mTopLine + VISIBLE_LINES) {
-        mTopLine = l_cursor->y - VISIBLE_LINES + 1;
+    s32 topLine = gzInfo_getTopLine();
+    if (l_cursor->y < topLine) {
+        topLine = l_cursor->y;
+    } else if (l_cursor->y >= topLine + VISIBLE_LINES) {
+        topLine = l_cursor->y - VISIBLE_LINES + 1;
     }
 
-    // Clamp mTopLine to valid range
+    // Clamp topLine to valid range
     int maxTop = LINE_NUM - VISIBLE_LINES;
     if (maxTop < 0) maxTop = 0;
-    if (mTopLine > maxTop) mTopLine = maxTop;
-    if (mTopLine < 0) mTopLine = 0;
+    if (topLine > maxTop) topLine = maxTop;
+    if (topLine < 0) topLine = 0;
+    gzInfo_setTopLine(topLine);
 
     for (int screenIdx = 0; screenIdx < VISIBLE_LINES; screenIdx++) {
-        int lineIdx = mTopLine + screenIdx;
+        int lineIdx = topLine + screenIdx;
         if (lineIdx >= LINE_NUM) break;
 
         if (mpLines[lineIdx] != NULL) {
@@ -83,10 +85,10 @@ void gzCreditsMenu_c::draw() {
 
     u32 arrows = 0;
     if (LINE_NUM > VISIBLE_LINES) {
-        if (mTopLine > 0) {
+        if (topLine > 0) {
             arrows |= ARROW_UP;
         }
-        if (mTopLine < maxTop) {
+        if (topLine < maxTop) {
             arrows |= ARROW_DOWN;
         }
     }

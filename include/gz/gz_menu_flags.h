@@ -2,7 +2,7 @@
 #define GZ_MENU_FLAGS_H
 
 #include "gz/gz_menu.h"
-#include "gz/gz_tab.h"
+#include "gz/gz_textbox.h"
 
 class gzFlagsMenu_c : public gzMenu_c {
 public:
@@ -80,12 +80,23 @@ public:
         R_FLAG_MAX
     };
 
+    static const int NUM_DUNGEONS = 9;
+    static const int NUM_REGIONS = 6;
+
     gzFlagsMenu_c();
     ~gzFlagsMenu_c();
 
     virtual void _delete();
     virtual void execute();
     virtual void draw();
+
+    static u32 nextDungeon();
+    static u32 prevDungeon();
+    static u32 nextRegion();
+    static u32 prevRegion();
+    static u32 addSmallKey();
+    static u32 removeSmallKey();
+    static int getSelectedDungeonStageNo() { return sSelectedDungeon + 16; }
 
 private:
     void updateDynamicLines();
@@ -96,24 +107,16 @@ private:
 
 private:
     gzTextBox* mpTabHeaders[TAB_MAX_e];
-    gzTextBox* mpLinesGeneral[G_FLAG_MAX];
-    gzTextBox* mpLineOptionsGeneral[G_FLAG_MAX];
-    gzTextBox* mpLinesDungeon[D_FLAG_MAX];
-    gzTextBox* mpLineOptionsDungeon[D_FLAG_MAX];
-    gzTextBox* mpLinesPortal[P_FLAG_MAX];
-    gzTextBox* mpLineOptionsPortal[P_FLAG_MAX];
-    gzTextBox* mpLinesRupee[R_FLAG_MAX];
-    gzTextBox* mpLineOptionsRupee[R_FLAG_MAX];
-    gzTextBox* mpDescription;
+    gzLine* mpLinesGeneral[G_FLAG_MAX];
+    gzLine* mpLinesDungeon[D_FLAG_MAX];
+    gzLine* mpLinesPortal[P_FLAG_MAX];
+    gzLine* mpLinesRupee[R_FLAG_MAX];
 
-    dSelect_cursor_c* mpDrawCursor;
     dMeterHaihai_c* mpMeterHaihai;
     int mCurrentTab;
-    int mTopLine;
-    int mSelectedDungeon;
-    int mSelectedRegion;
-    bool mOption;
-    f32 mXPos;
+
+    static int sSelectedDungeon;
+    static int sSelectedRegion;
 };
 
 inline u8 getDungeonSmallKeys(int i_stageNo) { return dComIfGs_getSaveData()->getSave(i_stageNo).getBit().getKeyNum(); }

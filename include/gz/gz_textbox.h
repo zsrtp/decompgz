@@ -4,18 +4,22 @@
 #include "JSystem/J2DGraph/J2DTextBox.h"
 #include "gz/gz.h"
 
+// TextBox pool functions (implemented in gz_textbox.cpp)
+class gzTextBox;
+gzTextBox* gzTextBox_allocate();
+void gzTextBox_free(gzTextBox* box);
+void gzTextBox_shutdownPool();
+
 class gzTextBox : public J2DTextBox {
 public:
     gzTextBox() : J2DTextBox() {
         setFont(g_gzInfo.mpFont);
         setFontSize(18.0f, 18.0f);
-        m_description[0] = 0;
     }
 
     gzTextBox(f32 sizeX, f32 sizeY) : J2DTextBox() {
         setFont(g_gzInfo.mpFont);
         setFontSize(sizeX, sizeY);
-        m_description[0] = 0;
     }
 
     gzTextBox(const char* string, u32 color) : J2DTextBox() {
@@ -24,13 +28,8 @@ public:
         setString(string);
         setCharColor(color);
         setGradColor(color);
-        m_description[0] = 0;
     }
 
-    void setStringDesc(const char* string, const char* description) {
-        setString(string);
-        strcpy(m_description, description);
-    }
 
     void setFullColor(u32 color) {
         setCharColor(color);
@@ -72,20 +71,28 @@ public:
         J2DTextBox::draw(x, y, 608.0f, binding);
     }
 
-    char m_description[80]; // todo: is this the best way to handle this?
 };
 
 class gzLine {
 public:
-    gzLine(char* i_text, char* i_description) {
-        mText = new gzTextBox();
-        mText->setStringDesc(i_text, i_description);
+    gzLine(const char* i_text, const char* i_description) {
+        mText = gzTextBox_allocate();
+        mText->setStringf(i_text);
         mText->mBounds.f.x = 430.0f;
         mText->mBounds.f.y = 10.0f;
+        strcpy(m_description, i_description);
+    }
+
+    ~gzLine() {
+        gzTextBox_free(mText);
+        mText = NULL;
     }
 
     virtual gzTextBox* getOptionBox() const { return NULL; }
     virtual void updateOptionText() {}
+
+    void setDescription(const char* desc) { strcpy(m_description, desc); }
+    void draw(f32 x, f32 y, u32 color) { mText->draw(x, y, color); }
 
 public:
     gzTextBox* mText;
@@ -98,13 +105,26 @@ public:
     typedef void (*OnFunc)();
     typedef void (*OffFunc)();
 
-    gzBoolOptionLine(char* i_text, char* i_description, 
-                    IsFunc i_isFunc, OnFunc i_onFunc, 
+    gzBoolOptionLine(const char* i_text, const char* i_description,
+                    IsFunc i_isFunc, OnFunc i_onFunc,
                     OffFunc i_offFunc) : gzLine(i_text, i_description) {
-        mOption = new gzTextBox();
+        mOption = gzTextBox_allocate();
         mIs = i_isFunc;
         mOn = i_onFunc;
         mOff = i_offFunc;
+    }
+
+    // Simple constructor for when logic is handled externally
+    gzBoolOptionLine(const char* i_text, const char* i_description) : gzLine(i_text, i_description) {
+        mOption = gzTextBox_allocate();
+        mIs = NULL;
+        mOn = NULL;
+        mOff = NULL;
+    }
+
+    ~gzBoolOptionLine() {
+        gzTextBox_free(mOption);
+        mOption = NULL;
     }
 
     virtual gzTextBox* getOptionBox() const { return mOption; }
@@ -122,10 +142,22 @@ public:
     typedef u32 (*NextFunc)();
     typedef u32 (*PrevFunc)();
 
-    gzListOptionLine(char* i_text, char* i_description, NextFunc i_nextFunc, PrevFunc i_prevFunc) : gzLine(i_text, i_description) {
-        mpOption = new gzTextBox();
+    gzListOptionLine(const char* i_text, const char* i_description, NextFunc i_nextFunc, PrevFunc i_prevFunc) : gzLine(i_text, i_description) {
+        mpOption = gzTextBox_allocate();
         mpNext = i_nextFunc;
         mpPrev = i_prevFunc;
+    }
+
+    // Simple constructor for when logic is handled externally
+    gzListOptionLine(const char* i_text, const char* i_description) : gzLine(i_text, i_description) {
+        mpOption = gzTextBox_allocate();
+        mpNext = NULL;
+        mpPrev = NULL;
+    }
+
+    ~gzListOptionLine() {
+        gzTextBox_free(mpOption);
+        mpOption = NULL;
     }
 
     virtual gzTextBox* getOptionBox() const { return mpOption; }

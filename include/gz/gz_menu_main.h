@@ -2,6 +2,7 @@
 #define GZ_MENU_MAIN_H
 
 #include "gz/gz_menu.h"
+#include "gz/gz_textbox.h"
 
 class gzMainMenu_c : public gzMenu_c {
 public:
@@ -40,13 +41,8 @@ public:
     static const int LINE_NUM = MENU_MAX;
     
 private:
-    gzTextBox* mpLines[LINE_NUM];
+    gzLine* mpLines[LINE_NUM];
     gzMenu_c* mpMenus[LINE_NUM];
-    gzTextBox* mpDescription;
-    // gzFrameworkMenu_c* mpFrameworkMenu;
-    // gzSettingsMenu_c* mpSettingsMenu;
-    // gzToolsMenu_c* mpToolsMenu;
-    dSelect_cursor_c* mpDrawCursor;
     dMeterHaihai_c* mpMeterHaihai;
     bool mTransitioning;
     bool mTransitionForward;

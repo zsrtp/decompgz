@@ -2,7 +2,9 @@
 #define GZ_MENU_PRACTICE_H
 
 #include "gz/gz_utility_keyboard.h"
+#include "gz/gz_utility_confirm.h"
 #include "gz/gz_menu.h"
+#include "gz/gz_textbox.h"
 
 class gzPracticeMenu_c : public gzMenu_c {
 public:
@@ -38,40 +40,40 @@ public:
     public:
         void create();
         int execute();
-        
-        gzTextBox* mpLines[ANY_LINE_NUM];
+
+        gzLine* mpLines[ANY_LINE_NUM];
     };
 
     class gzHundoSavesTab_c {
     public:
         void create();
         int execute();
-        
-        gzTextBox* mpLines[HUNDO_LINE_NUM];
+
+        gzLine* mpLines[HUNDO_LINE_NUM];
     };
 
     class gzADSavesTab_c {
     public:
         void create();
         int execute();
-        
-        gzTextBox* mpLines[ALL_DUNGEONS_LINE_NUM];
+
+        gzLine* mpLines[ALL_DUNGEONS_LINE_NUM];
     };
 
     class gzGlitchlessSavesTab_c {
     public:
         void create();
         int execute();
-        
-        gzTextBox* mpLines[GLITCHLESS_LINE_NUM];
+
+        gzLine* mpLines[GLITCHLESS_LINE_NUM];
     };
 
     class gzNoSQSavesTab_c {
     public:
         void create();
         int execute();
-        
-        gzTextBox* mpLines[NOSQ_LINE_NUM];
+
+        gzLine* mpLines[NOSQ_LINE_NUM];
     };
 
     class gzMemfileTab_c {
@@ -84,6 +86,8 @@ public:
         int loadMemfile(int i_no);
         int deleteMemfile(int i_slotNo);
         static int memfileNameFinishCb(gzKeyboard_c* i_keyboard, void* i_data);
+        static int memfileDeleteConfirmCb(gzConfirm_c* i_confirm, void* i_data);
+        static int memfileDeleteReturnCb(gzConfirm_c* i_confirm, void* i_data);
 
         void setMemfileExists(int i_no, bool i_exists) {
             mMemfileStates[i_no] = i_exists;
@@ -93,6 +97,8 @@ public:
 
         gzTextBox* mpLines[MEMFILE_MAX_NUM];
         gzKeyboard_c* mpKeyboard;
+        gzConfirm_c* mpConfirm;
+        int mPendingDeleteSlot;
         bool mMemfileStates[MEMFILE_MAX_NUM];  // TODO: optimize this
     };
 
@@ -103,9 +109,7 @@ public:
     gzHundoSavesTab_c mHundoSavesTab;
     gzGlitchlessSavesTab_c mGlitchlessSavesTab;
     gzMemfileTab_c mMemfileTab;
-    gzTextBox* mpDescription;
     dMeterHaihai_c* mpMeterHaihai;
-    int mTopLine;
     int mCurrentTab;
 };
 

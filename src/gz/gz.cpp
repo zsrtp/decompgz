@@ -3,6 +3,8 @@
 #include "gz/gz.h"
 #include "gz/gz_menu_main.h"
 #include "gz/gz_utility_notification.h"
+#include "d/d_select_cursor.h"
+#include "m_Do/m_Do_controller_pad.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTDbPrint.h"
 #include "m_Do/m_Do_MemCard.h"
@@ -55,11 +57,17 @@ void gzInfo_c::loadDefaultSettings() {
     mSettings.mCommandCombos.mTeleportSave = (PAD_TRIGGER_R | PAD_BUTTON_UP);
     mSettings.mCommandCombos.mTeleportLoad = (PAD_TRIGGER_R | PAD_BUTTON_DOWN);
     mSettings.mDropShadows = true;
+    mSettings.mMenuPausesGame = true;
     setCursorType(1);
     mpFont = mDoExt_getMesgFont();
     mCursor.x = 0;
     mCursor.y = 0;
     mSettings.mMenuSfx = true;
+
+    // Initialize input state for menu navigation
+    mStickTriggers = 0;
+    mRepeatDirection = 0;
+    mRepeatCounter = 0;
 
     mBackgroundXPos = 5.0f;
     mBackgroundYPos = 5.0f;
@@ -100,7 +108,8 @@ int gzInfo_c::_create() {
     gzDVDLoadFile("/gz/bg.bti", buf, 108960, 0);
     ResTIMG* bg = (ResTIMG*)buf;
     mpBackground = new J2DPicture(bg);
-    mpHeader = new gzTextBox("tpgz v2.0.0", mSettings.mTextColor);
+    mpHeader = gzTextBox_allocate();
+    mpHeader->setString("tpgz v2.0.0");
     
     mpMainMenu = new gzMainMenu_c();
     if (mpMainMenu == NULL) {
@@ -108,6 +117,15 @@ int gzInfo_c::_create() {
     }
 
     mpNotification = new gzNotification_c();
+
+    mpTPCursor = new dSelect_cursor_c(2, 1.0f, NULL);
+    mpTPCursor->setParam(0.96f, 0.84f, 0.06f, 0.5f, 0.5f);
+    mpTPCursor->setAlphaRate(1.0f);
+
+    mpMenuDescription = gzTextBox_allocate();
+    mMenuOption = false;
+    mTopLine = 0;
+    mVisibleLines = 15;
 
     mInputWaitTimer = 2;
     mGZInitialized = true;
@@ -134,7 +152,7 @@ int gzInfo_c::_delete() {
     delete mpIcon;
     mpIcon = NULL;
 
-    delete mpHeader;
+    gzTextBox_free(mpHeader);
     mpHeader = NULL;
 
     delete mpBackground;
@@ -147,14 +165,83 @@ int gzInfo_c::_delete() {
 
     delete mpNotification;
     mpNotification = NULL;
+
+    delete mpTPCursor;
+    mpTPCursor = NULL;
+
+    gzTextBox_free(mpMenuDescription);
+    mpMenuDescription = NULL;
     return 1;
+}
+
+void gzInfo_c::updateStickTriggers() {
+    static const f32 STICK_THRESHOLD = 0.5f;
+    static const s16 REPEAT_DELAY = 14;  // Frames before repeat starts
+    static const s16 REPEAT_RATE = 4;    // Frames between repeats
+
+    // Get current direction from d-pad
+    u32 currentDir = 0;
+    u32 dpadHold = mDoCPd_c::m_gzPadInfo.mButtonFlags & (PAD_BUTTON_UP | PAD_BUTTON_DOWN | PAD_BUTTON_LEFT | PAD_BUTTON_RIGHT);
+    currentDir |= dpadHold;
+
+    // Only use analog stick for menu navigation if menu pauses game is enabled
+    // (otherwise stick passes through to game)
+    if (gzInfo_isMenuPausesGame()) {
+        f32 stickX = gzPad::getStickX();
+        f32 stickY = gzPad::getStickY();
+
+        if (stickY > STICK_THRESHOLD) currentDir |= PAD_BUTTON_UP;
+        if (stickY < -STICK_THRESHOLD) currentDir |= PAD_BUTTON_DOWN;
+        if (stickX < -STICK_THRESHOLD) currentDir |= PAD_BUTTON_LEFT;
+        if (stickX > STICK_THRESHOLD) currentDir |= PAD_BUTTON_RIGHT;
+    }
+
+    mStickTriggers = 0;
+
+    if (currentDir == 0) {
+        // No direction held - reset
+        mRepeatDirection = 0;
+        mRepeatCounter = 0;
+    } else if (currentDir != mRepeatDirection) {
+        // New direction - trigger immediately and start counting
+        mStickTriggers = currentDir;
+        mRepeatDirection = currentDir;
+        mRepeatCounter = 0;
+    } else {
+        // Same direction held - handle repeat
+        mRepeatCounter++;
+        if (mRepeatCounter == REPEAT_DELAY) {
+            mStickTriggers = currentDir;
+        } else if (mRepeatCounter > REPEAT_DELAY && (mRepeatCounter - REPEAT_DELAY) % REPEAT_RATE == 0) {
+            mStickTriggers = currentDir;
+        }
+    }
 }
 
 int gzInfo_c::execute() {
     if (!mGZInitialized) return 0;
 
+    updateStickTriggers();
+
     if (gzPad::getHoldL() && gzPad::getHoldR() && gzPad::getTrigDown()) {
         mDisplay = !mDisplay;
+
+        // Null out game inputs to prevent ring menu from opening
+        interface_of_controller_pad& cpad = mDoCPd_c::getCpadInfo(PAD_1);
+        cpad.mPressedButtonFlags = 0;
+        cpad.mButtonFlags = 0;
+        cpad.mMainStickPosX = 0.0f;
+        cpad.mMainStickPosY = 0.0f;
+        cpad.mMainStickValue = 0.0f;
+        cpad.mMainStickAngle = 0;
+        cpad.mCStickPosX = 0.0f;
+        cpad.mCStickPosY = 0.0f;
+        cpad.mCStickValue = 0.0f;
+        cpad.mCStickAngle = 0;
+        cpad.mAnalogA = 0.0f;
+        cpad.mAnalogB = 0.0f;
+        cpad.mTriggerLeft = 0.0f;
+        cpad.mTriggerRight = 0.0f;
 
         if (mDisplay)
             mInputWaitTimer = 2;
@@ -168,11 +255,13 @@ int gzInfo_c::execute() {
         
         if (mpMainMenu != NULL && mCursor.x == 0) mpMainMenu->execute();
         if (mpCurrentMenu != NULL && mCursor.x > 0) mpCurrentMenu->execute();
+    } else {
+        // may need to be more selective here on what does/doesn't apply 
+        // when the menu is/isn't up
+        mCheatsMng.execute();
+        mToolsMng.execute();
+        mSaveLoaderMng.execute();
     }
-
-    mCheatsMng.execute();
-    mToolsMng.execute();
-    mSaveLoaderMng.execute();
 
     return 1;
 }
@@ -186,32 +275,12 @@ int gzInfo_c::draw() {
         if (mpHeader != NULL) mpHeader->draw(mHeaderXPos, mHeaderYPos, mSettings.mTextColor);
         if (mpMainMenu != NULL) dComIfGd_set2DOpaTop(mpMainMenu);
         if (mpCurrentMenu != NULL) dComIfGd_set2DOpaTop(mpCurrentMenu);
-
-        // randomly crashes?
-        // if (mpCurrentMenu != NULL) mpCurrentMenu->draw();
-
-        // showHeapUsage();
     }
 
     // Draw any notifications
     if (mpNotification != NULL) mpNotification->draw();
 
     return 1;
-}
-
-void gzInfo_c::showHeapUsage() {
-    if (zeldaHeap != NULL && gameHeap != NULL && archiveHeap != NULL) {
-        u32 zeldaFree = zeldaHeap->getFreeSize();
-        u32 gameFree = gameHeap->getFreeSize();
-        u32 archiveFree = archiveHeap->getFreeSize();
-        u32 zeldaTotal = zeldaHeap->getTotalFreeSize();
-        u32 gameTotal = gameHeap->getTotalFreeSize();
-        u32 archiveTotal = archiveHeap->getTotalFreeSize();
-
-        gzPrint(200, 30, 0xFFFFFFFF, "  Zelda %5d / %5d\n", zeldaFree / 1024, zeldaTotal / 1024);
-        gzPrint(200, 50, 0xFFFFFFFF, "   Game %5d / %5d\n", gameFree / 1024, gameTotal / 1024);
-        gzPrint(200, 70, 0xFFFFFFFF, "Archive %5d / %5d\n", archiveFree / 1024, archiveTotal / 1024);
-    }
 }
 
 int gzInfo_c::storeSettingsMemcard() {

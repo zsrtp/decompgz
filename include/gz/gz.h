@@ -18,6 +18,7 @@ class gzTextBox;
 class gzMainMenu_c;
 class gzNotification_c;
 class gzToolsMng_c;
+class dSelect_cursor_c;
 
 #define COLOR_WHITE 0xFFFFFFFFu
 #define COLOR_RED 0xFF0000FFu
@@ -133,6 +134,7 @@ public:
     int _delete();
     int execute();
     int draw();
+    void updateStickTriggers();
 
     void loadDefaultSettings();
     int storeSettingsMemcard();
@@ -146,6 +148,14 @@ public:
     void executeMoveLink();
 
     gzCursor* getCursor() { return &mCursor; }
+    dSelect_cursor_c* getTPCursor() { return mpTPCursor; }
+    gzTextBox* getMenuDescription() { return mpMenuDescription; }
+    bool isMenuOption() { return mMenuOption; }
+    void setMenuOption(bool i_opt) { mMenuOption = i_opt; }
+    s32 getTopLine() { return mTopLine; }
+    void setTopLine(s32 i_topLine) { mTopLine = i_topLine; }
+    s32 getVisibleLines() { return mVisibleLines; }
+    void setVisibleLines(s32 i_visibleLines) { mVisibleLines = i_visibleLines; }
     u32 getCursorColor() { return getCursorType() & CURSOR_CLASSIC ? getTextColor() : COLOR_WHITE; }
     u8 getCursorType() const { return mSettings.mCursorType; }
     bool getDisplayMode() const { return mSettings.mDisplayMode; }
@@ -370,11 +380,21 @@ public:
     gzMenu_c* mpCurrentMenu;
     gzMainMenu_c* mpMainMenu;
     gzNotification_c* mpNotification;
+    dSelect_cursor_c* mpTPCursor;
+    gzTextBox* mpMenuDescription;
+    bool mMenuOption;
+    s32 mTopLine;
+    s32 mVisibleLines;
 
     JUTFont* mpFont;
     s16 mInputWaitTimer;
     bool mDisplay;
     bool mGZInitialized;
+
+    // Input state for menu navigation (stick + d-pad with repeat)
+    u32 mStickTriggers;
+    u32 mRepeatDirection;
+    s16 mRepeatCounter;
     gzSettings_s mSettings;
     gzCursor mCursor;
     gzSaveLoaderMng_c mSaveLoaderMng;
@@ -400,6 +420,17 @@ public:
 extern gzInfo_c g_gzInfo;
 
 inline gzCursor* gzInfo_getCursor() { return g_gzInfo.getCursor(); }
+inline dSelect_cursor_c* gzInfo_getTPCursor() { return g_gzInfo.getTPCursor(); }
+inline gzTextBox* gzInfo_getMenuDescription() { return g_gzInfo.getMenuDescription(); }
+inline bool gzInfo_isMenuOption() { return g_gzInfo.isMenuOption(); }
+inline void gzInfo_setMenuOption(bool i_opt) { g_gzInfo.setMenuOption(i_opt); }
+inline void gzInfo_onMenuOption() { g_gzInfo.setMenuOption(true); }
+inline void gzInfo_offMenuOption() { g_gzInfo.setMenuOption(false); }
+inline s32 gzInfo_getTopLine() { return g_gzInfo.getTopLine(); }
+inline void gzInfo_setTopLine(s32 i_topLine) { g_gzInfo.setTopLine(i_topLine); }
+inline void gzInfo_resetTopLine() { g_gzInfo.setTopLine(0); }
+inline s32 gzInfo_getVisibleLines() { return g_gzInfo.getVisibleLines(); }
+inline void gzInfo_setVisibleLines(s32 i_visibleLines) { g_gzInfo.setVisibleLines(i_visibleLines); }
 inline u32 gzInfo_getCursorColor() { return g_gzInfo.getCursorColor(); }
 inline u32 gzInfo_getTextColor() { return g_gzInfo.getTextColor(); }
 inline u8 gzInfo_getCursorType() { return g_gzInfo.getCursorType(); }
@@ -747,12 +778,13 @@ inline void gzInfo_onWolfSense() { g_gzInfo.setWolfSense(true); }
 
 namespace gzPad {
     inline u32 getTrig() { return mDoCPd_c::m_gzPadInfo.mPressedButtonFlags; }
+    inline u32 getInputTrig() { return g_gzInfo.mStickTriggers; }  // Combined stick + d-pad with repeat
     inline u32 getTrigLockL() { return mDoCPd_c::m_gzPadInfo.mTrigLockL; }
     inline u32 getTrigLockR() { return mDoCPd_c::m_gzPadInfo.mTrigLockR; }
-    inline u32 getTrigUp() { return getTrig() & PAD_BUTTON_UP; }
-    inline u32 getTrigDown() { return getTrig() & PAD_BUTTON_DOWN; }
-    inline u32 getTrigLeft() { return getTrig() & PAD_BUTTON_LEFT; }
-    inline u32 getTrigRight() { return getTrig() & PAD_BUTTON_RIGHT; }
+    inline u32 getTrigUp() { return getInputTrig() & PAD_BUTTON_UP; }
+    inline u32 getTrigDown() { return getInputTrig() & PAD_BUTTON_DOWN; }
+    inline u32 getTrigLeft() { return getInputTrig() & PAD_BUTTON_LEFT; }
+    inline u32 getTrigRight() { return getInputTrig() & PAD_BUTTON_RIGHT; }
     inline u32 getTrigL() { return getTrig() & PAD_TRIGGER_L; }
     inline u32 getTrigR() { return getTrig() & PAD_TRIGGER_R; }
     inline u32 getTrigA() { return getTrig() & PAD_BUTTON_A; }
