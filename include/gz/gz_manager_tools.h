@@ -86,6 +86,17 @@ struct ElevatorEscapeState {
     s32 targetFrame;
 };
 
+struct AbMashRateState {
+    static const u8 WINDOW_FRAMES = 30;
+    bool initialized;
+    u8 cursor;
+    u8 aPresses;
+    u8 bPresses;
+    u8 aHistory[WINDOW_FRAMES];
+    u8 bHistory[WINDOW_FRAMES];
+    gzTextBox* pText;
+};
+
 class J2DPicture;
 struct gzInputViewer_s {
     void drawButton(J2DPicture* pic, u32 button, u32 color, f32 x, f32 y, f32 sx, f32 sy);
@@ -134,10 +145,12 @@ public:
     void executeEBMB();
     void executeRollChecker();
     void executeTeleport();
+    void executeAbMashRate();
 
     void drawRollChecker();
     void drawLinkInfo();
     void drawInputViewer();
+    void drawAbMashRate();
 
     bool isMoveLinkActive() const { return mMoveLink.active; }
 
@@ -152,6 +165,7 @@ private:
     RollCheckerState mRollChecker;
     gzInputViewer_s mInputViewer;
     gzToolLinkDebugInfo_s mLinkInfo;
+    AbMashRateState mAbMashRate;
 };
 
 #endif // GZ_MANAGER_TOOLS_H
