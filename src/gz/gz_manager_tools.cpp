@@ -422,6 +422,43 @@ void gzToolsMng_c::executeRollChecker() {
     }
 }
 
+void gzToolsMng_c::executeAbMashRate() {
+    if (!mAbMashRate.initialized) {
+        mAbMashRate.initialized = true;
+        mAbMashRate.cursor = 0;
+        mAbMashRate.aPresses = 0;
+        mAbMashRate.bPresses = 0;
+
+        for (int i = 0; i < AbMashRateState::WINDOW_FRAMES; i++) {
+            mAbMashRate.aHistory[i] = 0;
+            mAbMashRate.bHistory[i] = 0;
+        }
+    }
+
+    const u8 idx = mAbMashRate.cursor;
+    const bool aTrig = (gzPad::getTrig() & PAD_BUTTON_A) != 0;
+    const bool bTrig = (gzPad::getTrig() & PAD_BUTTON_B) != 0;
+
+    if (mAbMashRate.aHistory[idx] != 0) {
+        mAbMashRate.aPresses--;
+    }
+    if (mAbMashRate.bHistory[idx] != 0) {
+        mAbMashRate.bPresses--;
+    }
+
+    mAbMashRate.aHistory[idx] = aTrig ? 1 : 0;
+    mAbMashRate.bHistory[idx] = bTrig ? 1 : 0;
+
+    if (aTrig && mAbMashRate.aPresses < AbMashRateState::WINDOW_FRAMES) {
+        mAbMashRate.aPresses++;
+    }
+    if (bTrig && mAbMashRate.bPresses < AbMashRateState::WINDOW_FRAMES) {
+        mAbMashRate.bPresses++;
+    }
+
+    mAbMashRate.cursor = (u8)((idx + 1) % AbMashRateState::WINDOW_FRAMES);
+}
+
 void gzToolsMng_c::execute() {
     if (gzInfo_isTool_FreeCam()) {
         if (gzCheckComboToggle(g_gzInfo.mSettings.mCommandCombos.mFreeCamToggle, mFreeCam.comboHeld)) {
@@ -479,6 +516,7 @@ void gzToolsMng_c::execute() {
     if (gzInfo_isTool_GorgeVoid()) executeGorgeVoid();
     if (gzInfo_isTool_RollChecker()) executeRollChecker();
     if (gzInfo_isTool_Teleport()) executeTeleport();
+    if (gzInfo_isTool_AbMashRate()) executeAbMashRate();
 }
 
 void gzToolsMng_c::drawRollChecker() {
@@ -773,6 +811,16 @@ void gzToolsMng_c::drawInputViewer() {
     }
 }
 
+void gzToolsMng_c::drawAbMashRate() {
+    if (mAbMashRate.pText == NULL) {
+        mAbMashRate.pText = gzTextBox_allocate();
+        if (mAbMashRate.pText == NULL) return;
+        mAbMashRate.pText->setFontSize(15.0f, 15.0f);
+    }
+    mAbMashRate.pText->setStringf("A: %d/s B: %d/s", (int)mAbMashRate.aPresses, (int)mAbMashRate.bPresses);
+    mAbMashRate.pText->draw(20.0f, 20.0f, COLOR_WHITE);
+}
+
 void gzToolsMng_c::draw() {
     if (gzInfo_isTool_RollChecker()) drawRollChecker();
 
@@ -786,5 +834,9 @@ void gzToolsMng_c::draw() {
         drawInputViewer();
     } else {
         mInputViewer.cleanup();
+    }
+
+    if (gzInfo_isTool_AbMashRate()) {
+        drawAbMashRate();
     }
 }
