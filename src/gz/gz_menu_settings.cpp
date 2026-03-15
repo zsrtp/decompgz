@@ -3,6 +3,7 @@
 #include "gz/gz_menu_settings.h"
 #include "gz/gz_menu_main.h"
 #include "gz/gz_utility_confirm.h"
+#include "umbra/umbra_usb.h"
 
 u8 gzSettingsMenu_c::getHaihaiFlags(int i) {
     u8 haihai_flags = gzMenu_c::ARROW_LEFT | gzMenu_c::ARROW_RIGHT;
@@ -250,6 +251,13 @@ void gzSettingsMenu_c::execute() {
             gzInfo_sendNotification("test!", 1);
             gzInfo_sendNotification("test!", 2);
             gzInfo_sendNotification("test2!");
+            if (umbra::usb_probe(1)) {
+                char msg[] = "Hello from USBGecko!\n";
+                umbra::usb_send(1, msg, sizeof(msg));
+                gzInfo_sendNotification("USBGecko: Hello!");
+            } else {
+                gzInfo_sendNotification("USBGecko not found!");
+            }
             break;
         case SETTING_GDB_SERVER:
             if (g_gzInfo.mNet.gdbStart(2159) == 0) {

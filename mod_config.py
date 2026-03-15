@@ -67,4 +67,5 @@ umbra_objects = [
     "umbra/umbra_storage.cpp",
     "umbra/umbra_net.cpp",
     "umbra/umbra_gdb.cpp",
+    "umbra/umbra_usb.cpp",
 ]

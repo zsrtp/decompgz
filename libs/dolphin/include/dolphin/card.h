@@ -220,6 +220,9 @@ typedef struct CARDStat {
 #define CARDSetCommentAddress(stat, addr) ((stat)->commentAddr = (u32)(addr))
 #define CARDGetFileNo(fileInfo) ((fileInfo)->fileNo)
 
+#define CARD_SLOT_A 0
+#define CARD_SLOT_B 1
+
 extern u32 __CARDFreq;
 
 #if DEBUG
